@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
-import { jobs } from '@/lib/data';
-import { v4 as uuidv4 } from 'uuid';
+import clientPromise from '@/lib/mongodb';
 import type { Job } from '@/lib/types';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: Request) {
   try {
+    const client = await clientPromise;
+    const db = client.db(process.env.DB_NAME);
     const { searchParams } = new URL(request.url);
 
     const limit = searchParams.get('limit');
@@ -12,25 +14,26 @@ export async function GET(request: Request) {
     const recruiterId = searchParams.get('recruiterId');
     const employeeId = searchParams.get('employeeId');
 
-    let filteredJobs: Job[] = [...jobs];
-
+    const query: any = {};
     if (isReferral !== null) {
-      filteredJobs = filteredJobs.filter(job => String(job.isReferral) === isReferral);
+      query.isReferral = isReferral === 'true';
     }
     if (recruiterId) {
-      filteredJobs = filteredJobs.filter(job => job.recruiterId === recruiterId);
+      query.recruiterId = recruiterId;
     }
     if (employeeId) {
-      filteredJobs = filteredJobs.filter(job => job.employeeId === employeeId);
+      query.employeeId = employeeId;
     }
-    
-    filteredJobs.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+
+    let jobsQuery = db.collection<Job>('jobs').find(query).sort({ postedAt: -1 });
 
     if (limit) {
-      filteredJobs = filteredJobs.slice(0, parseInt(limit, 10));
+      jobsQuery = jobsQuery.limit(parseInt(limit, 10));
     }
     
-    return NextResponse.json(filteredJobs);
+    const jobs = await jobsQuery.toArray();
+    
+    return NextResponse.json(jobs || []);
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
@@ -39,16 +42,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const jobData = await request.json();
-
-    const newJob: Job = {
-      id: uuidv4(),
-      ...jobData,
-    };
-
-    jobs.unshift(newJob);
-
-    return NextResponse.json(newJob, { status: 201 });
+    // This functionality is temporarily disabled to debug read operations with Atlas SQL.
+    return NextResponse.json({ error: 'Job creation is temporarily disabled.' }, { status: 403 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });

@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, ThumbsUp } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Terminal } from "lucide-react";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
@@ -35,6 +37,7 @@ type ReferralFormValues = z.infer<typeof formSchema>;
 export function ReferralReviewForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isWritesDisabled = true; // To control form submission
 
   const form = useForm<ReferralFormValues>({
     resolver: zodResolver(formSchema),
@@ -69,14 +72,15 @@ export function ReferralReviewForm() {
           salary: data.salary,
           isReferral: true,
           employeeId: 'user-3', // Hardcoded for now
-          postedAt: new Date(),
+          postedAt: new Date().toISOString(),
           companyLogoUrl: 'https://picsum.photos/100/100', // Placeholder
           type: 'Full-time', // Default value
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit referral');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit referral');
       }
 
       toast({
@@ -84,10 +88,10 @@ export function ReferralReviewForm() {
         description: "Your referral job post has been successfully submitted.",
       });
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
        toast({
         title: "Error",
-        description: "There was an error submitting your referral. Please try again.",
+        description: error.message || "There was an error submitting your referral. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -97,6 +101,15 @@ export function ReferralReviewForm() {
 
   return (
     <div>
+      {isWritesDisabled && (
+         <Alert className="mb-4">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>Write Operations Disabled</AlertTitle>
+            <AlertDescription>
+              Job submission is temporarily disabled while we resolve issues with the database connection. Please try again later.
+            </AlertDescription>
+        </Alert>
+      )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,7 +224,7 @@ export function ReferralReviewForm() {
            </div>
 
           <div className="flex justify-end pt-4">
-             <Button type="submit" disabled={isSubmitting}>
+             <Button type="submit" disabled={isSubmitting || isWritesDisabled}>
                 {isSubmitting ? <LoaderCircle className="animate-spin mr-2"/> : <ThumbsUp className="mr-2"/>}
                 Submit Referral
             </Button>
