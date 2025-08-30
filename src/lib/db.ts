@@ -6,10 +6,10 @@ import { v4 as uuidv4 } from 'uuid';
 let db = null;
 
 const usersData: User[] = [
-  { id: "user-1", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer" },
-  { id: "user-2", name: "Bob Williams", email: "bob@example.com", role: "Recruiter" },
-  { id: "user-3", name: "Charlie Brown", email: "charlie@example.com", role: "Employee" },
-  { id: "user-4", name: "Diana Prince", email: "diana@example.com", role: "Admin" },
+  { id: "user-1", firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", password: "password123" },
+  { id: "user-2", firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", password: "password123" },
+  { id: "user-3", firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", password: "password123" },
+  { id: "user-4", firstName: "Diana", lastName: "Prince", name: "Diana Prince", email: "diana@example.com", role: "Admin", phone: "444-555-6666", password: "password123" },
 ];
 
 const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
@@ -96,17 +96,27 @@ export async function getDb() {
         });
 
         await db.exec('PRAGMA journal_mode = WAL;');
+        await db.exec('PRAGMA foreign_keys = ON;');
 
         const tables = await db.all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'jobs', 'applications', 'domains')");
 
         if (tables.length < 4) {
             await db.exec(`
+                DROP TABLE IF EXISTS users;
+                DROP TABLE IF EXISTS jobs;
+                DROP TABLE IF EXISTS applications;
+                DROP TABLE IF EXISTS domains;
+
                 CREATE TABLE IF NOT EXISTS users (
                     id TEXT PRIMARY KEY,
+                    firstName TEXT,
+                    lastName TEXT,
                     name TEXT,
-                    email TEXT,
+                    email TEXT UNIQUE,
+                    phone TEXT,
                     role TEXT,
-                    headline TEXT
+                    headline TEXT,
+                    password TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS jobs (
@@ -124,7 +134,9 @@ export async function getDb() {
                     employeeId TEXT,
                     vacancies INTEGER,
                     contactEmail TEXT,
-                    contactPhone TEXT
+                    contactPhone TEXT,
+                    FOREIGN KEY(recruiterId) REFERENCES users(id),
+                    FOREIGN KEY(employeeId) REFERENCES users(id)
                 );
 
                 CREATE TABLE IF NOT EXISTS applications (
@@ -134,7 +146,9 @@ export async function getDb() {
                     companyName TEXT,
                     userId TEXT,
                     status TEXT,
-                    appliedAt TEXT
+                    appliedAt TEXT,
+                    FOREIGN KEY(jobId) REFERENCES jobs(id),
+                    FOREIGN KEY(userId) REFERENCES users(id)
                 );
 
                 CREATE TABLE IF NOT EXISTS domains (
@@ -143,9 +157,9 @@ export async function getDb() {
                 );
             `);
 
-            const userStmt = await db.prepare('INSERT INTO users (id, name, email, role, headline) VALUES (?, ?, ?, ?, ?)');
+            const userStmt = await db.prepare('INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
             for (const user of usersData) {
-                await userStmt.run(user.id, user.name, user.email, user.role, user.headline);
+                await userStmt.run(user.id, user.firstName, user.lastName, user.name, user.email, user.role, user.headline, user.phone, user.password);
             }
             await userStmt.finalize();
 
@@ -155,7 +169,6 @@ export async function getDb() {
                 const postedAt = new Date(Date.now() - (index + 1) * 2 * 24 * 60 * 60 * 1000).toISOString();
                 await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.isReferral, job.recruiterId, job.employeeId);
                 
-                // Assign jobId to applicationsData based on title
                 const appToUpdate = applicationsData.find(app => app.jobTitle === job.title);
                 if (appToUpdate) {
                     (appToUpdate as any).jobId = newId;

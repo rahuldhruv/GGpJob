@@ -3,12 +3,11 @@
 import Link from "next/link";
 import {
   BriefcaseBusiness,
-  PanelLeft,
-  Search,
   Settings,
   User,
   LogOut,
-  LogIn
+  LogIn,
+  UserPlus
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -20,9 +19,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { useEffect, useState } from "react";
 
 export default function Header() {
-  const isLoggedIn = true; // Mock login state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // This is a placeholder for a real auth check.
+  // In a real app, you might check for a session cookie or a token in localStorage.
+  useEffect(() => {
+    // For now, we'll just mock a logged-out state.
+    // To test the logged-in state, you can set this to true.
+    setIsLoggedIn(false); 
+  }, []);
+
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
@@ -31,42 +40,51 @@ export default function Header() {
         <span className="text-lg">GGP Portal</span>
       </Link>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <div className="ml-auto flex-1 sm:flex-initial">
-          {/* Search can be added here in the future */}
-        </div>
-        {isLoggedIn ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar>
-                  <AvatarFallback>AJ</AvatarFallback>
-                </Avatar>
+        <div className="ml-auto flex items-center gap-2">
+           {isLoggedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarFallback>AJ</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button asChild variant="ghost">
+                <Link href="/login">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button>
-            <LogIn className="mr-2 h-4 w-4" />
-            Login
-          </Button>
-        )}
+              <Button asChild>
+                 <Link href="/signup">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Sign Up
+                 </Link>
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

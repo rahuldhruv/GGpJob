@@ -2,9 +2,13 @@ export type Role = "Job Seeker" | "Recruiter" | "Employee" | "Admin";
 
 export interface User {
   id: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
+  phone: string;
   role: Role;
+  password?: string;
   headline?: string;
 }
 
