@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -126,14 +127,17 @@ export default function JobSeekerDashboard() {
         <CardContent>
           <form onSubmit={handleSearch} className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-2">
-              <Input 
-                placeholder="e.g. 'Software Engineer' or 'Google'"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-grow"
-              />
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                  placeholder="e.g. 'Software Engineer' or 'Google'"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
               <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                {loading ? <LoaderCircle className="animate-spin mr-2"/> : <Search className="mr-2"/>}
+                {loading ? <LoaderCircle className="animate-spin mr-2"/> : null}
                 Search
               </Button>
             </div>
