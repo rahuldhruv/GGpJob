@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { jobs } from '@/lib/data';
-import { Job } from '@/lib/types';
+import { getDb } from '@/lib/db';
+import type { Job } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: Request) {
   try {
+    const db = await getDb();
     const { searchParams } = new URL(request.url);
 
     const limit = searchParams.get('limit');
@@ -12,25 +13,37 @@ export async function GET(request: Request) {
     const recruiterId = searchParams.get('recruiterId');
     const employeeId = searchParams.get('employeeId');
 
-    let filteredJobs = jobs;
+    let query = 'SELECT * FROM jobs';
+    const conditions = [];
+    const params = [];
 
     if (isReferral !== null) {
-      filteredJobs = filteredJobs.filter(job => String(job.isReferral) === isReferral);
+      conditions.push('isReferral = ?');
+      params.push(isReferral === 'true' ? 1 : 0);
     }
     if (recruiterId) {
-      filteredJobs = filteredJobs.filter(job => job.recruiterId === recruiterId);
+      conditions.push('recruiterId = ?');
+      params.push(recruiterId);
     }
     if (employeeId) {
-      filteredJobs = filteredJobs.filter(job => job.employeeId === employeeId);
+      conditions.push('employeeId = ?');
+      params.push(employeeId);
     }
 
-    filteredJobs.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-
-    if (limit) {
-      filteredJobs = filteredJobs.slice(0, parseInt(limit, 10));
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
     }
     
-    return NextResponse.json(filteredJobs);
+    query += ' ORDER BY postedAt DESC';
+
+    if (limit) {
+      query += ' LIMIT ?';
+      params.push(parseInt(limit, 10));
+    }
+
+    const jobs = await db.all(query, ...params);
+    
+    return NextResponse.json(jobs);
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
@@ -40,13 +53,34 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const newJobData = await request.json();
-    
+    const db = await getDb();
+
     const newJob: Job = {
       id: uuidv4(),
       ...newJobData,
     };
+    
+    const stmt = await db.prepare(
+      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, companyLogoUrl, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    );
 
-    jobs.unshift(newJob);
+    await stmt.run(
+        newJob.id,
+        newJob.title,
+        newJob.companyName,
+        newJob.location,
+        newJob.description,
+        newJob.vacancies,
+        newJob.contactEmail,
+        newJob.contactPhone,
+        newJob.salary,
+        newJob.isReferral ? 1 : 0,
+        newJob.employeeId,
+        newJob.postedAt,
+        newJob.companyLogoUrl,
+        newJob.type
+    );
+    await stmt.finalize();
 
     return NextResponse.json(newJob, { status: 201 });
   } catch (e) {
