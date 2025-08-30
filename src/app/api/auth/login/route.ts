@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import type { User } from '@/lib/types';
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
-    const user = await db.get('SELECT * FROM users WHERE email = ? AND role = ?', email, role);
+    const user: User | undefined = await db.get('SELECT * FROM users WHERE email = ? AND role = ?', email, role);
 
     if (!user || user.password !== password) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
