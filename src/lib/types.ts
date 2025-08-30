@@ -11,7 +11,7 @@ export interface User {
 }
 
 export interface Job {
-  id: string;
+  id:string;
   title: string;
   companyName: string;
   companyLogoUrl: string;
@@ -39,4 +39,9 @@ export interface Application {
   status: "Applied" | "In Review" | "Interview" | "Offered" | "Rejected";
   appliedAt: Date | string;
   _id?: string;
+}
+
+export interface Domain {
+  id: string;
+  name: string;
 }

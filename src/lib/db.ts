@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
-import type { User, Job, Application } from './types';
+import type { User, Job, Application, Domain } from './types';
 
 let db = null;
 
@@ -99,6 +99,13 @@ const applicationsData: Application[] = [
   },
 ];
 
+const domainsData: Domain[] = [
+    { id: "domain-1", name: "Software Engineering" },
+    { id: "domain-2", name: "Product Management" },
+    { id: "domain-3", name: "Data Science" },
+    { id: "domain-4", name: "Design" },
+];
+
 export async function getDb() {
     if (!db) {
         db = await open({
@@ -108,9 +115,9 @@ export async function getDb() {
 
         await db.exec('PRAGMA journal_mode = WAL;');
 
-        const tables = await db.all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'jobs', 'applications')");
+        const tables = await db.all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'jobs', 'applications', 'domains')");
 
-        if (tables.length < 3) {
+        if (tables.length < 4) {
             await db.exec(`
                 CREATE TABLE IF NOT EXISTS users (
                     id TEXT PRIMARY KEY,
@@ -149,6 +156,11 @@ export async function getDb() {
                     status TEXT,
                     appliedAt TEXT
                 );
+
+                CREATE TABLE IF NOT EXISTS domains (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL UNIQUE
+                );
             `);
 
             const userStmt = await db.prepare('INSERT INTO users (id, name, email, avatarUrl, role, headline) VALUES (?, ?, ?, ?, ?, ?)');
@@ -168,6 +180,12 @@ export async function getDb() {
                 await appStmt.run(app.id, app.jobId, app.jobTitle, app.companyName, app.userId, app.status, (app.appliedAt as Date).toISOString());
             }
             await appStmt.finalize();
+
+            const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
+            for (const domain of domainsData) {
+                await domainStmt.run(domain.id, domain.name);
+            }
+            await domainStmt.finalize();
         }
     }
     return db;
