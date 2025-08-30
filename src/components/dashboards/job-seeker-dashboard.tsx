@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import type { Job, Application } from "@/lib/types";
-import { jobs as allJobs, applications as allApplications } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -12,11 +11,29 @@ import { ArrowRight } from "lucide-react";
 import { format } from 'date-fns';
 
 export default function JobSeekerDashboard() {
-  const [jobs] = useState<Job[]>(allJobs.slice(0,3));
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setApplications(allApplications);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [jobsRes, appsRes] = await Promise.all([
+          fetch('/api/jobs?limit=3'),
+          fetch('/api/applications')
+        ]);
+        const jobsData = await jobsRes.json();
+        const appsData = await appsRes.json();
+        setJobs(jobsData);
+        setApplications(appsData);
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
   
   const getStatusBadge = (status: Application['status']) => {
@@ -28,6 +45,10 @@ export default function JobSeekerDashboard() {
       default: return <Badge variant="outline">Applied</Badge>;
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
 
   return (
@@ -65,7 +86,7 @@ export default function JobSeekerDashboard() {
                 <TableRow key={app.id}>
                   <TableCell className="font-medium">{app.jobTitle}</TableCell>
                   <TableCell>{app.companyName}</TableCell>
-                  <TableCell>{format(app.appliedAt, 'PPP')}</TableCell>
+                  <TableCell>{format(new Date(app.appliedAt), 'PPP')}</TableCell>
                   <TableCell>{getStatusBadge(app.status)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm">

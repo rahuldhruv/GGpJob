@@ -53,7 +53,7 @@ export default function JobCard({ job }: JobCardProps) {
       <CardFooter className="flex justify-between items-center">
         <div className="text-xs text-muted-foreground flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          {formatDistanceToNow(job.postedAt, { addSuffix: true })}
+          {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
         </div>
         <Button variant="secondary" size="sm">View Details</Button>
       </CardFooter>

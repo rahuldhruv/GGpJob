@@ -1,26 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Job, User } from "@/lib/types";
-import { jobs as allJobs, users as allUsers } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
-import { MoreHorizontal, Edit, Trash2, UserCog, Briefcase } from "lucide-react";
+import { UserCog, Briefcase } from "lucide-react";
 import { format } from "date-fns";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export default function AdminDashboard() {
-  const [jobs, setJobs] = useState<Job[]>(allJobs);
-  const [users, setUsers] = useState<User[]>(allUsers);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [jobsRes, usersRes] = await Promise.all([
+          fetch('/api/jobs'),
+          fetch('/api/users')
+        ]);
+        const jobsData = await jobsRes.json();
+        const usersData = await usersRes.json();
+        setJobs(jobsData);
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const getRoleBadge = (role: User['role']) => {
     switch (role) {
@@ -30,6 +45,10 @@ export default function AdminDashboard() {
       default: return <Badge variant="secondary">{role}</Badge>;
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <Card>
@@ -100,7 +119,7 @@ export default function AdminDashboard() {
                         {job.isReferral ? "Referral" : "Direct"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{format(job.postedAt, "PPP")}</TableCell>
+                    <TableCell>{format(new Date(job.postedAt), "PPP")}</TableCell>
                     <TableCell className="text-right">
                        <Button variant="outline" size="sm">Edit Job</Button>
                     </TableCell>

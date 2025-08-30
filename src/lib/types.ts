@@ -7,6 +7,7 @@ export interface User {
   avatarUrl: string;
   role: Role;
   headline?: string;
+  _id?: string;
 }
 
 export interface Job {
@@ -18,10 +19,11 @@ export interface Job {
   type: "Full-time" | "Part-time" | "Contract" | "Internship";
   salary?: string;
   description: string;
-  postedAt: Date;
+  postedAt: Date | string;
   isReferral?: boolean;
   recruiterId?: string;
   employeeId?: string;
+  _id?: string;
 }
 
 export interface Application {
@@ -31,5 +33,6 @@ export interface Application {
   companyName: string;
   userId: string;
   status: "Applied" | "In Review" | "Interview" | "Offered" | "Rejected";
-  appliedAt: Date;
+  appliedAt: Date | string;
+  _id?: string;
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Job } from "@/lib/types";
-import { jobs as allJobs } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -26,9 +25,28 @@ import {
 import { ReferralReviewForm } from "../referral-review-form";
 
 export default function EmployeeDashboard() {
-  const [referralJobs, setReferralJobs] = useState<Job[]>(
-    allJobs.filter((job) => job.isReferral && job.employeeId === "user-3")
-  );
+  const [referralJobs, setReferralJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/jobs?isReferral=true&employeeId=user-3');
+        const data = await res.json();
+        setReferralJobs(data);
+      } catch (error) {
+        console.error("Failed to fetch referral jobs", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobs();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <Card>
@@ -70,7 +88,7 @@ export default function EmployeeDashboard() {
             {referralJobs.map((job) => (
               <TableRow key={job.id}>
                 <TableCell className="font-medium">{job.title}</TableCell>
-                <TableCell>{format(job.postedAt, "PPP")}</TableCell>
+                <TableCell>{format(new Date(job.postedAt), "PPP")}</TableCell>
                 <TableCell>
                   <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                     Open
