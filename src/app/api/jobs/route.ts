@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import type { Job } from '@/lib/types';
+import { Job } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
+import { jobs as localJobs } from '@/lib/data';
 
 export async function GET(request: Request) {
   try {
@@ -42,8 +43,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // This functionality is temporarily disabled to debug read operations with Atlas SQL.
-    return NextResponse.json({ error: 'Job creation is temporarily disabled.' }, { status: 403 });
+    const newJobData = await request.json();
+    
+    const newJob: Job = {
+      id: uuidv4(),
+      ...newJobData,
+    };
+
+    localJobs.unshift(newJob);
+
+    return NextResponse.json(newJob, { status: 201 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
