@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { v4 as uuidv4 } from 'uuid';
 import type { User } from '@/lib/types';
 
 export async function POST(request: Request) {
@@ -18,34 +17,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
     }
 
-    const newUser: User = {
-      id: uuidv4(),
+    const result = await db.run(
+      'INSERT INTO users (firstName, lastName, name, email, phone, role, password, headline) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      firstName,
+      lastName,
+      `${firstName} ${lastName}`,
+      email,
+      phone,
+      role,
+      password, // In a real app, hash this password!
+      '' // Provide a default empty headline
+    );
+    
+    const newUser: Partial<User> = {
+      id: result.lastID,
       firstName,
       lastName,
       name: `${firstName} ${lastName}`,
       email,
       phone,
       role,
-      password, // In a real app, hash this password!
-      headline: '', // Provide a default empty headline
+      headline: '',
     };
-    
-    await db.run(
-      'INSERT INTO users (id, firstName, lastName, name, email, phone, role, password, headline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      newUser.id,
-      newUser.firstName,
-      newUser.lastName,
-      newUser.name,
-      newUser.email,
-      newUser.phone,
-      newUser.role,
-      newUser.password,
-      newUser.headline
-    );
-    
-    const { password: _, ...userWithoutPassword } = newUser;
 
-    return NextResponse.json(userWithoutPassword, { status: 201 });
+    return NextResponse.json(newUser, { status: 201 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });

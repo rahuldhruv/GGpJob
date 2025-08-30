@@ -27,11 +27,11 @@ export async function GET(request: Request) {
     }
     if (recruiterId) {
       conditions.push('recruiterId = ?');
-      params.push(recruiterId);
+      params.push(Number(recruiterId));
     }
     if (employeeId) {
       conditions.push('employeeId = ?');
-      params.push(employeeId);
+      params.push(Number(employeeId));
     }
     if (search) {
       const searchCondition = '(title LIKE ? OR companyName LIKE ? OR description LIKE ?)';

@@ -23,7 +23,7 @@ export default function RecruiterDashboard() {
     const fetchJobs = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/jobs?recruiterId=user-2&isReferral=false');
+        const res = await fetch('/api/jobs?recruiterId=2&isReferral=false');
         const data = await res.json();
         setPostedJobs(Array.isArray(data) ? data : []);
       } catch (error) {

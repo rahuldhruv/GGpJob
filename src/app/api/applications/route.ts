@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     
     let applications;
     if (userId) {
-      applications = await db.all('SELECT * FROM applications WHERE userId = ? ORDER BY appliedAt DESC', userId);
+      applications = await db.all('SELECT * FROM applications WHERE userId = ? ORDER BY appliedAt DESC', Number(userId));
     } else {
       applications = await db.all('SELECT * FROM applications ORDER BY appliedAt DESC');
     }

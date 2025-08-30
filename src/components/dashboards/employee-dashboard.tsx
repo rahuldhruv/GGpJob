@@ -32,7 +32,7 @@ export default function EmployeeDashboard() {
     const fetchJobs = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/jobs?isReferral=true&employeeId=user-3');
+        const res = await fetch('/api/jobs?isReferral=true&employeeId=3');
         const data = await res.json();
         setReferralJobs(Array.isArray(data) ? data : []);
       } catch (error) {

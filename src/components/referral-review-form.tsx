@@ -71,7 +71,7 @@ export function ReferralReviewForm() {
           contactPhone: data.phoneNumber,
           salary: data.salary,
           isReferral: true,
-          employeeId: 'user-3', // Hardcoded for now
+          employeeId: 3, // Hardcoded for now
           postedAt: new Date().toISOString(),
           type: 'Full-time', // Default value
         }),

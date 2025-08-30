@@ -7,10 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 let db = null;
 
 const usersData: User[] = [
-  { id: "user-1", firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", password: "password123" },
-  { id: "user-2", firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", password: "password123" },
-  { id: "user-3", firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", password: "password123" },
-  { id: "user-4", firstName: "Admin", lastName: "User", name: "Admin User", email: "admin@gmail.com", role: "Admin", phone: "444-555-6666", password: "admin123", headline: "Platform Administrator" },
+  { id: 1, firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", password: "password123" },
+  { id: 2, firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", password: "password123" },
+  { id: 3, firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", password: "password123" },
+  { id: 4, firstName: "Admin", lastName: "User", name: "Admin User", email: "admin@gmail.com", role: "Admin", phone: "444-555-6666", password: "admin123", headline: "Platform Administrator" },
 ];
 
 const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
@@ -21,7 +21,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     type: "Full-time",
     salary: "$150,000 - $180,000",
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
-    recruiterId: "user-2",
+    recruiterId: 2,
     experienceLevel: "Senior Level",
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
@@ -33,7 +33,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     location: "New York, NY",
     type: "Full-time",
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
-    recruiterId: "user-2",
+    recruiterId: 2,
     experienceLevel: "Mid Level",
      vacancies: 1,
     contactEmail: "recruiter@creative.com",
@@ -47,7 +47,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     salary: "$130,000 - $160,000",
     description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
     isReferral: true,
-    employeeId: "user-3",
+    employeeId: 3,
     experienceLevel: "Mid Level",
      vacancies: 1,
     contactEmail: "referrals@data-insights.com",
@@ -59,7 +59,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     location: "San Francisco, CA",
     type: "Contract",
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
-    recruiterId: "user-2",
+    recruiterId: 2,
     experienceLevel: "Entry Level",
      vacancies: 1,
     contactEmail: "recruiter@innovate.com",
@@ -72,7 +72,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     type: "Full-time",
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
     isReferral: true,
-    employeeId: "user-3",
+    employeeId: 3,
     experienceLevel: "Senior Level",
      vacancies: 1,
     contactEmail: "referrals@data-insights.com",
@@ -84,13 +84,13 @@ const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId'>[] = [
   {
     jobTitle: "Senior Frontend Engineer",
     companyName: "Innovate Inc.",
-    userId: "user-1",
+    userId: 1,
     status: "In Review",
   },
   {
     jobTitle: "Product Manager",
     companyName: "Creative Solutions",
-    userId: "user-1",
+    userId: 1,
     status: "Applied",
   },
 ];
@@ -121,7 +121,7 @@ export async function getDb() {
 
         await db.exec(`
             CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
+                id INTEGER PRIMARY KEY,
                 firstName TEXT,
                 lastName TEXT,
                 name TEXT,
@@ -143,8 +143,8 @@ export async function getDb() {
                 postedAt TEXT,
                 experienceLevel TEXT,
                 isReferral BOOLEAN,
-                recruiterId TEXT,
-                employeeId TEXT,
+                recruiterId INTEGER,
+                employeeId INTEGER,
                 vacancies INTEGER,
                 contactEmail TEXT,
                 contactPhone TEXT,
@@ -157,7 +157,7 @@ export async function getDb() {
                 jobId TEXT,
                 jobTitle TEXT,
                 companyName TEXT,
-                userId TEXT,
+                userId INTEGER,
                 status TEXT,
                 appliedAt TEXT,
                 FOREIGN KEY(jobId) REFERENCES jobs(id) ON DELETE CASCADE,

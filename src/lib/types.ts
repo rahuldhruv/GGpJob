@@ -1,7 +1,7 @@
 export type Role = "Job Seeker" | "Recruiter" | "Employee" | "Admin";
 
 export interface User {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   name: string;
@@ -23,8 +23,8 @@ export interface Job {
   postedAt: Date | string;
   experienceLevel?: "Entry Level" | "Mid Level" | "Senior Level";
   isReferral?: boolean;
-  recruiterId?: string;
-  employeeId?: string;
+  recruiterId?: number;
+  employeeId?: number;
   vacancies?: number;
   contactEmail?: string;
   contactPhone?: string;
@@ -35,7 +35,7 @@ export interface Application {
   jobId: string;
   jobTitle: string;
   companyName: string;
-  userId: string;
+  userId: number;
   status: "Applied" | "In Review" | "Interview" | "Offered" | "Rejected";
   appliedAt: Date | string;
 }

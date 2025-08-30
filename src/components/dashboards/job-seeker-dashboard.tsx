@@ -55,7 +55,7 @@ export default function JobSeekerDashboard() {
       try {
         const [jobsRes, appsRes] = await Promise.all([
           fetch('/api/jobs'),
-          fetch('/api/applications?userId=user-1')
+          fetch('/api/applications?userId=1')
         ]);
         const jobsData = await jobsRes.json();
         const appsData = await appsRes.json();
