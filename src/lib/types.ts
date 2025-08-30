@@ -24,6 +24,9 @@ export interface Job {
   recruiterId?: string;
   employeeId?: string;
   _id?: string;
+  vacancies?: number;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface Application {

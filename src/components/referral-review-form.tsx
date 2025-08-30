@@ -20,8 +20,14 @@ import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, ThumbsUp } from "lucide-react";
 
 const formSchema = z.object({
+  companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
+  jobLocation: z.string().min(2, "Job location is required."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
+  vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
+  email: z.string().email("Please enter a valid email address."),
+  phoneNumber: z.string().min(10, "Please enter a valid phone number."),
+  salary: z.string().optional(),
 });
 
 type ReferralFormValues = z.infer<typeof formSchema>;
@@ -33,41 +39,105 @@ export function ReferralReviewForm() {
   const form = useForm<ReferralFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      companyName: "",
       jobTitle: "",
+      jobLocation: "",
       jobDescription: "",
+      vacancies: 1,
+      email: "",
+      phoneNumber: "",
+      salary: "",
     },
   });
 
   const onSubmit = async (data: ReferralFormValues) => {
     setIsSubmitting(true);
-    console.log(data); // In a real app, this would submit to a backend.
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Referral Submitted!",
-      description: "Your referral job post has been successfully submitted.",
-    });
-    form.reset();
-    setIsSubmitting(false);
+    try {
+      const response = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          title: data.jobTitle,
+          location: data.jobLocation,
+          description: data.jobDescription,
+          contactEmail: data.email,
+          contactPhone: data.phoneNumber,
+          isReferral: true,
+          employeeId: 'user-3', // Hardcoded for now
+          postedAt: new Date(),
+          companyLogoUrl: 'https://picsum.photos/100/100', // Placeholder
+          type: 'Full-time', // Default value
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit referral');
+      }
+
+      toast({
+        title: "Referral Submitted!",
+        description: "Your referral job post has been successfully submitted.",
+      });
+      form.reset();
+    } catch (error) {
+       toast({
+        title: "Error",
+        description: "There was an error submitting your referral. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="jobTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Job Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g. Senior Software Engineer" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="companyName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Acme Inc." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="jobTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Senior Software Engineer" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+           <FormField
+              control={form.control}
+              name="jobLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Location</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. San Francisco, CA" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           <FormField
             control={form.control}
             name="jobDescription"
@@ -81,6 +151,62 @@ export function ReferralReviewForm() {
               </FormItem>
             )}
           />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="vacancies"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Number of Vacancies</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="salary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Salary (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. $100,000 - $120,000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="hiring.manager@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Phone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="(123) 456-7890" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+           </div>
 
           <div className="flex justify-end pt-4">
              <Button type="submit" disabled={isSubmitting}>
