@@ -9,7 +9,7 @@ import Footer from '@/components/footer';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'CareerConnect',
+  title: 'GGP Portal',
   description: 'The premier platform for connecting talent with opportunity.',
 };
 
