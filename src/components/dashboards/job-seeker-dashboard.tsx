@@ -126,19 +126,15 @@ export default function JobSeekerDashboard() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSearch} className="flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-grow">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input 
-                  placeholder="e.g. 'Software Engineer' or 'Google'"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                {loading ? <LoaderCircle className="animate-spin mr-2"/> : null}
-                Search
+            <div className="relative flex-grow">
+              <Input 
+                placeholder="e.g. 'Software Engineer' or 'Google'"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-10"
+              />
+              <Button type="submit" size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" disabled={loading}>
+                 {loading ? <LoaderCircle className="animate-spin h-5 w-5"/> : <Search className="h-5 w-5 text-muted-foreground" />}
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 items-center">
