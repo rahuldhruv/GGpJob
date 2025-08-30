@@ -13,6 +13,9 @@ export async function GET(request: Request) {
     const recruiterId = searchParams.get('recruiterId');
     const employeeId = searchParams.get('employeeId');
     const search = searchParams.get('search');
+    const posted = searchParams.get('posted');
+    const location = searchParams.get('location');
+    const experience = searchParams.get('experience');
 
     let query = 'SELECT * FROM jobs';
     const conditions = [];
@@ -36,7 +39,23 @@ export async function GET(request: Request) {
       const searchTerm = `%${search}%`;
       params.push(searchTerm, searchTerm, searchTerm);
     }
-
+    if (posted) {
+        const days = parseInt(posted, 10);
+        if (!isNaN(days)) {
+            const date = new Date();
+            date.setDate(date.getDate() - days);
+            conditions.push('postedAt >= ?');
+            params.push(date.toISOString());
+        }
+    }
+    if (location && location !== 'all') {
+        conditions.push('location = ?');
+        params.push(location);
+    }
+    if (experience && experience !== 'all') {
+        conditions.push('experienceLevel = ?');
+        params.push(experience);
+    }
 
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ');
@@ -69,7 +88,7 @@ export async function POST(request: Request) {
     };
     
     const stmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, companyLogoUrl, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, companyLogoUrl, type, experienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     await stmt.run(
@@ -86,7 +105,8 @@ export async function POST(request: Request) {
         newJob.employeeId,
         newJob.postedAt,
         newJob.companyLogoUrl,
-        newJob.type
+        newJob.type,
+        newJob.experienceLevel
     );
     await stmt.finalize();
 

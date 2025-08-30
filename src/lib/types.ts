@@ -20,6 +20,7 @@ export interface Job {
   salary?: string;
   description: string;
   postedAt: Date | string;
+  experienceLevel?: "Entry Level" | "Mid Level" | "Senior Level";
   isReferral?: boolean;
   recruiterId?: string;
   employeeId?: string;

@@ -18,12 +18,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, ThumbsUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
   jobLocation: z.string().min(2, "Job location is required."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
+  experienceLevel: z.enum(["Entry Level", "Mid Level", "Senior Level"]),
   vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
   email: z.string().email("Please enter a valid email address."),
   phoneNumber: z.string().min(10, "Please enter a valid phone number."),
@@ -63,6 +65,7 @@ export function ReferralReviewForm() {
           companyName: data.companyName,
           location: data.jobLocation,
           description: data.jobDescription,
+          experienceLevel: data.experienceLevel,
           vacancies: data.vacancies,
           contactEmail: data.email,
           contactPhone: data.phoneNumber,
@@ -157,13 +160,22 @@ export function ReferralReviewForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="vacancies"
+              name="experienceLevel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Number of Vacancies</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="1" {...field} />
-                  </FormControl>
+                  <FormLabel>Experience Level</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select experience level" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Entry Level">Entry Level</SelectItem>
+                      <SelectItem value="Mid Level">Mid Level</SelectItem>
+                      <SelectItem value="Senior Level">Senior Level</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -183,6 +195,19 @@ export function ReferralReviewForm() {
             />
           </div>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="vacancies"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Number of Vacancies</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
              <FormField
                 control={form.control}
                 name="email"
@@ -196,21 +221,20 @@ export function ReferralReviewForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contact Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="(123) 456-7890" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
            </div>
-
+           <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="(123) 456-7890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           <div className="flex justify-end pt-4">
              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? <LoaderCircle className="animate-spin mr-2"/> : <ThumbsUp className="mr-2"/>}

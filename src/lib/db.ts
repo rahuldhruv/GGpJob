@@ -21,8 +21,9 @@ const jobsData: Job[] = [
     type: "Full-time",
     salary: "$150,000 - $180,000",
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
-    postedAt: new Date("2024-05-20T10:00:00Z"),
+    postedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     recruiterId: "user-2",
+    experienceLevel: "Senior Level",
   },
   {
     id: "job-2",
@@ -32,8 +33,9 @@ const jobsData: Job[] = [
     location: "New York, NY",
     type: "Full-time",
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
-    postedAt: new Date("2024-05-18T14:30:00Z"),
+    postedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
     recruiterId: "user-2",
+    experienceLevel: "Mid Level",
   },
   {
     id: "job-3",
@@ -44,9 +46,10 @@ const jobsData: Job[] = [
     type: "Full-time",
     salary: "$130,000 - $160,000",
     description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
-    postedAt: new Date("2024-05-21T09:00:00Z"),
+    postedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
     isReferral: true,
     employeeId: "user-3",
+    experienceLevel: "Mid Level",
   },
   {
     id: "job-4",
@@ -56,20 +59,22 @@ const jobsData: Job[] = [
     location: "San Francisco, CA",
     type: "Contract",
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
-    postedAt: new Date("2024-05-19T11:00:00Z"),
+    postedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
     recruiterId: "user-2",
+    experienceLevel: "Entry Level",
   },
   {
     id: "job-5",
     title: "Backend Developer (Referral)",
     companyName: "Data Insights Co.",
     companyLogoUrl: "https://picsum.photos/id/40/100/100",
-    location: "Remote",
+    location: "Austin, TX",
     type: "Full-time",
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
-    postedAt: new Date("2024-05-22T16:00:00Z"),
+    postedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000), // 25 days ago
     isReferral: true,
     employeeId: "user-3",
+    experienceLevel: "Senior Level",
   },
 ];
 
@@ -126,6 +131,7 @@ export async function getDb() {
                     salary TEXT,
                     description TEXT,
                     postedAt TEXT,
+                    experienceLevel TEXT,
                     isReferral BOOLEAN,
                     recruiterId TEXT,
                     employeeId TEXT,
@@ -151,9 +157,9 @@ export async function getDb() {
             }
             await userStmt.finalize();
 
-            const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, companyLogoUrl, location, type, salary, description, postedAt, isReferral, recruiterId, employeeId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, companyLogoUrl, location, type, salary, description, postedAt, experienceLevel, isReferral, recruiterId, employeeId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             for (const job of jobsData) {
-                await jobStmt.run(job.id, job.title, job.companyName, job.companyLogoUrl, job.location, job.type, job.salary, job.description, (job.postedAt as Date).toISOString(), job.isReferral, job.recruiterId, job.employeeId);
+                await jobStmt.run(job.id, job.title, job.companyName, job.companyLogoUrl, job.location, job.type, job.salary, job.description, (job.postedAt as Date).toISOString(), job.experienceLevel, job.isReferral, job.recruiterId, job.employeeId);
             }
             await jobStmt.finalize();
 
