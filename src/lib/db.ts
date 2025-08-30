@@ -9,7 +9,7 @@ const usersData: User[] = [
   { id: "user-1", firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", password: "password123" },
   { id: "user-2", firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", password: "password123" },
   { id: "user-3", firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", password: "password123" },
-  { id: "user-4", firstName: "Diana", lastName: "Prince", name: "Diana Prince", email: "diana@example.com", role: "Admin", phone: "444-555-6666", password: "password123" },
+  { id: "user-4", firstName: "Admin", lastName: "User", name: "Admin User", email: "admin@gmail.com", role: "Admin", phone: "444-555-6666", password: "admin123", headline: "Platform Administrator" },
 ];
 
 const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
