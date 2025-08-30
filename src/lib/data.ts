@@ -1,13 +1,13 @@
 import type { User, Job, Application, Role } from "./types";
 
-export const users: User[] = [
+export let users: User[] = [
   { id: "user-1", name: "Alice Johnson", email: "alice@example.com", avatarUrl: "https://picsum.photos/id/1005/100/100", role: "Job Seeker", headline: "Frontend Developer" },
   { id: "user-2", name: "Bob Williams", email: "bob@example.com", avatarUrl: "https://picsum.photos/id/1011/100/100", role: "Recruiter" },
   { id: "user-3", name: "Charlie Brown", email: "charlie@example.com", avatarUrl: "https://picsum.photos/id/1012/100/100", role: "Employee" },
   { id: "user-4", name: "Diana Prince", email: "diana@example.com", avatarUrl: "https://picsum.photos/id/1027/100/100", role: "Admin" },
 ];
 
-export const jobs: Job[] = [
+export let jobs: Job[] = [
   {
     id: "job-1",
     title: "Senior Frontend Engineer",
@@ -69,7 +69,7 @@ export const jobs: Job[] = [
   },
 ];
 
-export const applications: Application[] = [
+export let applications: Application[] = [
   {
     id: "app-1",
     jobId: "job-1",

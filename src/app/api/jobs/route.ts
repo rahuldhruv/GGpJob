@@ -1,38 +1,36 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { jobs } from '@/lib/data';
 import { v4 as uuidv4 } from 'uuid';
+import type { Job } from '@/lib/types';
 
 export async function GET(request: Request) {
   try {
-    const client = await clientPromise;
-    const db = client.db(process.env.DB_NAME);
     const { searchParams } = new URL(request.url);
 
-    const query: any = {};
     const limit = searchParams.get('limit');
     const isReferral = searchParams.get('isReferral');
     const recruiterId = searchParams.get('recruiterId');
     const employeeId = searchParams.get('employeeId');
 
+    let filteredJobs: Job[] = [...jobs];
+
     if (isReferral !== null) {
-      query.isReferral = isReferral === 'true';
+      filteredJobs = filteredJobs.filter(job => String(job.isReferral) === isReferral);
     }
     if (recruiterId) {
-      query.recruiterId = recruiterId;
+      filteredJobs = filteredJobs.filter(job => job.recruiterId === recruiterId);
     }
     if (employeeId) {
-      query.employeeId = employeeId;
+      filteredJobs = filteredJobs.filter(job => job.employeeId === employeeId);
     }
     
-    let jobsQuery = db.collection('jobs').find(query).sort({ postedAt: -1 });
+    filteredJobs.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 
     if (limit) {
-      jobsQuery = jobsQuery.limit(parseInt(limit, 10));
+      filteredJobs = filteredJobs.slice(0, parseInt(limit, 10));
     }
-
-    const jobs = await jobsQuery.toArray();
-
-    return NextResponse.json(jobs);
+    
+    return NextResponse.json(filteredJobs);
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
@@ -41,18 +39,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const client = await clientPromise;
-    const db = client.db(process.env.DB_NAME);
     const jobData = await request.json();
 
-    const newJob = {
+    const newJob: Job = {
       id: uuidv4(),
       ...jobData,
     };
 
-    const result = await db.collection('jobs').insertOne(newJob);
+    jobs.unshift(newJob);
 
-    return NextResponse.json(result, { status: 201 });
+    return NextResponse.json(newJob, { status: 201 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
