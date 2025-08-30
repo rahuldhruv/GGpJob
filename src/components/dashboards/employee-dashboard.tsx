@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
-import { PlusCircle, MoreHorizontal, Edit, Trash2, Gift } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import {
   DropdownMenu,
@@ -60,7 +60,6 @@ export default function EmployeeDashboard() {
           <TableHeader>
             <TableRow>
               <TableHead>Job Title</TableHead>
-              <TableHead>Bonus</TableHead>
               <TableHead>Date Posted</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Referrals</TableHead>
@@ -71,12 +70,6 @@ export default function EmployeeDashboard() {
             {referralJobs.map((job) => (
               <TableRow key={job.id}>
                 <TableCell className="font-medium">{job.title}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="flex items-center gap-1 text-primary border-primary/50">
-                    <Gift className="h-3 w-3" />
-                    {job.referralBonus}
-                  </Badge>
-                </TableCell>
                 <TableCell>{format(job.postedAt, "PPP")}</TableCell>
                 <TableCell>
                   <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">

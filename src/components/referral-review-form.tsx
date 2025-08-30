@@ -22,7 +22,6 @@ import { LoaderCircle, ThumbsUp } from "lucide-react";
 const formSchema = z.object({
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
-  referralBonus: z.string().optional(),
 });
 
 type ReferralFormValues = z.infer<typeof formSchema>;
@@ -36,7 +35,6 @@ export function ReferralReviewForm() {
     defaultValues: {
       jobTitle: "",
       jobDescription: "",
-      referralBonus: "$1,500",
     },
   });
 
@@ -78,19 +76,6 @@ export function ReferralReviewForm() {
                 <FormLabel>Job Description</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Describe the role and responsibilities..." className="min-h-[120px]" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-           <FormField
-            control={form.control}
-            name="referralBonus"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Referral Bonus</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g. $2,000" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

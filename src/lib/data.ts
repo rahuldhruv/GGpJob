@@ -42,7 +42,6 @@ export const jobs: Job[] = [
     description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
     postedAt: new Date("2024-05-21T09:00:00Z"),
     isReferral: true,
-    referralBonus: "$2,000",
     employeeId: "user-3",
   },
   {
@@ -66,7 +65,6 @@ export const jobs: Job[] = [
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
     postedAt: new Date("2024-05-22T16:00:00Z"),
     isReferral: true,
-    referralBonus: "$1,500",
     employeeId: "user-3",
   },
 ];

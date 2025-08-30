@@ -20,7 +20,6 @@ export interface Job {
   description: string;
   postedAt: Date;
   isReferral?: boolean;
-  referralBonus?: string;
   recruiterId?: string;
   employeeId?: string;
 }
