@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 import { UserCog, Briefcase, PlusCircle, Edit, Trash2, MoreHorizontal, Layers } from "lucide-react";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -163,7 +163,6 @@ export default function AdminDashboard() {
                     <TableRow key={user.id}>
                       <TableCell className="font-medium flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatarUrl} alt={user.name}/>
                           <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         {user.name}

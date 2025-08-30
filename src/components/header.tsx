@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 export default function Header() {
   const isLoggedIn = true; // Mock login state
@@ -39,7 +39,6 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar>
-                  <AvatarImage src="https://picsum.photos/id/1005/100/100" alt="User Avatar" />
                   <AvatarFallback>AJ</AvatarFallback>
                 </Avatar>
               </Button>

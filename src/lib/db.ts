@@ -4,11 +4,11 @@ import type { User, Job, Application, Domain } from './types';
 
 let db = null;
 
-const usersData: User[] = [
-  { id: "user-1", name: "Alice Johnson", email: "alice@example.com", avatarUrl: "https://picsum.photos/id/1005/100/100", role: "Job Seeker", headline: "Frontend Developer" },
-  { id: "user-2", name: "Bob Williams", email: "bob@example.com", avatarUrl: "https://picsum.photos/id/1011/100/100", role: "Recruiter" },
-  { id: "user-3", name: "Charlie Brown", email: "charlie@example.com", avatarUrl: "https://picsum.photos/id/1012/100/100", role: "Employee" },
-  { id: "user-4", name: "Diana Prince", email: "diana@example.com", avatarUrl: "https://picsum.photos/id/1027/100/100", role: "Admin" },
+const usersData: Omit<User, 'avatarUrl'>[] = [
+  { id: "user-1", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer" },
+  { id: "user-2", name: "Bob Williams", email: "bob@example.com", role: "Recruiter" },
+  { id: "user-3", name: "Charlie Brown", email: "charlie@example.com", role: "Employee" },
+  { id: "user-4", name: "Diana Prince", email: "diana@example.com", role: "Admin" },
 ];
 
 const jobsData: Job[] = [
@@ -123,7 +123,6 @@ export async function getDb() {
                     id TEXT PRIMARY KEY,
                     name TEXT,
                     email TEXT,
-                    avatarUrl TEXT,
                     role TEXT,
                     headline TEXT
                 );
@@ -163,9 +162,9 @@ export async function getDb() {
                 );
             `);
 
-            const userStmt = await db.prepare('INSERT INTO users (id, name, email, avatarUrl, role, headline) VALUES (?, ?, ?, ?, ?, ?)');
+            const userStmt = await db.prepare('INSERT INTO users (id, name, email, role, headline) VALUES (?, ?, ?, ?, ?)');
             for (const user of usersData) {
-                await userStmt.run(user.id, user.name, user.email, user.avatarUrl, user.role, user.headline);
+                await userStmt.run(user.id, user.name, user.email, user.role, user.headline);
             }
             await userStmt.finalize();
 
