@@ -59,12 +59,14 @@ export function ReferralReviewForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...data,
           title: data.jobTitle,
+          companyName: data.companyName,
           location: data.jobLocation,
           description: data.jobDescription,
+          vacancies: data.vacancies,
           contactEmail: data.email,
           contactPhone: data.phoneNumber,
+          salary: data.salary,
           isReferral: true,
           employeeId: 'user-3', // Hardcoded for now
           postedAt: new Date(),
