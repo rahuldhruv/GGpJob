@@ -65,6 +65,9 @@ export default function LoginPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to login");
       }
+      
+      const { user } = await response.json();
+      localStorage.setItem('ggp-user', JSON.stringify(user));
 
       toast({
         title: "Login Successful!",
@@ -72,6 +75,7 @@ export default function LoginPage() {
       });
 
       router.push("/");
+      router.refresh();
     } catch (error: any) {
       toast({
         title: "Login Failed",

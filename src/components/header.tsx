@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BriefcaseBusiness,
   Settings,
@@ -20,18 +21,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useEffect, useState } from "react";
+import type { User as UserType } from "@/lib/types";
 
 export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<UserType | null>(null);
+  const router = useRouter();
   
-  // This is a placeholder for a real auth check.
-  // In a real app, you might check for a session cookie or a token in localStorage.
   useEffect(() => {
-    // For now, we'll just mock a logged-out state.
-    // To test the logged-in state, you can set this to true.
-    setIsLoggedIn(false); 
+    const storedUser = localStorage.getItem('ggp-user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('ggp-user');
+    setUser(null);
+    router.push('/login');
+    router.refresh();
+  };
+  
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
@@ -41,12 +53,12 @@ export default function Header() {
       </Link>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex items-center gap-2">
-           {isLoggedIn ? (
+           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar>
-                    <AvatarFallback>AJ</AvatarFallback>
+                    <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -62,7 +74,7 @@ export default function Header() {
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
