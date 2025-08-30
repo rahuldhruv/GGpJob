@@ -1,3 +1,4 @@
+
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import type { User, Job, Application, Domain } from './types';
@@ -22,6 +23,9 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
     recruiterId: "user-2",
     experienceLevel: "Senior Level",
+    vacancies: 1,
+    contactEmail: "recruiter@innovate.com",
+    contactPhone: "123-456-7890",
   },
   {
     title: "Product Manager",
@@ -31,6 +35,9 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
     recruiterId: "user-2",
     experienceLevel: "Mid Level",
+     vacancies: 1,
+    contactEmail: "recruiter@creative.com",
+    contactPhone: "123-456-7890",
   },
   {
     title: "Data Scientist (Referral)",
@@ -42,6 +49,9 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     isReferral: true,
     employeeId: "user-3",
     experienceLevel: "Mid Level",
+     vacancies: 1,
+    contactEmail: "referrals@data-insights.com",
+    contactPhone: "123-456-7890",
   },
   {
     title: "UX/UI Designer",
@@ -51,6 +61,9 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
     recruiterId: "user-2",
     experienceLevel: "Entry Level",
+     vacancies: 1,
+    contactEmail: "recruiter@innovate.com",
+    contactPhone: "123-456-7890",
   },
   {
     title: "Backend Developer (Referral)",
@@ -61,19 +74,20 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     isReferral: true,
     employeeId: "user-3",
     experienceLevel: "Senior Level",
+     vacancies: 1,
+    contactEmail: "referrals@data-insights.com",
+    contactPhone: "123-456-7890",
   },
 ];
 
-const applicationsData: Omit<Application, 'id' | 'appliedAt'>[] = [
+const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId'>[] = [
   {
-    jobId: "job-1",
     jobTitle: "Senior Frontend Engineer",
     companyName: "Innovate Inc.",
     userId: "user-1",
     status: "In Review",
   },
   {
-    jobId: "job-2",
     jobTitle: "Product Manager",
     companyName: "Creative Solutions",
     userId: "user-1",
@@ -98,98 +112,97 @@ export async function getDb() {
         await db.exec('PRAGMA journal_mode = WAL;');
         await db.exec('PRAGMA foreign_keys = ON;');
 
-        const tables = await db.all("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('users', 'jobs', 'applications', 'domains')");
+        await db.exec(`
+          DROP TABLE IF EXISTS applications;
+          DROP TABLE IF EXISTS jobs;
+          DROP TABLE IF EXISTS users;
+          DROP TABLE IF EXISTS domains;
+        `);
 
-        if (tables.length < 4) {
-            await db.exec(`
-                DROP TABLE IF EXISTS users;
-                DROP TABLE IF EXISTS jobs;
-                DROP TABLE IF EXISTS applications;
-                DROP TABLE IF EXISTS domains;
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                firstName TEXT,
+                lastName TEXT,
+                name TEXT,
+                email TEXT UNIQUE,
+                phone TEXT,
+                role TEXT,
+                headline TEXT,
+                password TEXT
+            );
 
-                CREATE TABLE IF NOT EXISTS users (
-                    id TEXT PRIMARY KEY,
-                    firstName TEXT,
-                    lastName TEXT,
-                    name TEXT,
-                    email TEXT UNIQUE,
-                    phone TEXT,
-                    role TEXT,
-                    headline TEXT,
-                    password TEXT
-                );
+            CREATE TABLE IF NOT EXISTS jobs (
+                id TEXT PRIMARY KEY,
+                title TEXT,
+                companyName TEXT,
+                location TEXT,
+                type TEXT,
+                salary TEXT,
+                description TEXT,
+                postedAt TEXT,
+                experienceLevel TEXT,
+                isReferral BOOLEAN,
+                recruiterId TEXT,
+                employeeId TEXT,
+                vacancies INTEGER,
+                contactEmail TEXT,
+                contactPhone TEXT,
+                FOREIGN KEY(recruiterId) REFERENCES users(id),
+                FOREIGN KEY(employeeId) REFERENCES users(id)
+            );
 
-                CREATE TABLE IF NOT EXISTS jobs (
-                    id TEXT PRIMARY KEY,
-                    title TEXT,
-                    companyName TEXT,
-                    location TEXT,
-                    type TEXT,
-                    salary TEXT,
-                    description TEXT,
-                    postedAt TEXT,
-                    experienceLevel TEXT,
-                    isReferral BOOLEAN,
-                    recruiterId TEXT,
-                    employeeId TEXT,
-                    vacancies INTEGER,
-                    contactEmail TEXT,
-                    contactPhone TEXT,
-                    FOREIGN KEY(recruiterId) REFERENCES users(id),
-                    FOREIGN KEY(employeeId) REFERENCES users(id)
-                );
+            CREATE TABLE IF NOT EXISTS applications (
+                id TEXT PRIMARY KEY,
+                jobId TEXT,
+                jobTitle TEXT,
+                companyName TEXT,
+                userId TEXT,
+                status TEXT,
+                appliedAt TEXT,
+                FOREIGN KEY(jobId) REFERENCES jobs(id) ON DELETE CASCADE,
+                FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+            );
 
-                CREATE TABLE IF NOT EXISTS applications (
-                    id TEXT PRIMARY KEY,
-                    jobId TEXT,
-                    jobTitle TEXT,
-                    companyName TEXT,
-                    userId TEXT,
-                    status TEXT,
-                    appliedAt TEXT,
-                    FOREIGN KEY(jobId) REFERENCES jobs(id),
-                    FOREIGN KEY(userId) REFERENCES users(id)
-                );
+            CREATE TABLE IF NOT EXISTS domains (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            );
+        `);
 
-                CREATE TABLE IF NOT EXISTS domains (
-                    id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL UNIQUE
-                );
-            `);
-
-            const userStmt = await db.prepare('INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            for (const user of usersData) {
-                await userStmt.run(user.id, user.firstName, user.lastName, user.name, user.email, user.role, user.headline, user.phone, user.password);
-            }
-            await userStmt.finalize();
-
-            const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, isReferral, recruiterId, employeeId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            for (const [index, job] of jobsData.entries()) {
-                const newId = `job-${index + 1}`;
-                const postedAt = new Date(Date.now() - (index + 1) * 2 * 24 * 60 * 60 * 1000).toISOString();
-                await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.isReferral, job.recruiterId, job.employeeId);
-                
-                const appToUpdate = applicationsData.find(app => app.jobTitle === job.title);
-                if (appToUpdate) {
-                    (appToUpdate as any).jobId = newId;
-                }
-            }
-            await jobStmt.finalize();
-
-            const appStmt = await db.prepare('INSERT INTO applications (id, jobId, jobTitle, companyName, userId, status, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)');
-            for (const [index, app] of applicationsData.entries()) {
-                const newId = `app-${index + 1}`;
-                const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
-                await appStmt.run(newId, (app as any).jobId, app.jobTitle, app.companyName, app.userId, app.status, appliedAt);
-            }
-            await appStmt.finalize();
-
-            const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
-            for (const domain of domainsData) {
-                await domainStmt.run(uuidv4(), domain.name);
-            }
-            await domainStmt.finalize();
+        const userStmt = await db.prepare('INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        for (const user of usersData) {
+            await userStmt.run(user.id, user.firstName, user.lastName, user.name, user.email, user.role, user.headline, user.phone, user.password);
         }
+        await userStmt.finalize();
+
+        const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, isReferral, recruiterId, employeeId, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        const jobIds: { [key: string]: string } = {};
+        for (const [index, job] of jobsData.entries()) {
+            const newId = `job-${index + 1}`;
+            jobIds[job.title] = newId;
+            const postedAt = new Date(Date.now() - (index + 1) * 2 * 24 * 60 * 60 * 1000).toISOString();
+            await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.isReferral, job.recruiterId, job.employeeId, job.vacancies, job.contactEmail, job.contactPhone);
+        }
+        await jobStmt.finalize();
+
+        const appStmt = await db.prepare('INSERT INTO applications (id, jobId, jobTitle, companyName, userId, status, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        for (const [index, app] of applicationsData.entries()) {
+            const newId = `app-${index + 1}`;
+            const jobId = jobIds[app.jobTitle];
+            if (jobId) {
+                const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
+                await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, app.status, appliedAt);
+            }
+        }
+        await appStmt.finalize();
+
+        const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
+        for (const domain of domainsData) {
+            await domainStmt.run(uuidv4(), domain.name);
+        }
+        await domainStmt.finalize();
+        
     }
     return db;
 }
