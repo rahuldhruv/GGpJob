@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const isReferral = searchParams.get('isReferral');
     const recruiterId = searchParams.get('recruiterId');
     const employeeId = searchParams.get('employeeId');
+    const search = searchParams.get('search');
 
     let query = 'SELECT * FROM jobs';
     const conditions = [];
@@ -29,6 +30,13 @@ export async function GET(request: Request) {
       conditions.push('employeeId = ?');
       params.push(employeeId);
     }
+    if (search) {
+      const searchCondition = '(title LIKE ? OR companyName LIKE ? OR description LIKE ?)';
+      conditions.push(searchCondition);
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
+
 
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ');

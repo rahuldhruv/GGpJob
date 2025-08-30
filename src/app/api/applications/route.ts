@@ -9,9 +9,9 @@ export async function GET(request: Request) {
     
     let applications;
     if (userId) {
-      applications = await db.all('SELECT * FROM applications WHERE userId = ?', userId);
+      applications = await db.all('SELECT * FROM applications WHERE userId = ? ORDER BY appliedAt DESC', userId);
     } else {
-      applications = await db.all('SELECT * FROM applications');
+      applications = await db.all('SELECT * FROM applications ORDER BY appliedAt DESC');
     }
       
     return NextResponse.json(applications);
