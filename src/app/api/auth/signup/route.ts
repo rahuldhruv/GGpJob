@@ -27,10 +27,11 @@ export async function POST(request: Request) {
       phone,
       role,
       password, // In a real app, hash this password!
+      headline: '', // Provide a default empty headline
     };
     
     await db.run(
-      'INSERT INTO users (id, firstName, lastName, name, email, phone, role, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO users (id, firstName, lastName, name, email, phone, role, password, headline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       newUser.id,
       newUser.firstName,
       newUser.lastName,
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
       newUser.email,
       newUser.phone,
       newUser.role,
-      newUser.password
+      newUser.password,
+      newUser.headline
     );
     
     const { password: _, ...userWithoutPassword } = newUser;
