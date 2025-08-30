@@ -1,0 +1,62 @@
+import Image from 'next/image';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { Job } from "@/lib/types";
+import { MapPin, Briefcase, Clock, Star } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+
+interface JobCardProps {
+  job: Job;
+}
+
+export default function JobCard({ job }: JobCardProps) {
+  return (
+    <Card className="hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
+      <CardHeader className="flex flex-row items-start gap-4">
+        <Image
+          src={job.companyLogoUrl}
+          alt={`${job.companyName} logo`}
+          width={56}
+          height={56}
+          className="rounded-lg border"
+          data-ai-hint="company logo"
+        />
+        <div className="flex-1">
+          <CardTitle className="text-lg">{job.title}</CardTitle>
+          <CardDescription>{job.companyName}</CardDescription>
+        </div>
+        {job.isReferral && (
+          <Badge variant="outline" className="flex items-center gap-1 bg-green-100 text-green-800 border-green-200">
+            <Star className="h-3 w-3" />
+            Referral
+          </Badge>
+        )}
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <div className="flex flex-col space-y-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <span>{job.location}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            <span>{job.type}</span>
+          </div>
+          {job.salary && (
+             <div className="flex items-center gap-2">
+                <span className="font-semibold text-primary/80">{job.salary}</span>
+             </div>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="flex justify-between items-center">
+        <div className="text-xs text-muted-foreground flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          {formatDistanceToNow(job.postedAt, { addSuffix: true })}
+        </div>
+        <Button variant="secondary" size="sm">View Details</Button>
+      </CardFooter>
+    </Card>
+  );
+}

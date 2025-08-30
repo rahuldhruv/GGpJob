@@ -1,0 +1,93 @@
+import type { User, Job, Application, Role } from "./types";
+
+export const users: User[] = [
+  { id: "user-1", name: "Alice Johnson", email: "alice@example.com", avatarUrl: "https://picsum.photos/id/1005/100/100", role: "Job Seeker", headline: "Frontend Developer" },
+  { id: "user-2", name: "Bob Williams", email: "bob@example.com", avatarUrl: "https://picsum.photos/id/1011/100/100", role: "Recruiter" },
+  { id: "user-3", name: "Charlie Brown", email: "charlie@example.com", avatarUrl: "https://picsum.photos/id/1012/100/100", role: "Employee" },
+  { id: "user-4", name: "Diana Prince", email: "diana@example.com", avatarUrl: "https://picsum.photos/id/1027/100/100", role: "Admin" },
+];
+
+export const jobs: Job[] = [
+  {
+    id: "job-1",
+    title: "Senior Frontend Engineer",
+    companyName: "Innovate Inc.",
+    companyLogoUrl: "https://picsum.photos/id/20/100/100",
+    location: "San Francisco, CA",
+    type: "Full-time",
+    salary: "$150,000 - $180,000",
+    description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
+    postedAt: new Date("2024-05-20T10:00:00Z"),
+    recruiterId: "user-2",
+  },
+  {
+    id: "job-2",
+    title: "Product Manager",
+    companyName: "Creative Solutions",
+    companyLogoUrl: "https://picsum.photos/id/30/100/100",
+    location: "New York, NY",
+    type: "Full-time",
+    description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
+    postedAt: new Date("2024-05-18T14:30:00Z"),
+    recruiterId: "user-2",
+  },
+  {
+    id: "job-3",
+    title: "Data Scientist (Referral)",
+    companyName: "Data Insights Co.",
+    companyLogoUrl: "https://picsum.photos/id/40/100/100",
+    location: "Remote",
+    type: "Full-time",
+    salary: "$130,000 - $160,000",
+    description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
+    postedAt: new Date("2024-05-21T09:00:00Z"),
+    isReferral: true,
+    referralBonus: "$2,000",
+    employeeId: "user-3",
+  },
+  {
+    id: "job-4",
+    title: "UX/UI Designer",
+    companyName: "Innovate Inc.",
+    companyLogoUrl: "https://picsum.photos/id/20/100/100",
+    location: "San Francisco, CA",
+    type: "Contract",
+    description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
+    postedAt: new Date("2024-05-19T11:00:00Z"),
+    recruiterId: "user-2",
+  },
+  {
+    id: "job-5",
+    title: "Backend Developer (Referral)",
+    companyName: "Data Insights Co.",
+    companyLogoUrl: "https://picsum.photos/id/40/100/100",
+    location: "Remote",
+    type: "Full-time",
+    description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
+    postedAt: new Date("2024-05-22T16:00:00Z"),
+    isReferral: true,
+    referralBonus: "$1,500",
+    employeeId: "user-3",
+  },
+];
+
+export const applications: Application[] = [
+  {
+    id: "app-1",
+    jobId: "job-1",
+    jobTitle: "Senior Frontend Engineer",
+    companyName: "Innovate Inc.",
+    userId: "user-1",
+    status: "In Review",
+    appliedAt: new Date("2024-05-21T10:00:00Z"),
+  },
+  {
+    id: "app-2",
+    jobId: "job-2",
+    jobTitle: "Product Manager",
+    companyName: "Creative Solutions",
+    userId: "user-1",
+    status: "Applied",
+    appliedAt: new Date("2024-05-19T15:00:00Z"),
+  },
+];
