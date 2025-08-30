@@ -6,14 +6,12 @@ export interface User {
   email: string;
   role: Role;
   headline?: string;
-  _id?: string;
 }
 
 export interface Job {
   id:string;
   title: string;
   companyName: string;
-  companyLogoUrl: string;
   location: string;
   type: "Full-time" | "Part-time" | "Contract" | "Internship";
   salary?: string;
@@ -23,7 +21,6 @@ export interface Job {
   isReferral?: boolean;
   recruiterId?: string;
   employeeId?: string;
-  _id?: string;
   vacancies?: number;
   contactEmail?: string;
   contactPhone?: string;
@@ -37,7 +34,6 @@ export interface Application {
   userId: string;
   status: "Applied" | "In Review" | "Interview" | "Offered" | "Rejected";
   appliedAt: Date | string;
-  _id?: string;
 }
 
 export interface Domain {

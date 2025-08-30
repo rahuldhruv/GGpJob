@@ -73,7 +73,6 @@ export function ReferralReviewForm() {
           isReferral: true,
           employeeId: 'user-3', // Hardcoded for now
           postedAt: new Date().toISOString(),
-          companyLogoUrl: 'https://picsum.photos/100/100', // Placeholder
           type: 'Full-time', // Default value
         }),
       });

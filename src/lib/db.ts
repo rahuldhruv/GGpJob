@@ -1,109 +1,91 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import type { User, Job, Application, Domain } from './types';
+import { v4 as uuidv4 } from 'uuid';
 
 let db = null;
 
-const usersData: Omit<User, 'avatarUrl'>[] = [
+const usersData: User[] = [
   { id: "user-1", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer" },
   { id: "user-2", name: "Bob Williams", email: "bob@example.com", role: "Recruiter" },
   { id: "user-3", name: "Charlie Brown", email: "charlie@example.com", role: "Employee" },
   { id: "user-4", name: "Diana Prince", email: "diana@example.com", role: "Admin" },
 ];
 
-const jobsData: Job[] = [
+const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
-    id: "job-1",
     title: "Senior Frontend Engineer",
     companyName: "Innovate Inc.",
-    companyLogoUrl: "https://picsum.photos/id/20/100/100",
     location: "San Francisco, CA",
     type: "Full-time",
     salary: "$150,000 - $180,000",
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
-    postedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     recruiterId: "user-2",
     experienceLevel: "Senior Level",
   },
   {
-    id: "job-2",
     title: "Product Manager",
     companyName: "Creative Solutions",
-    companyLogoUrl: "https://picsum.photos/id/30/100/100",
     location: "New York, NY",
     type: "Full-time",
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
-    postedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
     recruiterId: "user-2",
     experienceLevel: "Mid Level",
   },
   {
-    id: "job-3",
     title: "Data Scientist (Referral)",
     companyName: "Data Insights Co.",
-    companyLogoUrl: "https://picsum.photos/id/40/100/100",
     location: "Remote",
     type: "Full-time",
     salary: "$130,000 - $160,000",
     description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
-    postedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
     isReferral: true,
     employeeId: "user-3",
     experienceLevel: "Mid Level",
   },
   {
-    id: "job-4",
     title: "UX/UI Designer",
     companyName: "Innovate Inc.",
-    companyLogoUrl: "https://picsum.photos/id/20/100/100",
     location: "San Francisco, CA",
     type: "Contract",
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
-    postedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
     recruiterId: "user-2",
     experienceLevel: "Entry Level",
   },
   {
-    id: "job-5",
     title: "Backend Developer (Referral)",
     companyName: "Data Insights Co.",
-    companyLogoUrl: "https://picsum.photos/id/40/100/100",
     location: "Austin, TX",
     type: "Full-time",
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
-    postedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000), // 25 days ago
     isReferral: true,
     employeeId: "user-3",
     experienceLevel: "Senior Level",
   },
 ];
 
-const applicationsData: Application[] = [
+const applicationsData: Omit<Application, 'id' | 'appliedAt'>[] = [
   {
-    id: "app-1",
     jobId: "job-1",
     jobTitle: "Senior Frontend Engineer",
     companyName: "Innovate Inc.",
     userId: "user-1",
     status: "In Review",
-    appliedAt: new Date("2024-05-21T10:00:00Z"),
   },
   {
-    id: "app-2",
     jobId: "job-2",
     jobTitle: "Product Manager",
     companyName: "Creative Solutions",
     userId: "user-1",
     status: "Applied",
-    appliedAt: new Date("2024-05-19T15:00:00Z"),
   },
 ];
 
-const domainsData: Domain[] = [
-    { id: "domain-1", name: "Software Engineering" },
-    { id: "domain-2", name: "Product Management" },
-    { id: "domain-3", name: "Data Science" },
-    { id: "domain-4", name: "Design" },
+const domainsData: Omit<Domain, 'id'>[] = [
+    { name: "Software Engineering" },
+    { name: "Product Management" },
+    { name: "Data Science" },
+    { name: "Design" },
 ];
 
 export async function getDb() {
@@ -131,7 +113,6 @@ export async function getDb() {
                     id TEXT PRIMARY KEY,
                     title TEXT,
                     companyName TEXT,
-                    companyLogoUrl TEXT,
                     location TEXT,
                     type TEXT,
                     salary TEXT,
@@ -168,21 +149,31 @@ export async function getDb() {
             }
             await userStmt.finalize();
 
-            const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, companyLogoUrl, location, type, salary, description, postedAt, experienceLevel, isReferral, recruiterId, employeeId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            for (const job of jobsData) {
-                await jobStmt.run(job.id, job.title, job.companyName, job.companyLogoUrl, job.location, job.type, job.salary, job.description, (job.postedAt as Date).toISOString(), job.experienceLevel, job.isReferral, job.recruiterId, job.employeeId);
+            const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, isReferral, recruiterId, employeeId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            for (const [index, job] of jobsData.entries()) {
+                const newId = `job-${index + 1}`;
+                const postedAt = new Date(Date.now() - (index + 1) * 2 * 24 * 60 * 60 * 1000).toISOString();
+                await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.isReferral, job.recruiterId, job.employeeId);
+                
+                // Assign jobId to applicationsData based on title
+                const appToUpdate = applicationsData.find(app => app.jobTitle === job.title);
+                if (appToUpdate) {
+                    (appToUpdate as any).jobId = newId;
+                }
             }
             await jobStmt.finalize();
 
             const appStmt = await db.prepare('INSERT INTO applications (id, jobId, jobTitle, companyName, userId, status, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)');
-            for (const app of applicationsData) {
-                await appStmt.run(app.id, app.jobId, app.jobTitle, app.companyName, app.userId, app.status, (app.appliedAt as Date).toISOString());
+            for (const [index, app] of applicationsData.entries()) {
+                const newId = `app-${index + 1}`;
+                const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
+                await appStmt.run(newId, (app as any).jobId, app.jobTitle, app.companyName, app.userId, app.status, appliedAt);
             }
             await appStmt.finalize();
 
             const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
             for (const domain of domainsData) {
-                await domainStmt.run(domain.id, domain.name);
+                await domainStmt.run(uuidv4(), domain.name);
             }
             await domainStmt.finalize();
         }
