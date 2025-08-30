@@ -1,10 +1,10 @@
 
 import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import { Database, open } from 'sqlite';
 import type { User, Job, Application, Domain } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
-let db = null;
+let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
 const usersData: User[] = [
   { id: 1, firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", password: "password123" },
@@ -23,6 +23,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
     recruiterId: 2,
     experienceLevel: "Senior Level",
+    domain: "Software Engineering",
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -35,6 +36,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
     recruiterId: 2,
     experienceLevel: "Mid Level",
+    domain: "Product Management",
      vacancies: 1,
     contactEmail: "recruiter@creative.com",
     contactPhone: "123-456-7890",
@@ -49,6 +51,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     isReferral: true,
     employeeId: 3,
     experienceLevel: "Mid Level",
+    domain: "Data Science",
      vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -61,6 +64,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
     recruiterId: 2,
     experienceLevel: "Entry Level",
+    domain: "Design",
      vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -74,6 +78,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     isReferral: true,
     employeeId: 3,
     experienceLevel: "Senior Level",
+    domain: "Software Engineering",
      vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -142,6 +147,7 @@ export async function getDb() {
                 description TEXT,
                 postedAt TEXT,
                 experienceLevel TEXT,
+                domain TEXT,
                 isReferral BOOLEAN,
                 recruiterId INTEGER,
                 employeeId INTEGER,
@@ -176,13 +182,13 @@ export async function getDb() {
         }
         await userStmt.finalize();
 
-        const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, isReferral, recruiterId, employeeId, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, domain, isReferral, recruiterId, employeeId, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         const jobIds: { [key: string]: string } = {};
         for (const [index, job] of jobsData.entries()) {
             const newId = `job-${index + 1}`;
             jobIds[job.title] = newId;
             const postedAt = new Date(Date.now() - (index + 1) * 2 * 24 * 60 * 60 * 1000).toISOString();
-            await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.isReferral, job.recruiterId, job.employeeId, job.vacancies, job.contactEmail, job.contactPhone);
+            await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.domain, job.isReferral, job.recruiterId, job.employeeId, job.vacancies, job.contactEmail, job.contactPhone);
         }
         await jobStmt.finalize();
 

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Job, Application } from "@/lib/types";
+import type { Job, Application, Domain } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function JobSeekerDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [allLocations, setAllLocations] = useState<string[]>([]);
+  const [domains, setDomains] = useState<Domain[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,6 +25,7 @@ export default function JobSeekerDashboard() {
     posted: "all",
     location: "all",
     experience: "all",
+    domain: "all",
   });
 
   const fetchJobs = useCallback(async () => {
@@ -34,7 +36,8 @@ export default function JobSeekerDashboard() {
       if (filters.posted !== 'all') params.append('posted', filters.posted);
       if (filters.location !== 'all') params.append('location', filters.location);
       if (filters.experience !== 'all') params.append('experience', filters.experience);
-      if (!filters.search && !params.has('posted') && !params.has('location') && !params.has('experience')) {
+      if (filters.domain !== 'all') params.append('domain', filters.domain);
+      if (!filters.search && !params.has('posted') && !params.has('location') && !params.has('experience') && !params.has('domain')) {
         params.append('limit', '3');
       }
 
@@ -53,12 +56,14 @@ export default function JobSeekerDashboard() {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const [jobsRes, appsRes] = await Promise.all([
+        const [jobsRes, appsRes, domainsRes] = await Promise.all([
           fetch('/api/jobs'),
-          fetch('/api/applications?userId=1')
+          fetch('/api/applications?userId=1'),
+          fetch('/api/domains')
         ]);
         const jobsData = await jobsRes.json();
         const appsData = await appsRes.json();
+        const domainsData = await domainsRes.json();
         
         if (Array.isArray(jobsData)) {
           const uniqueLocations = Array.from(new Set(jobsData.map(j => j.location).filter(Boolean)));
@@ -71,6 +76,7 @@ export default function JobSeekerDashboard() {
         
         setJobs(Array.isArray(initialJobsData) ? initialJobsData : []);
         setApplications(Array.isArray(appsData) ? appsData : []);
+        setDomains(Array.isArray(domainsData) ? domainsData : []);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -100,11 +106,12 @@ export default function JobSeekerDashboard() {
       posted: "all",
       location: "all",
       experience: "all",
+      domain: "all",
     });
   }
 
   const hasActiveFilters = () => {
-    return filters.search || filters.posted !== 'all' || filters.location !== 'all' || filters.experience !== 'all';
+    return filters.search || filters.posted !== 'all' || filters.location !== 'all' || filters.experience !== 'all' || filters.domain !== 'all';
   }
 
   const getStatusBadge = (status: Application['status']) => {
@@ -137,8 +144,8 @@ export default function JobSeekerDashboard() {
                  {loading ? <LoaderCircle className="animate-spin h-5 w-5"/> : <Search className="h-5 w-5 text-muted-foreground" />}
               </Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 items-center">
-              <div className="flex items-center gap-2 text-sm font-medium">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-center">
+              <div className="flex items-center gap-2 text-sm font-medium col-span-full lg:col-span-1">
                 <Filter className="h-4 w-4" />
                 <span>Filters:</span>
               </div>
@@ -152,6 +159,15 @@ export default function JobSeekerDashboard() {
                   <SelectItem value="7">Last 7 days</SelectItem>
                   <SelectItem value="14">Last 14 days</SelectItem>
                   <SelectItem value="30">Last 30 days</SelectItem>
+                </SelectContent>
+              </Select>
+               <Select value={filters.domain} onValueChange={(value) => handleFilterChange('domain', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Domain" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Domains</SelectItem>
+                  {domains.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>

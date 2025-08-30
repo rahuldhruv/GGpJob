@@ -22,6 +22,7 @@ export interface Job {
   description: string;
   postedAt: Date | string;
   experienceLevel?: "Entry Level" | "Mid Level" | "Senior Level";
+  domain?: string;
   isReferral?: boolean;
   recruiterId?: number;
   employeeId?: number;

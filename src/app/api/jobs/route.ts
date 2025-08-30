@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     const posted = searchParams.get('posted');
     const location = searchParams.get('location');
     const experience = searchParams.get('experience');
+    const domain = searchParams.get('domain');
 
     let query = 'SELECT * FROM jobs';
     const conditions = [];
@@ -56,6 +57,10 @@ export async function GET(request: Request) {
         conditions.push('experienceLevel = ?');
         params.push(experience);
     }
+    if (domain && domain !== 'all') {
+        conditions.push('domain = ?');
+        params.push(domain);
+    }
 
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ');
@@ -88,7 +93,7 @@ export async function POST(request: Request) {
     };
     
     const stmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, type, experienceLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, type, experienceLevel, domain) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     await stmt.run(
@@ -105,7 +110,8 @@ export async function POST(request: Request) {
         newJob.employeeId,
         newJob.postedAt,
         newJob.type,
-        newJob.experienceLevel
+        newJob.experienceLevel,
+        newJob.domain
     );
     await stmt.finalize();
 
