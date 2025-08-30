@@ -3,43 +3,21 @@
 import { useState, useEffect } from "react";
 import type { Job, Application } from "@/lib/types";
 import { jobs as allJobs, applications as allApplications } from "@/lib/data";
-import { getRecommendationsAction } from "@/app/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import JobCard from "../job-card";
 import { Button } from "../ui/button";
-import { Sparkles, LoaderCircle, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { format } from 'date-fns';
 
 export default function JobSeekerDashboard() {
-  const [recommendations, setRecommendations] = useState<Job[]>([]);
+  const [jobs] = useState<Job[]>(allJobs.slice(0,3));
   const [applications, setApplications] = useState<Application[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Initially load all jobs as a placeholder before recommendations are fetched
-    setRecommendations(allJobs.slice(0, 3));
     setApplications(allApplications);
   }, []);
-
-  const fetchRecommendations = async () => {
-    setIsLoading(true);
-    try {
-      // In a real app, profileSummary and searchHistory would be dynamic
-      const result = await getRecommendationsAction({
-        profileSummary: "Senior frontend developer with experience in React, TypeScript, and Next.js.",
-        searchHistory: "searched for 'frontend engineer', 'react developer'",
-      });
-      const recommendedJobs = allJobs.filter(job => result.jobRecommendations.includes(job.title));
-      setRecommendations(recommendedJobs.length ? recommendedJobs : allJobs.slice(0, 3)); // Fallback to initial jobs
-    } catch (error) {
-      console.error("Failed to fetch recommendations:", error);
-      // Fallback to initial jobs on error
-      setRecommendations(allJobs.slice(0, 3));
-    }
-    setIsLoading(false);
-  };
   
   const getStatusBadge = (status: Application['status']) => {
     switch (status) {
@@ -55,22 +33,12 @@ export default function JobSeekerDashboard() {
   return (
     <div className="space-y-8">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <CardTitle>Recommended For You</CardTitle>
-          </div>
-          <Button onClick={fetchRecommendations} disabled={isLoading}>
-            {isLoading ? (
-              <LoaderCircle className="h-4 w-4 animate-spin" />
-            ) : (
-              "Refresh"
-            )}
-          </Button>
+        <CardHeader>
+          <CardTitle>Featured Jobs</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommendations.map((job) => (
+            {jobs.map((job) => (
               <JobCard key={job.id} job={job} />
             ))}
           </div>

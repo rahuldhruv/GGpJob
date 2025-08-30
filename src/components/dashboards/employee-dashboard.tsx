@@ -48,7 +48,7 @@ export default function EmployeeDashboard() {
             <DialogHeader>
               <DialogTitle>Post a Referral Job</DialogTitle>
               <DialogDescription>
-                Fill out the details for the job you want to refer. Our AI will help review the description.
+                Fill out the details for the job you want to refer.
               </DialogDescription>
             </DialogHeader>
             <ReferralReviewForm />
