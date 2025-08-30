@@ -25,8 +25,8 @@ export default function JobSeekerDashboard() {
         ]);
         const jobsData = await jobsRes.json();
         const appsData = await appsRes.json();
-        setJobs(jobsData);
-        setApplications(appsData);
+        setJobs(Array.isArray(jobsData) ? jobsData : []);
+        setApplications(Array.isArray(appsData) ? appsData : []);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {

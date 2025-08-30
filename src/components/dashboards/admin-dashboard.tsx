@@ -26,8 +26,8 @@ export default function AdminDashboard() {
         ]);
         const jobsData = await jobsRes.json();
         const usersData = await usersRes.json();
-        setJobs(jobsData);
-        setUsers(usersData);
+        setJobs(Array.isArray(jobsData) ? jobsData : []);
+        setUsers(Array.isArray(usersData) ? usersData : []);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {

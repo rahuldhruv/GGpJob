@@ -34,7 +34,7 @@ export default function EmployeeDashboard() {
       try {
         const res = await fetch('/api/jobs?isReferral=true&employeeId=user-3');
         const data = await res.json();
-        setReferralJobs(data);
+        setReferralJobs(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Failed to fetch referral jobs", error);
       } finally {
