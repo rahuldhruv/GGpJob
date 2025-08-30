@@ -35,7 +35,9 @@ import { useRouter } from "next/navigation";
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(1, "Password is required."),
-  role: z.enum(["Job Seeker", "Recruiter", "Employee", "Admin"]),
+  role: z.enum(["Job Seeker", "Recruiter", "Employee", "Admin"], {
+    required_error: "You need to select a role.",
+  }),
 });
 
 type LoginFormValues = z.infer<typeof formSchema>;
