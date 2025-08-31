@@ -12,8 +12,14 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
-    const user: User | undefined = await db.get('SELECT * FROM users WHERE email = ? AND role = ?', email, role);
-
+    
+    let user: User | undefined;
+    if (role === 'Super Admin') {
+        user = await db.get('SELECT * FROM users WHERE email = ? AND role = ?', email, 'Super Admin');
+    } else {
+        user = await db.get('SELECT * FROM users WHERE email = ? AND role = ?', email, role);
+    }
+    
     if (!user || !user.password) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
