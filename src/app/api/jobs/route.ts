@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     };
     
     const stmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, type, experienceLevel, domain) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, type, workplaceType, experienceLevel, domain, employeeLinkedIn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     await stmt.run(
@@ -110,8 +110,10 @@ export async function POST(request: Request) {
         newJob.employeeId,
         newJob.postedAt,
         newJob.type,
+        newJob.workplaceType,
         newJob.experienceLevel,
-        newJob.domain
+        newJob.domain,
+        newJob.employeeLinkedIn
     );
     await stmt.finalize();
 

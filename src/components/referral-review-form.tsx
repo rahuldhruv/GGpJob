@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, ThumbsUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Domain, JobType, WorkplaceType } from "@/lib/types";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
@@ -26,9 +26,13 @@ const formSchema = z.object({
   jobLocation: z.string().min(2, "Job location is required."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
   experienceLevel: z.enum(["Entry Level", "Mid Level", "Senior Level"]),
+  jobType: z.enum(["Full-time", "Part-time", "Contract", "Internship"]),
+  workplaceType: z.enum(["On-site", "Hybrid", "Remote"]),
+  domain: z.string().min(1, "Please select a domain."),
   vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
   email: z.string().email("Please enter a valid email address."),
   phoneNumber: z.string().min(10, "Please enter a valid phone number."),
+  employeeLinkedIn: z.string().url("Please enter a valid LinkedIn URL.").optional().or(z.literal('')),
   salary: z.string().optional(),
 });
 
@@ -37,6 +41,28 @@ type ReferralFormValues = z.infer<typeof formSchema>;
 export function ReferralReviewForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [domains, setDomains] = useState<Domain[]>([]);
+
+  useEffect(() => {
+    const fetchDomains = async () => {
+      try {
+        const res = await fetch('/api/domains');
+        const data = await res.json();
+        if(Array.isArray(data)) {
+          setDomains(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch domains", error);
+        toast({
+            title: "Error fetching domains",
+            description: "Could not load job domains. Please try again later.",
+            variant: "destructive",
+        });
+      }
+    };
+    fetchDomains();
+  }, [toast]);
+
 
   const form = useForm<ReferralFormValues>({
     resolver: zodResolver(formSchema),
@@ -48,6 +74,7 @@ export function ReferralReviewForm() {
       vacancies: 1,
       email: "",
       phoneNumber: "",
+      employeeLinkedIn: "",
       salary: "",
     },
   });
@@ -66,14 +93,17 @@ export function ReferralReviewForm() {
           location: data.jobLocation,
           description: data.jobDescription,
           experienceLevel: data.experienceLevel,
+          type: data.jobType,
+          workplaceType: data.workplaceType,
+          domain: data.domain,
           vacancies: data.vacancies,
           contactEmail: data.email,
           contactPhone: data.phoneNumber,
+          employeeLinkedIn: data.employeeLinkedIn,
           salary: data.salary,
           isReferral: true,
           employeeId: 3, // Hardcoded for now
           postedAt: new Date().toISOString(),
-          type: 'Full-time', // Default value
         }),
       });
 
@@ -157,6 +187,53 @@ export function ReferralReviewForm() {
             )}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <FormField
+              control={form.control}
+              name="jobType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Employment Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employment type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Full-time">Full-time</SelectItem>
+                      <SelectItem value="Part-time">Part-time</SelectItem>
+                      <SelectItem value="Contract">Contract</SelectItem>
+                      <SelectItem value="Internship">Internship</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="workplaceType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Workplace Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select workplace type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="On-site">On-site</SelectItem>
+                      <SelectItem value="Hybrid">Hybrid</SelectItem>
+                      <SelectItem value="Remote">Remote</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="experienceLevel"
@@ -181,13 +258,20 @@ export function ReferralReviewForm() {
             />
              <FormField
               control={form.control}
-              name="salary"
+              name="domain"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Salary (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. $100,000 - $120,000" {...field} />
-                  </FormControl>
+                  <FormLabel>Domain</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a domain" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {domains.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -208,6 +292,21 @@ export function ReferralReviewForm() {
               )}
             />
              <FormField
+              control={form.control}
+              name="salary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Salary (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. $100,000 - $120,000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
@@ -220,8 +319,7 @@ export function ReferralReviewForm() {
                   </FormItem>
                 )}
               />
-           </div>
-           <FormField
+               <FormField
               control={form.control}
               name="phoneNumber"
               render={({ field }) => (
@@ -229,6 +327,20 @@ export function ReferralReviewForm() {
                   <FormLabel>Contact Phone</FormLabel>
                   <FormControl>
                     <Input placeholder="(123) 456-7890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+           </div>
+            <FormField
+              control={form.control}
+              name="employeeLinkedIn"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Your LinkedIn URL (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://linkedin.com/in/your-profile" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

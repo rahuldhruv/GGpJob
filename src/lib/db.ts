@@ -21,6 +21,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     companyName: "Innovate Inc.",
     location: "San Francisco, CA",
     type: "Full-time",
+    workplaceType: "Hybrid",
     salary: "$150,000 - $180,000",
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
     recruiterId: 2,
@@ -35,6 +36,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     companyName: "Creative Solutions",
     location: "New York, NY",
     type: "Full-time",
+    workplaceType: "On-site",
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
     recruiterId: 2,
     experienceLevel: "Mid Level",
@@ -48,10 +50,12 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     companyName: "Data Insights Co.",
     location: "Remote",
     type: "Full-time",
+    workplaceType: "Remote",
     salary: "$130,000 - $160,000",
     description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
     isReferral: true,
     employeeId: 3,
+    employeeLinkedIn: "https://linkedin.com/in/charliebrown",
     experienceLevel: "Mid Level",
     domain: "Data Science",
     vacancies: 1,
@@ -63,6 +67,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     companyName: "Innovate Inc.",
     location: "San Francisco, CA",
     type: "Contract",
+    workplaceType: "On-site",
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
     recruiterId: 2,
     experienceLevel: "Entry Level",
@@ -76,9 +81,11 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     companyName: "Data Insights Co.",
     location: "Austin, TX",
     type: "Full-time",
+    workplaceType: "Hybrid",
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
     isReferral: true,
     employeeId: 3,
+    employeeLinkedIn: "https://linkedin.com/in/charliebrown",
     experienceLevel: "Senior Level",
     domain: "Software Engineering",
     vacancies: 1,
@@ -97,6 +104,9 @@ const domainsData: Omit<Domain, 'id'>[] = [
   { name: "Product Management" },
   { name: "Data Science" },
   { name: "Design" },
+  { name: "Marketing" },
+  { name: "Sales" },
+  { name: "Human Resources" },
 ];
 
 export async function getDb() {
@@ -109,6 +119,12 @@ export async function getDb() {
 
   await db.exec('PRAGMA journal_mode = WAL;');
   await db.exec('PRAGMA foreign_keys = ON;');
+  
+  await db.exec('DROP TABLE IF EXISTS applications');
+  await db.exec('DROP TABLE IF EXISTS jobs');
+  await db.exec('DROP TABLE IF EXISTS users');
+  await db.exec('DROP TABLE IF EXISTS domains');
+
 
   // Create tables if not exist
   await db.exec(`
@@ -130,6 +146,7 @@ export async function getDb() {
       companyName TEXT,
       location TEXT,
       type TEXT,
+      workplaceType TEXT,
       salary TEXT,
       description TEXT,
       postedAt TEXT,
@@ -138,6 +155,7 @@ export async function getDb() {
       isReferral BOOLEAN,
       recruiterId INTEGER,
       employeeId INTEGER,
+      employeeLinkedIn TEXT,
       vacancies INTEGER,
       contactEmail TEXT,
       contactPhone TEXT,
@@ -190,7 +208,7 @@ export async function getDb() {
 
     // Jobs
     const jobStmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, domain, isReferral, recruiterId, employeeId, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, location, type, workplaceType, salary, description, postedAt, experienceLevel, domain, isReferral, recruiterId, employeeId, employeeLinkedIn, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     const jobIds: { [key: string]: string } = {};
     for (const [index, job] of jobsData.entries()) {
@@ -203,6 +221,7 @@ export async function getDb() {
         job.companyName,
         job.location,
         job.type,
+        job.workplaceType,
         job.salary ?? null,
         job.description,
         postedAt,
@@ -211,6 +230,7 @@ export async function getDb() {
         job.isReferral ?? false,
         job.recruiterId ?? null,
         job.employeeId ?? null,
+        job.employeeLinkedIn ?? null,
         job.vacancies ?? 0,
         job.contactEmail ?? null,
         job.contactPhone ?? null

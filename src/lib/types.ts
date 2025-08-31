@@ -12,12 +12,16 @@ export interface User {
   headline?: string;
 }
 
+export type JobType = "Full-time" | "Part-time" | "Contract" | "Internship";
+export type WorkplaceType = "On-site" | "Hybrid" | "Remote";
+
 export interface Job {
   id:string;
   title: string;
   companyName: string;
   location: string;
-  type: "Full-time" | "Part-time" | "Contract" | "Internship";
+  type: JobType;
+  workplaceType?: WorkplaceType;
   salary?: string;
   description: string;
   postedAt: Date | string;
@@ -26,6 +30,7 @@ export interface Job {
   isReferral?: boolean;
   recruiterId?: number;
   employeeId?: number;
+  employeeLinkedIn?: string;
   vacancies?: number;
   contactEmail?: string;
   contactPhone?: string;
