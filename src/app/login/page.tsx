@@ -31,11 +31,13 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import type { Role } from "@/lib/types";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(1, "Password is required."),
-  role: z.enum(["Job Seeker", "Recruiter", "Employee", "Admin"], {
+  role: z.enum(["Job Seeker", "Recruiter", "Employee", "Admin", "Super Admin"], {
     required_error: "You need to select a role.",
   }),
 });
@@ -45,6 +47,8 @@ type LoginFormValues = z.infer<typeof formSchema>;
 export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<Role | "">("");
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -146,6 +150,7 @@ export default function LoginPage() {
                         <SelectItem value="Recruiter">Recruiter</SelectItem>
                         <SelectItem value="Employee">Employee</SelectItem>
                         <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Super Admin">Super Admin</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

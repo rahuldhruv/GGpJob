@@ -59,7 +59,8 @@ export default function Home() {
       case "Employee":
         return <EmployeeDashboard />;
       case "Admin":
-        return <AdminDashboard />;
+      case "Super Admin":
+        return <AdminDashboard user={user} />;
       default:
          router.push('/login');
          return null;

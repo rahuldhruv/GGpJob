@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
-import { UserCog, Briefcase, PlusCircle, Edit, Trash2, MoreHorizontal, Layers } from "lucide-react";
+import { UserCog, Briefcase, PlusCircle, Edit, Trash2, MoreHorizontal, Layers, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -35,14 +35,20 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { DomainForm } from "../domain-form";
+import { AdminCreationForm } from "../admin-creation-form";
 import { useToast } from "@/hooks/use-toast";
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  user: User;
+}
+
+export default function AdminDashboard({ user }: AdminDashboardProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDomainFormOpen, setIsDomainFormOpen] = useState(false);
+  const [isAdminFormOpen, setIsAdminFormOpen] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const { toast } = useToast();
@@ -93,6 +99,7 @@ export default function AdminDashboard() {
 
   const getRoleBadge = (role: User['role']) => {
     switch (role) {
+      case 'Super Admin': return <Badge className="bg-purple-100 text-purple-800">{role}</Badge>;
       case 'Admin': return <Badge className="bg-red-100 text-red-800">{role}</Badge>;
       case 'Recruiter': return <Badge className="bg-blue-100 text-blue-800">{role}</Badge>;
       case 'Employee': return <Badge className="bg-yellow-100 text-yellow-800">{role}</Badge>;
@@ -169,6 +176,23 @@ export default function AdminDashboard() {
           />
         </DialogContent>
       </Dialog>
+      
+       <Dialog open={isAdminFormOpen} onOpenChange={setIsAdminFormOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New Admin</DialogTitle>
+             <DialogDescription>
+              Enter the details for the new Admin user.
+            </DialogDescription>
+          </DialogHeader>
+          <AdminCreationForm
+            onSuccess={() => {
+              setIsAdminFormOpen(false);
+              fetchUsers();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
         <AlertDialogContent>
@@ -207,6 +231,14 @@ export default function AdminDashboard() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="users">
+              {user.role === 'Super Admin' && (
+                <div className="flex justify-end mb-4">
+                  <Button onClick={() => setIsAdminFormOpen(true)}>
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Create Admin
+                  </Button>
+                </div>
+              )}
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -217,20 +249,20 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
+                  {users.map((u) => (
+                    <TableRow key={u.id}>
                       <TableCell className="font-medium flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback>{u.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        {user.name}
+                        {u.name}
                       </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{getRoleBadge(user.role)}</TableCell>
+                      <TableCell>{u.email}</TableCell>
+                      <TableCell>{getRoleBadge(u.role)}</TableCell>
                       <TableCell className="text-right">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" disabled={u.id === user.id}>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -239,7 +271,7 @@ export default function AdminDashboard() {
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setUserToDelete(user)} className="text-destructive">
+                            <DropdownMenuItem onClick={() => setUserToDelete(u)} className="text-destructive">
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete
                             </DropdownMenuItem>

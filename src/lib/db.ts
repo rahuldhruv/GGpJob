@@ -13,7 +13,7 @@ const usersData: Omit<User, 'id' | 'password'> & { passwordPlain: string }[] = [
   { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123" },
   { firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", passwordPlain: "password123" },
   { firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", passwordPlain: "password123" },
-  { firstName: "Admin", lastName: "User", name: "Admin User", email: "admin@gmail.com", role: "Admin", phone: "444-555-6666", passwordPlain: "admin123", headline: "Platform Administrator" },
+  { firstName: "Super", lastName: "Admin", name: "Super Admin", email: "admin@gmail.com", role: "Super Admin", phone: "444-555-6666", passwordPlain: "admin123", headline: "Platform Administrator" },
 ];
 
 const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
