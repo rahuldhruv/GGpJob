@@ -127,7 +127,7 @@ export async function getDb() {
                 lastName TEXT,
                 name TEXT,
                 email TEXT UNIQUE,
-                phone TEXT,
+                phone TEXT UNIQUE,
                 role TEXT,
                 headline TEXT,
                 password TEXT

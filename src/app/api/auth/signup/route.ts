@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import type { User } from '@/lib/types';
@@ -14,11 +15,6 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
-
-    const existingUser = await db.get('SELECT * FROM users WHERE email = ?', email);
-    if (existingUser) {
-      return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
-    }
     
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -46,7 +42,15 @@ export async function POST(request: Request) {
     };
 
     return NextResponse.json(newUser, { status: 201 });
-  } catch (e) {
+  } catch (e: any) {
+    if (e.message.includes('UNIQUE constraint failed')) {
+      if (e.message.includes('users.email')) {
+        return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
+      }
+      if (e.message.includes('users.phone')) {
+        return NextResponse.json({ error: 'User with this phone number already exists' }, { status: 409 });
+      }
+    }
     console.error(e);
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
   }
