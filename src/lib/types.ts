@@ -12,21 +12,33 @@ export interface User {
   headline?: string;
 }
 
-export type JobType = "Full-time" | "Part-time" | "Contract" | "Internship";
-export type WorkplaceType = "On-site" | "Hybrid" | "Remote";
+export interface JobType {
+  id: number;
+  name: "Full-time" | "Part-time" | "Contract" | "Internship";
+}
+
+export interface WorkplaceType {
+    id: number;
+    name: "On-site" | "Hybrid" | "Remote";
+}
+
+export interface ExperienceLevel {
+    id: number;
+    name: "Entry Level" | "Mid Level" | "Senior Level";
+}
 
 export interface Job {
   id:string;
   title: string;
   companyName: string;
   location: string;
-  type: JobType;
-  workplaceType?: WorkplaceType;
+  jobTypeId: number;
+  workplaceTypeId?: number;
   salary?: string;
   description: string;
   postedAt: Date | string;
-  experienceLevel?: "Entry Level" | "Mid Level" | "Senior Level";
-  domain?: string;
+  experienceLevelId?: number;
+  domainId?: string;
   isReferral?: boolean;
   recruiterId?: number;
   employeeId?: number;
@@ -34,6 +46,11 @@ export interface Job {
   vacancies?: number;
   contactEmail?: string;
   contactPhone?: string;
+  // Joined fields
+  type?: string;
+  workplaceType?: string;
+  experienceLevel?: string;
+  domain?: string;
 }
 
 export interface Application {

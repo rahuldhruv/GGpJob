@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Job, Application, Domain } from "@/lib/types";
+import type { Job, Application, Domain, ExperienceLevel } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ export default function JobSeekerDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [allLocations, setAllLocations] = useState<string[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
+  const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,18 +57,20 @@ export default function JobSeekerDashboard() {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const [jobsRes, appsRes, domainsRes] = await Promise.all([
+        const [jobsRes, appsRes, domainsRes, experienceLevelsRes] = await Promise.all([
           fetch('/api/jobs'),
           fetch('/api/applications?userId=1'),
-          fetch('/api/domains')
+          fetch('/api/domains'),
+          fetch('/api/experience-levels'),
         ]);
         const jobsData = await jobsRes.json();
         const appsData = await appsRes.json();
         const domainsData = await domainsRes.json();
+        const experienceLevelsData = await experienceLevelsRes.json();
         
         if (Array.isArray(jobsData)) {
-          const uniqueLocations = Array.from(new Set(jobsData.map(j => j.location).filter(Boolean)));
-          setAllLocations(uniqueLocations);
+          const uniqueLocations = Array.from(new Set(jobsData.map((j: Job) => j.location).filter(Boolean)));
+          setAllLocations(uniqueLocations as string[]);
         }
 
         const initialJobsUrl = `/api/jobs?limit=3`;
@@ -77,6 +80,7 @@ export default function JobSeekerDashboard() {
         setJobs(Array.isArray(initialJobsData) ? initialJobsData : []);
         setApplications(Array.isArray(appsData) ? appsData : []);
         setDomains(Array.isArray(domainsData) ? domainsData : []);
+        setExperienceLevels(Array.isArray(experienceLevelsData) ? experienceLevelsData : []);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -185,9 +189,7 @@ export default function JobSeekerDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="Entry Level">Entry Level</SelectItem>
-                  <SelectItem value="Mid Level">Mid Level</SelectItem>
-                  <SelectItem value="Senior Level">Senior Level</SelectItem>
+                  {experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
                 </SelectContent>
               </Select>
               {hasActiveFilters() && (

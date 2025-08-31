@@ -18,24 +18,36 @@ export async function GET(request: Request) {
     const experience = searchParams.get('experience');
     const domain = searchParams.get('domain');
 
-    let query = 'SELECT * FROM jobs';
+    let query = `
+      SELECT 
+        j.*,
+        jt.name as type,
+        wt.name as workplaceType,
+        el.name as experienceLevel,
+        d.name as domain
+      FROM jobs j
+      LEFT JOIN job_types jt ON j.jobTypeId = jt.id
+      LEFT JOIN workplace_types wt ON j.workplaceTypeId = wt.id
+      LEFT JOIN experience_levels el ON j.experienceLevelId = el.id
+      LEFT JOIN domains d ON j.domainId = d.id
+    `;
     const conditions = [];
-    const params = [];
+    const params: (string | number | boolean)[] = [];
 
     if (isReferral !== null) {
-      conditions.push('isReferral = ?');
+      conditions.push('j.isReferral = ?');
       params.push(isReferral === 'true' ? 1 : 0);
     }
     if (recruiterId) {
-      conditions.push('recruiterId = ?');
+      conditions.push('j.recruiterId = ?');
       params.push(Number(recruiterId));
     }
     if (employeeId) {
-      conditions.push('employeeId = ?');
+      conditions.push('j.employeeId = ?');
       params.push(Number(employeeId));
     }
     if (search) {
-      const searchCondition = '(title LIKE ? OR companyName LIKE ? OR description LIKE ?)';
+      const searchCondition = '(j.title LIKE ? OR j.companyName LIKE ? OR j.description LIKE ?)';
       conditions.push(searchCondition);
       const searchTerm = `%${search}%`;
       params.push(searchTerm, searchTerm, searchTerm);
@@ -45,20 +57,20 @@ export async function GET(request: Request) {
         if (!isNaN(days)) {
             const date = new Date();
             date.setDate(date.getDate() - days);
-            conditions.push('postedAt >= ?');
+            conditions.push('j.postedAt >= ?');
             params.push(date.toISOString());
         }
     }
     if (location && location !== 'all') {
-        conditions.push('location = ?');
+        conditions.push('j.location = ?');
         params.push(location);
     }
     if (experience && experience !== 'all') {
-        conditions.push('experienceLevel = ?');
+        conditions.push('el.name = ?');
         params.push(experience);
     }
     if (domain && domain !== 'all') {
-        conditions.push('domain = ?');
+        conditions.push('d.name = ?');
         params.push(domain);
     }
 
@@ -66,7 +78,7 @@ export async function GET(request: Request) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
     
-    query += ' ORDER BY postedAt DESC';
+    query += ' ORDER BY j.postedAt DESC';
 
     if (limit) {
       query += ' LIMIT ?';
@@ -93,7 +105,7 @@ export async function POST(request: Request) {
     };
     
     const stmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, type, workplaceType, experienceLevel, domain, employeeLinkedIn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, jobTypeId, workplaceTypeId, experienceLevelId, domainId, employeeLinkedIn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     await stmt.run(
@@ -109,10 +121,10 @@ export async function POST(request: Request) {
         newJob.isReferral ? 1 : 0,
         newJob.employeeId,
         newJob.postedAt,
-        newJob.type,
-        newJob.workplaceType,
-        newJob.experienceLevel,
-        newJob.domain,
+        newJob.jobTypeId,
+        newJob.workplaceTypeId,
+        newJob.experienceLevelId,
+        newJob.domainId,
         newJob.employeeLinkedIn
     );
     await stmt.finalize();

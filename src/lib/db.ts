@@ -20,13 +20,13 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     title: "Senior Frontend Engineer",
     companyName: "Innovate Inc.",
     location: "San Francisco, CA",
-    type: "Full-time",
-    workplaceType: "Hybrid",
+    jobTypeId: 1, // Full-time
+    workplaceTypeId: 2, // Hybrid
     salary: "$150,000 - $180,000",
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
     recruiterId: 2,
-    experienceLevel: "Senior Level",
-    domain: "Software Engineering",
+    experienceLevelId: 3, // Senior Level
+    domainId: '1', // Software Engineering
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -35,12 +35,12 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     title: "Product Manager",
     companyName: "Creative Solutions",
     location: "New York, NY",
-    type: "Full-time",
-    workplaceType: "On-site",
+    jobTypeId: 1, // Full-time
+    workplaceTypeId: 1, // On-site
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
     recruiterId: 2,
-    experienceLevel: "Mid Level",
-    domain: "Product Management",
+    experienceLevelId: 2, // Mid Level
+    domainId: '2', // Product Management
     vacancies: 1,
     contactEmail: "recruiter@creative.com",
     contactPhone: "123-456-7890",
@@ -49,15 +49,15 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     title: "Data Scientist (Referral)",
     companyName: "Data Insights Co.",
     location: "Remote",
-    type: "Full-time",
-    workplaceType: "Remote",
+    jobTypeId: 1, // Full-time
+    workplaceTypeId: 3, // Remote
     salary: "$130,000 - $160,000",
     description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
     isReferral: true,
     employeeId: 3,
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
-    experienceLevel: "Mid Level",
-    domain: "Data Science",
+    experienceLevelId: 2, // Mid Level
+    domainId: '3', // Data Science
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -66,12 +66,12 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     title: "UX/UI Designer",
     companyName: "Innovate Inc.",
     location: "San Francisco, CA",
-    type: "Contract",
-    workplaceType: "On-site",
+    jobTypeId: 3, // Contract
+    workplaceTypeId: 1, // On-site
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
     recruiterId: 2,
-    experienceLevel: "Entry Level",
-    domain: "Design",
+    experienceLevelId: 1, // Entry Level
+    domainId: '4', // Design
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -80,14 +80,14 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     title: "Backend Developer (Referral)",
     companyName: "Data Insights Co.",
     location: "Austin, TX",
-    type: "Full-time",
-    workplaceType: "Hybrid",
+    jobTypeId: 1, // Full-time
+    workplaceTypeId: 2, // Hybrid
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
     isReferral: true,
     employeeId: 3,
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
-    experienceLevel: "Senior Level",
-    domain: "Software Engineering",
+    experienceLevelId: 3, // Senior Level
+    domainId: '1', // Software Engineering
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -99,15 +99,20 @@ const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId'>[] = [
   { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, status: "Applied" },
 ];
 
-const domainsData: Omit<Domain, 'id'>[] = [
-  { name: "Software Engineering" },
-  { name: "Product Management" },
-  { name: "Data Science" },
-  { name: "Design" },
-  { name: "Marketing" },
-  { name: "Sales" },
-  { name: "Human Resources" },
+const domainsData: { id: string, name: string }[] = [
+  { id: "1", name: "Software Engineering" },
+  { id: "2", name: "Product Management" },
+  { id: "3", name: "Data Science" },
+  { id: "4", name: "Design" },
+  { id: "5", name: "Marketing" },
+  { id: "6", name: "Sales" },
+  { id: "7", name: "Human Resources" },
 ];
+
+const jobTypesData = [ {id: 1, name: "Full-time"}, {id: 2, name: "Part-time"}, {id: 3, name: "Contract"}, {id: 4, name: "Internship"} ];
+const workplaceTypesData = [ {id: 1, name: "On-site"}, {id: 2, name: "Hybrid"}, {id: 3, name: "Remote"} ];
+const experienceLevelsData = [ {id: 1, name: "Entry Level"}, {id: 2, name: "Mid Level"}, {id: 3, name: "Senior Level"} ];
+
 
 export async function getDb() {
   if (db) return db;
@@ -124,6 +129,9 @@ export async function getDb() {
   await db.exec('DROP TABLE IF EXISTS jobs');
   await db.exec('DROP TABLE IF EXISTS users');
   await db.exec('DROP TABLE IF EXISTS domains');
+  await db.exec('DROP TABLE IF EXISTS job_types');
+  await db.exec('DROP TABLE IF EXISTS workplace_types');
+  await db.exec('DROP TABLE IF EXISTS experience_levels');
 
 
   // Create tables if not exist
@@ -140,18 +148,34 @@ export async function getDb() {
       password TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS domains (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS job_types (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS workplace_types (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS experience_levels (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE
+    );
+
     CREATE TABLE IF NOT EXISTS jobs (
       id TEXT PRIMARY KEY,
       title TEXT,
       companyName TEXT,
       location TEXT,
-      type TEXT,
-      workplaceType TEXT,
       salary TEXT,
       description TEXT,
       postedAt TEXT,
-      experienceLevel TEXT,
-      domain TEXT,
       isReferral BOOLEAN,
       recruiterId INTEGER,
       employeeId INTEGER,
@@ -159,8 +183,16 @@ export async function getDb() {
       vacancies INTEGER,
       contactEmail TEXT,
       contactPhone TEXT,
+      jobTypeId INTEGER,
+      workplaceTypeId INTEGER,
+      experienceLevelId INTEGER,
+      domainId TEXT,
       FOREIGN KEY(recruiterId) REFERENCES users(id) ON DELETE SET NULL,
-      FOREIGN KEY(employeeId) REFERENCES users(id) ON DELETE SET NULL
+      FOREIGN KEY(employeeId) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY(jobTypeId) REFERENCES job_types(id) ON DELETE SET NULL,
+      FOREIGN KEY(workplaceTypeId) REFERENCES workplace_types(id) ON DELETE SET NULL,
+      FOREIGN KEY(experienceLevelId) REFERENCES experience_levels(id) ON DELETE SET NULL,
+      FOREIGN KEY(domainId) REFERENCES domains(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS applications (
@@ -174,17 +206,37 @@ export async function getDb() {
       FOREIGN KEY(jobId) REFERENCES jobs(id) ON DELETE CASCADE,
       FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
     );
-
-    CREATE TABLE IF NOT EXISTS domains (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE
-    );
   `);
 
   // Check if already seeded
   const { count } = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM users');
   if (count === 0) {
     console.log("Seeding database...");
+
+    // Seed lookup tables
+    const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
+    for (const domain of domainsData) {
+      await domainStmt.run(domain.id, domain.name);
+    }
+    await domainStmt.finalize();
+    
+    const jobTypeStmt = await db.prepare('INSERT INTO job_types (id, name) VALUES (?, ?)');
+    for (const type of jobTypesData) {
+        await jobTypeStmt.run(type.id, type.name);
+    }
+    await jobTypeStmt.finalize();
+
+    const workplaceTypeStmt = await db.prepare('INSERT INTO workplace_types (id, name) VALUES (?, ?)');
+    for (const type of workplaceTypesData) {
+        await workplaceTypeStmt.run(type.id, type.name);
+    }
+    await workplaceTypeStmt.finalize();
+
+    const expLevelStmt = await db.prepare('INSERT INTO experience_levels (id, name) VALUES (?, ?)');
+    for (const level of experienceLevelsData) {
+        await expLevelStmt.run(level.id, level.name);
+    }
+    await expLevelStmt.finalize();
 
     // Users
     const userStmt = await db.prepare(
@@ -208,7 +260,7 @@ export async function getDb() {
 
     // Jobs
     const jobStmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, type, workplaceType, salary, description, postedAt, experienceLevel, domain, isReferral, recruiterId, employeeId, employeeLinkedIn, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, location, salary, description, postedAt, isReferral, recruiterId, employeeId, employeeLinkedIn, vacancies, contactEmail, contactPhone, jobTypeId, workplaceTypeId, experienceLevelId, domainId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     const jobIds: { [key: string]: string } = {};
     for (const [index, job] of jobsData.entries()) {
@@ -220,20 +272,20 @@ export async function getDb() {
         job.title,
         job.companyName,
         job.location,
-        job.type,
-        job.workplaceType,
         job.salary ?? null,
         job.description,
         postedAt,
-        job.experienceLevel,
-        job.domain,
         job.isReferral ?? false,
         job.recruiterId ?? null,
         job.employeeId ?? null,
         job.employeeLinkedIn ?? null,
         job.vacancies ?? 0,
         job.contactEmail ?? null,
-        job.contactPhone ?? null
+        job.contactPhone ?? null,
+        job.jobTypeId,
+        job.workplaceTypeId,
+        job.experienceLevelId,
+        job.domainId
       );
     }
     await jobStmt.finalize();
@@ -251,13 +303,6 @@ export async function getDb() {
       }
     }
     await appStmt.finalize();
-
-    // Domains
-    const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
-    for (const domain of domainsData) {
-      await domainStmt.run(uuidv4(), domain.name);
-    }
-    await domainStmt.finalize();
   }
 
   return db;

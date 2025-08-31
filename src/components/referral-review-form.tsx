@@ -18,17 +18,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, ThumbsUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Domain, JobType, WorkplaceType } from "@/lib/types";
+import type { Domain, JobType, WorkplaceType, ExperienceLevel } from "@/lib/types";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
   jobLocation: z.string().min(2, "Job location is required."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
-  experienceLevel: z.enum(["Entry Level", "Mid Level", "Senior Level"]),
-  jobType: z.enum(["Full-time", "Part-time", "Contract", "Internship"]),
-  workplaceType: z.enum(["On-site", "Hybrid", "Remote"]),
-  domain: z.string().min(1, "Please select a domain."),
+  experienceLevelId: z.coerce.number().min(1, "Please select an experience level."),
+  jobTypeId: z.coerce.number().min(1, "Please select a job type."),
+  workplaceTypeId: z.coerce.number().min(1, "Please select a workplace type."),
+  domainId: z.string().min(1, "Please select a domain."),
   vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
   email: z.string().email("Please enter a valid email address."),
   phoneNumber: z.string().min(10, "Please enter a valid phone number."),
@@ -42,25 +42,34 @@ export function ReferralReviewForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [domains, setDomains] = useState<Domain[]>([]);
+  const [jobTypes, setJobTypes] = useState<JobType[]>([]);
+  const [workplaceTypes, setWorkplaceTypes] = useState<WorkplaceType[]>([]);
+  const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
 
   useEffect(() => {
-    const fetchDomains = async () => {
-      try {
-        const res = await fetch('/api/domains');
-        const data = await res.json();
-        if(Array.isArray(data)) {
-          setDomains(data);
+    const fetchSelectData = async () => {
+        try {
+            const [domainsRes, jobTypesRes, workplaceTypesRes, experienceLevelsRes] = await Promise.all([
+                fetch('/api/domains'),
+                fetch('/api/job-types'),
+                fetch('/api/workplace-types'),
+                fetch('/api/experience-levels')
+            ]);
+            
+            setDomains(await domainsRes.json());
+            setJobTypes(await jobTypesRes.json());
+            setWorkplaceTypes(await workplaceTypesRes.json());
+            setExperienceLevels(await experienceLevelsRes.json());
+        } catch (error) {
+            console.error("Failed to fetch form select data", error);
+            toast({
+                title: "Error fetching form data",
+                description: "Could not load all select options. Please try again later.",
+                variant: "destructive",
+            });
         }
-      } catch (error) {
-        console.error("Failed to fetch domains", error);
-        toast({
-            title: "Error fetching domains",
-            description: "Could not load job domains. Please try again later.",
-            variant: "destructive",
-        });
-      }
-    };
-    fetchDomains();
+    }
+    fetchSelectData();
   }, [toast]);
 
 
@@ -92,10 +101,10 @@ export function ReferralReviewForm() {
           companyName: data.companyName,
           location: data.jobLocation,
           description: data.jobDescription,
-          experienceLevel: data.experienceLevel,
-          type: data.jobType,
-          workplaceType: data.workplaceType,
-          domain: data.domain,
+          experienceLevelId: data.experienceLevelId,
+          jobTypeId: data.jobTypeId,
+          workplaceTypeId: data.workplaceTypeId,
+          domainId: data.domainId,
           vacancies: data.vacancies,
           contactEmail: data.email,
           contactPhone: data.phoneNumber,
@@ -189,21 +198,18 @@ export function ReferralReviewForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <FormField
               control={form.control}
-              name="jobType"
+              name="jobTypeId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Employment Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select employment type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Full-time">Full-time</SelectItem>
-                      <SelectItem value="Part-time">Part-time</SelectItem>
-                      <SelectItem value="Contract">Contract</SelectItem>
-                      <SelectItem value="Internship">Internship</SelectItem>
+                      {jobTypes.map(jt => <SelectItem key={jt.id} value={String(jt.id)}>{jt.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -212,20 +218,18 @@ export function ReferralReviewForm() {
             />
              <FormField
               control={form.control}
-              name="workplaceType"
+              name="workplaceTypeId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Workplace Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select workplace type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="On-site">On-site</SelectItem>
-                      <SelectItem value="Hybrid">Hybrid</SelectItem>
-                      <SelectItem value="Remote">Remote</SelectItem>
+                       {workplaceTypes.map(wt => <SelectItem key={wt.id} value={String(wt.id)}>{wt.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -236,20 +240,18 @@ export function ReferralReviewForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="experienceLevel"
+              name="experienceLevelId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Experience Level</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select experience level" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Entry Level">Entry Level</SelectItem>
-                      <SelectItem value="Mid Level">Mid Level</SelectItem>
-                      <SelectItem value="Senior Level">Senior Level</SelectItem>
+                      {experienceLevels.map(el => <SelectItem key={el.id} value={String(el.id)}>{el.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -258,7 +260,7 @@ export function ReferralReviewForm() {
             />
              <FormField
               control={form.control}
-              name="domain"
+              name="domainId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Domain</FormLabel>
@@ -269,7 +271,7 @@ export function ReferralReviewForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {domains.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
+                      {domains.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
