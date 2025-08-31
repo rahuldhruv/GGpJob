@@ -111,18 +111,26 @@ const domainsData: Omit<Domain, 'id'>[] = [
 ];
 
 export async function getDb() {
-    if (!db) {
-        db = await open({
-            filename: './file.db',
-            driver: sqlite3.Database
-        });
+    if (db) {
+        await db.close();
+        db = null;
     }
+
+    db = await open({
+        filename: './file.db',
+        driver: sqlite3.Database
+    });
 
     await db.exec('PRAGMA journal_mode = WAL;');
     await db.exec('PRAGMA foreign_keys = ON;');
 
+    await db.exec('DROP TABLE IF EXISTS applications');
+    await db.exec('DROP TABLE IF EXISTS jobs');
+    await db.exec('DROP TABLE IF EXISTS users');
+    await db.exec('DROP TABLE IF EXISTS domains');
+
     await db.exec(`
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE users (
             id INTEGER PRIMARY KEY,
             firstName TEXT,
             lastName TEXT,
@@ -134,7 +142,7 @@ export async function getDb() {
             password TEXT
         );
 
-        CREATE TABLE IF NOT EXISTS jobs (
+        CREATE TABLE jobs (
             id TEXT PRIMARY KEY,
             title TEXT,
             companyName TEXT,
@@ -155,7 +163,7 @@ export async function getDb() {
             FOREIGN KEY(employeeId) REFERENCES users(id) ON DELETE SET NULL
         );
 
-        CREATE TABLE IF NOT EXISTS applications (
+        CREATE TABLE applications (
             id TEXT PRIMARY KEY,
             jobId TEXT,
             jobTitle TEXT,
@@ -167,16 +175,16 @@ export async function getDb() {
             FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
         );
 
-        CREATE TABLE IF NOT EXISTS domains (
+        CREATE TABLE domains (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL UNIQUE
         );
     `);
 
-    const userStmt = await db.prepare('INSERT INTO users (firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-    for (const user of usersData) {
+    const userStmt = await db.prepare('INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    for (const [index, user] of usersData.entries()) {
         const hashedPassword = await bcrypt.hash(user.passwordPlain, saltRounds);
-        await userStmt.run(user.firstName, user.lastName, user.name, user.email, user.role, user.headline, user.phone, hashedPassword);
+        await userStmt.run(index + 1, user.firstName, user.lastName, user.name, user.email, user.role, user.headline, user.phone, hashedPassword);
     }
     await userStmt.finalize();
 
