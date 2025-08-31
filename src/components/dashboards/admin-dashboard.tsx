@@ -99,7 +99,7 @@ export default function AdminDashboard() {
 
   const displayedUsers = useMemo(() => {
     if (user?.role === 'Admin') {
-      return users.filter(u => u.role !== 'Super Admin');
+      return users.filter(u => u.role !== 'Super Admin' && u.role !== 'Admin');
     }
     return users;
   }, [users, user]);
