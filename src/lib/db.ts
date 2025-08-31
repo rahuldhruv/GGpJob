@@ -119,13 +119,6 @@ export async function getDb() {
     }
 
     await db.exec('PRAGMA journal_mode = WAL;');
-    await db.exec('PRAGMA foreign_keys = OFF;');
-
-    await db.exec('DROP TABLE IF EXISTS users;');
-    await db.exec('DROP TABLE IF EXISTS jobs;');
-    await db.exec('DROP TABLE IF EXISTS applications;');
-    await db.exec('DROP TABLE IF EXISTS domains;');
-
     await db.exec('PRAGMA foreign_keys = ON;');
 
     await db.exec(`

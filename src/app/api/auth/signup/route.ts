@@ -30,8 +30,8 @@ export async function POST(request: Request) {
       '' // Provide a default empty headline
     );
     
-    const newUser: Partial<User> = {
-      id: result.lastID,
+    const newUser: Omit<User, 'password'> = {
+      id: result.lastID!,
       firstName,
       lastName,
       name: `${firstName} ${lastName}`,
