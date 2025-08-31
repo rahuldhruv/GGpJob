@@ -49,6 +49,7 @@ export default function AdminDashboard() {
   const [isAdminFormOpen, setIsAdminFormOpen] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -150,6 +151,25 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteJob = async () => {
+    if (!jobToDelete) return;
+    try {
+      const response = await fetch(`/api/jobs/${jobToDelete.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete job');
+      }
+      toast({ title: 'Success', description: 'Job deleted successfully.' });
+      await fetchJobs();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete job.', variant: 'destructive' });
+      console.error(error);
+    } finally {
+      setJobToDelete(null);
+    }
+  };
+
 
   if (loading) {
     return <div>Loading...</div>
@@ -203,6 +223,21 @@ export default function AdminDashboard() {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+       <AlertDialog open={!!jobToDelete} onOpenChange={(open) => !open && setJobToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the job posting for &quot;{jobToDelete?.title}&quot;.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setJobToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteJob}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -304,7 +339,23 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>{format(new Date(job.postedAt), "PPP")}</TableCell>
                       <TableCell className="text-right">
-                         <Button variant="outline" size="sm">Edit Job</Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setJobToDelete(job)} className="text-destructive">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
