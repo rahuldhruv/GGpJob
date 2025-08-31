@@ -154,8 +154,8 @@ export async function getDb() {
                 vacancies INTEGER,
                 contactEmail TEXT,
                 contactPhone TEXT,
-                FOREIGN KEY(recruiterId) REFERENCES users(id),
-                FOREIGN KEY(employeeId) REFERENCES users(id)
+                FOREIGN KEY(recruiterId) REFERENCES users(id) ON DELETE SET NULL,
+                FOREIGN KEY(employeeId) REFERENCES users(id) ON DELETE SET NULL
             );
 
             CREATE TABLE IF NOT EXISTS applications (

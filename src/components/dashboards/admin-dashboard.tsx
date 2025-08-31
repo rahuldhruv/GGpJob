@@ -17,6 +17,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -32,10 +42,21 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDomainFormOpen, setIsDomainFormOpen] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const { toast } = useToast();
 
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch users", error);
+    }
+  };
+  
   const fetchDomains = async () => {
     try {
       const res = await fetch('/api/domains');
@@ -45,20 +66,22 @@ export default function AdminDashboard() {
       console.error("Failed to fetch domains", error);
     }
   };
+  
+  const fetchJobs = async () => {
+     try {
+        const res = await fetch('/api/jobs');
+        const data = await res.json();
+        setJobs(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch jobs", error);
+      }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [jobsRes, usersRes] = await Promise.all([
-          fetch('/api/jobs'),
-          fetch('/api/users')
-        ]);
-        const jobsData = await jobsRes.json();
-        const usersData = await usersRes.json();
-        setJobs(Array.isArray(jobsData) ? jobsData : []);
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        await fetchDomains();
+        await Promise.all([fetchUsers(), fetchJobs(), fetchDomains()]);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -79,12 +102,12 @@ export default function AdminDashboard() {
   
   const handleEditDomain = (domain: Domain) => {
     setSelectedDomain(domain);
-    setIsFormOpen(true);
+    setIsDomainFormOpen(true);
   };
 
   const handleAddDomain = () => {
     setSelectedDomain(null);
-    setIsFormOpen(true);
+    setIsDomainFormOpen(true);
   };
   
   const handleDeleteDomain = async (domainId: string) => {
@@ -102,6 +125,25 @@ export default function AdminDashboard() {
       console.error(error);
     }
   };
+  
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      const response = await fetch(`/api/users/${userToDelete.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
+      }
+      toast({ title: 'Success', description: 'User deleted successfully.' });
+      await fetchUsers();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete user.', variant: 'destructive' });
+      console.error(error);
+    } finally {
+      setUserToDelete(null);
+    }
+  };
 
 
   if (loading) {
@@ -110,7 +152,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isDomainFormOpen} onOpenChange={setIsDomainFormOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{selectedDomain ? "Edit Domain" : "Add New Domain"}</DialogTitle>
@@ -121,12 +163,28 @@ export default function AdminDashboard() {
           <DomainForm
             domain={selectedDomain}
             onSuccess={() => {
-              setIsFormOpen(false);
+              setIsDomainFormOpen(false);
               fetchDomains();
             }}
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user account for {userToDelete?.name} and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Card>
         <CardHeader>
           <CardTitle>Admin Control Panel</CardTitle>
@@ -170,7 +228,23 @@ export default function AdminDashboard() {
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{getRoleBadge(user.role)}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm">Edit User</Button>
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setUserToDelete(user)} className="text-destructive">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
