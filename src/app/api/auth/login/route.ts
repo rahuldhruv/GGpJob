@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import type { User } from '@/lib/types';
+import bcrypt from 'bcrypt';
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +14,13 @@ export async function POST(request: Request) {
     const db = await getDb();
     const user: User | undefined = await db.get('SELECT * FROM users WHERE email = ? AND role = ?', email, role);
 
-    if (!user || user.password !== password) {
+    if (!user || !user.password) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+    
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 

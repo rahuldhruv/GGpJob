@@ -3,14 +3,17 @@ import sqlite3 from 'sqlite3';
 import { Database, open } from 'sqlite';
 import type { User, Job, Application, Domain } from './types';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcrypt';
+
+const saltRounds = 10;
 
 let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
-const usersData: User[] = [
-  { id: 1, firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", password: "password123" },
-  { id: 2, firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", password: "password123" },
-  { id: 3, firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", password: "password123" },
-  { id: 4, firstName: "Admin", lastName: "User", name: "Admin User", email: "admin@gmail.com", role: "Admin", phone: "444-555-6666", password: "admin123", headline: "Platform Administrator" },
+const usersData: Omit<User, 'id' | 'password'> & { passwordPlain: string }[] = [
+  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123" },
+  { firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", passwordPlain: "password123" },
+  { firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", passwordPlain: "password123" },
+  { firstName: "Admin", lastName: "User", name: "Admin User", email: "admin@gmail.com", role: "Admin", phone: "444-555-6666", passwordPlain: "admin123", headline: "Platform Administrator" },
 ];
 
 const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
@@ -169,39 +172,43 @@ export async function getDb() {
             );
         `);
 
-        const userStmt = await db.prepare('INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        for (const user of usersData) {
-            await userStmt.run(user.id, user.firstName, user.lastName, user.name, user.email, user.role, user.headline, user.phone, user.password);
-        }
-        await userStmt.finalize();
+        const userCount = await db.get('SELECT COUNT(*) as count FROM users');
+        if (userCount.count === 0) {
 
-        const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, domain, isReferral, recruiterId, employeeId, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        const jobIds: { [key: string]: string } = {};
-        for (const [index, job] of jobsData.entries()) {
-            const newId = `job-${index + 1}`;
-            jobIds[job.title] = newId;
-            const postedAt = new Date(Date.now() - (index + 1) * 2 * 24 * 60 * 60 * 1000).toISOString();
-            await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.domain, job.isReferral, job.recruiterId, job.employeeId, job.vacancies, job.contactEmail, job.contactPhone);
-        }
-        await jobStmt.finalize();
-
-        const appStmt = await db.prepare('INSERT INTO applications (id, jobId, jobTitle, companyName, userId, status, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)');
-        for (const [index, app] of applicationsData.entries()) {
-            const newId = `app-${index + 1}`;
-            const jobId = jobIds[app.jobTitle];
-            if (jobId) {
-                const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
-                await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, app.status, appliedAt);
+            const userStmt = await db.prepare('INSERT INTO users (firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            for (const user of usersData) {
+                const hashedPassword = await bcrypt.hash(user.passwordPlain, saltRounds);
+                await userStmt.run(user.firstName, user.lastName, user.name, user.email, user.role, user.headline, user.phone, hashedPassword);
             }
-        }
-        await appStmt.finalize();
+            await userStmt.finalize();
 
-        const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
-        for (const domain of domainsData) {
-            await domainStmt.run(uuidv4(), domain.name);
+            const jobStmt = await db.prepare('INSERT INTO jobs (id, title, companyName, location, type, salary, description, postedAt, experienceLevel, domain, isReferral, recruiterId, employeeId, vacancies, contactEmail, contactPhone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            const jobIds: { [key: string]: string } = {};
+            for (const [index, job] of jobsData.entries()) {
+                const newId = `job-${index + 1}`;
+                jobIds[job.title] = newId;
+                const postedAt = new Date(Date.now() - (index + 1) * 2 * 24 * 60 * 60 * 1000).toISOString();
+                await jobStmt.run(newId, job.title, job.companyName, job.location, job.type, job.salary, job.description, postedAt, job.experienceLevel, job.domain, job.isReferral, job.recruiterId, job.employeeId, job.vacancies, job.contactEmail, job.contactPhone);
+            }
+            await jobStmt.finalize();
+
+            const appStmt = await db.prepare('INSERT INTO applications (id, jobId, jobTitle, companyName, userId, status, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            for (const [index, app] of applicationsData.entries()) {
+                const newId = `app-${index + 1}`;
+                const jobId = jobIds[app.jobTitle];
+                if (jobId) {
+                    const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
+                    await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, app.status, appliedAt);
+                }
+            }
+            await appStmt.finalize();
+
+            const domainStmt = await db.prepare('INSERT INTO domains (id, name) VALUES (?, ?)');
+            for (const domain of domainsData) {
+                await domainStmt.run(uuidv4(), domain.name);
+            }
+            await domainStmt.finalize();
         }
-        await domainStmt.finalize();
-        
     }
     return db;
 }

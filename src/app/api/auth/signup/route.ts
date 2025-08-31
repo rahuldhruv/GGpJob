@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import type { User } from '@/lib/types';
+import bcrypt from 'bcrypt';
+
+const saltRounds = 10;
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +19,8 @@ export async function POST(request: Request) {
     if (existingUser) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
     }
+    
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const result = await db.run(
       'INSERT INTO users (firstName, lastName, name, email, phone, role, password, headline) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -25,7 +30,7 @@ export async function POST(request: Request) {
       email,
       phone,
       role,
-      password, // In a real app, hash this password!
+      hashedPassword,
       '' // Provide a default empty headline
     );
     
