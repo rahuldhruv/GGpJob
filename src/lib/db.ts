@@ -118,13 +118,6 @@ export async function getDb() {
         await db.exec('PRAGMA foreign_keys = ON;');
 
         await db.exec(`
-          DROP TABLE IF EXISTS applications;
-          DROP TABLE IF EXISTS jobs;
-          DROP TABLE IF EXISTS users;
-          DROP TABLE IF EXISTS domains;
-        `);
-
-        await db.exec(`
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 firstName TEXT,

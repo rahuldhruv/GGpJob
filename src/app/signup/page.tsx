@@ -79,12 +79,16 @@ export default function SignupPage() {
         throw new Error(errorData.error || "Failed to sign up");
       }
 
+      const user = await response.json();
+      localStorage.setItem('ggp-user', JSON.stringify(user));
+
       toast({
         title: "Account Created!",
-        description: "You have been successfully signed up. Please log in.",
+        description: "Welcome to GGP Portal!",
       });
 
-      router.push("/login");
+      router.push("/");
+      router.refresh();
     } catch (error: any) {
       toast({
         title: "Signup Failed",
