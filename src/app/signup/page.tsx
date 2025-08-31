@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/contexts/user-context";
 
 const formSchema = z
   .object({
@@ -52,6 +53,7 @@ type SignupFormValues = z.infer<typeof formSchema>;
 export default function SignupPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { setUser } = useUser();
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -80,7 +82,7 @@ export default function SignupPage() {
       }
 
       const user = await response.json();
-      localStorage.setItem('ggp-user', JSON.stringify(user));
+      setUser(user);
 
       toast({
         title: "Account Created!",
@@ -88,7 +90,6 @@ export default function SignupPage() {
       });
 
       router.push("/");
-      router.refresh();
     } catch (error: any) {
       toast({
         title: "Signup Failed",

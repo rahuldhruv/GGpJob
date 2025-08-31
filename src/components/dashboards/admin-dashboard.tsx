@@ -37,12 +37,10 @@ import {
 import { DomainForm } from "../domain-form";
 import { AdminCreationForm } from "../admin-creation-form";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/user-context";
 
-interface AdminDashboardProps {
-  user: User;
-}
-
-export default function AdminDashboard({ user }: AdminDashboardProps) {
+export default function AdminDashboard() {
+  const { user } = useUser();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
@@ -231,7 +229,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="users">
-              {user.role === 'Super Admin' && (
+              {user?.role === 'Super Admin' && (
                 <div className="flex justify-end mb-4">
                   <Button onClick={() => setIsAdminFormOpen(true)}>
                     <ShieldCheck className="mr-2 h-4 w-4" />
@@ -262,7 +260,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                       <TableCell className="text-right">
                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" disabled={u.id === user.id}>
+                            <Button variant="ghost" size="icon" disabled={u.id === user?.id}>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>

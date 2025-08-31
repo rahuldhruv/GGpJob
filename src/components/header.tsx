@@ -20,25 +20,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { useEffect, useState } from "react";
-import type { User as UserType } from "@/lib/types";
+import { useUser } from "@/contexts/user-context";
 
 export default function Header() {
-  const [user, setUser] = useState<UserType | null>(null);
+  const { user, setUser } = useUser();
   const router = useRouter();
-  
-  useEffect(() => {
-    const storedUser = localStorage.getItem('ggp-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('ggp-user');
     setUser(null);
     router.push('/login');
-    router.refresh();
   };
   
   const getInitials = (firstName: string, lastName: string) => {

@@ -31,8 +31,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import type { Role } from "@/lib/types";
+import { useUser } from "@/contexts/user-context";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -47,7 +46,7 @@ type LoginFormValues = z.infer<typeof formSchema>;
 export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<Role | "">("");
+  const { setUser } = useUser();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
@@ -73,7 +72,7 @@ export default function LoginPage() {
       }
       
       const { user } = await response.json();
-      localStorage.setItem('ggp-user', JSON.stringify(user));
+      setUser(user);
 
       toast({
         title: "Login Successful!",
@@ -81,7 +80,6 @@ export default function LoginPage() {
       });
 
       router.push("/");
-      router.refresh();
     } catch (error: any) {
       toast({
         title: "Login Failed",

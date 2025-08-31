@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useUser } from '@/contexts/user-context';
 import { useRouter } from 'next/navigation';
-import type { User as UserType } from '@/lib/types';
 import JobSeekerDashboard from "@/components/dashboards/job-seeker-dashboard";
 import RecruiterDashboard from "@/components/dashboards/recruiter-dashboard";
 import EmployeeDashboard from "@/components/dashboards/employee-dashboard";
@@ -12,17 +11,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function Home() {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useUser();
   const router = useRouter();
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('ggp-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
 
   if (loading) {
     return (
@@ -60,7 +50,7 @@ export default function Home() {
         return <EmployeeDashboard />;
       case "Admin":
       case "Super Admin":
-        return <AdminDashboard user={user} />;
+        return <AdminDashboard />;
       default:
          router.push('/login');
          return null;
