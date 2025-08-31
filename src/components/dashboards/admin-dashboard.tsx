@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Job, User, Domain } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -95,6 +96,13 @@ export default function AdminDashboard() {
     };
     fetchData();
   }, []);
+
+  const displayedUsers = useMemo(() => {
+    if (user?.role === 'Admin') {
+      return users.filter(u => u.role !== 'Super Admin');
+    }
+    return users;
+  }, [users, user]);
 
   const getRoleBadge = (role: User['role']) => {
     switch (role) {
@@ -282,7 +290,7 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((u) => (
+                  {displayedUsers.map((u) => (
                     <TableRow key={u.id}>
                       <TableCell className="font-medium flex items-center gap-3">
                         <Avatar className="h-8 w-8">
