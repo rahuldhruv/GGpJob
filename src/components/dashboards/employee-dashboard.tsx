@@ -14,15 +14,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ReferralReviewForm } from "../referral-review-form";
+import Link from "next/link";
+
 
 export default function EmployeeDashboard() {
   const [referralJobs, setReferralJobs] = useState<Job[]>([]);
@@ -55,23 +48,12 @@ export default function EmployeeDashboard() {
           <CardTitle>My Referrals</CardTitle>
           <CardDescription>Refer candidates and earn bonuses.</CardDescription>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Post a Referral
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[625px]">
-            <DialogHeader>
-              <DialogTitle>Post a Referral Job</DialogTitle>
-              <DialogDescription>
-                Fill out the details for the job you want to refer.
-              </DialogDescription>
-            </DialogHeader>
-            <ReferralReviewForm />
-          </DialogContent>
-        </Dialog>
+         <Button asChild>
+          <Link href="/referrals/post">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Post a Referral
+          </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>

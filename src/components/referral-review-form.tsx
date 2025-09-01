@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -40,6 +41,7 @@ type ReferralFormValues = z.infer<typeof formSchema>;
 
 export function ReferralReviewForm() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
@@ -125,7 +127,7 @@ export function ReferralReviewForm() {
         title: "Referral Submitted!",
         description: "Your referral job post has been successfully submitted.",
       });
-      form.reset();
+      router.push('/');
     } catch (error: any) {
        toast({
         title: "Error",
