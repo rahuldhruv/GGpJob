@@ -39,11 +39,11 @@ const formSchema = z.object({
 
 type ReferralFormValues = z.infer<typeof formSchema>;
 
-interface ReferralReviewFormProps {
+interface ReferralFormProps {
   job?: Job | null;
 }
 
-export function ReferralReviewForm({ job }: ReferralReviewFormProps) {
+export function ReferralForm({ job }: ReferralFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -302,7 +302,7 @@ export function ReferralReviewForm({ job }: ReferralReviewFormProps) {
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a domain" />
-                      </SelectTrigger>
+                      </T rigge r>
                     </FormControl>
                     <SelectContent>
                       {domains.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import type { Job } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ReferralReviewForm } from "@/components/referral-review-form";
+import { ReferralForm } from "@/components/referral-form";
 import { notFound } from "next/navigation";
 
 async function getJobData(id: string): Promise<Job | null> {
@@ -65,7 +65,7 @@ export default function EditReferralPage({ params }: { params: { id: string } })
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ReferralReviewForm job={job} />
+                        <ReferralForm job={job} />
                     </CardContent>
                 </Card>
             </div>

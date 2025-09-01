@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ReferralReviewForm } from "@/components/referral-review-form";
+import { ReferralForm } from "@/components/referral-form";
 
 export default function PostReferralPage() {
     return (
@@ -15,7 +15,7 @@ export default function PostReferralPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ReferralReviewForm />
+                        <ReferralForm />
                     </CardContent>
                 </Card>
             </div>
