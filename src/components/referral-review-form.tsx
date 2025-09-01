@@ -17,9 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, ThumbsUp } from "lucide-react";
+import { LoaderCircle, ThumbsUp, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Domain, JobType, WorkplaceType, ExperienceLevel } from "@/lib/types";
+import type { Domain, JobType, WorkplaceType, ExperienceLevel, Job } from "@/lib/types";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
@@ -39,7 +39,11 @@ const formSchema = z.object({
 
 type ReferralFormValues = z.infer<typeof formSchema>;
 
-export function ReferralReviewForm() {
+interface ReferralReviewFormProps {
+  job?: Job | null;
+}
+
+export function ReferralReviewForm({ job }: ReferralReviewFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,64 +78,92 @@ export function ReferralReviewForm() {
     fetchSelectData();
   }, [toast]);
 
-
   const form = useForm<ReferralFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      companyName: "",
-      jobTitle: "",
-      jobLocation: "",
-      jobDescription: "",
-      vacancies: 1,
-      email: "",
-      phoneNumber: "",
-      employeeLinkedIn: "",
-      salary: "",
+      companyName: job?.companyName || "",
+      jobTitle: job?.title || "",
+      jobLocation: job?.location || "",
+      jobDescription: job?.description || "",
+      vacancies: job?.vacancies || 1,
+      email: job?.contactEmail || "",
+      phoneNumber: job?.contactPhone || "",
+      employeeLinkedIn: job?.employeeLinkedIn || "",
+      salary: job?.salary || "",
+      jobTypeId: job?.jobTypeId,
+      workplaceTypeId: job?.workplaceTypeId,
+      experienceLevelId: job?.experienceLevelId,
+      domainId: job?.domainId,
     },
   });
+
+  useEffect(() => {
+    if (job) {
+      form.reset({
+        companyName: job.companyName || "",
+        jobTitle: job.title || "",
+        jobLocation: job.location || "",
+        jobDescription: job.description || "",
+        vacancies: job.vacancies || 1,
+        email: job.contactEmail || "",
+        phoneNumber: job.contactPhone || "",
+        employeeLinkedIn: job.employeeLinkedIn || "",
+        salary: job.salary || "",
+        jobTypeId: job.jobTypeId,
+        workplaceTypeId: job.workplaceTypeId,
+        experienceLevelId: job.experienceLevelId,
+        domainId: job.domainId,
+      });
+    }
+  }, [job, form]);
 
   const onSubmit = async (data: ReferralFormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
+      const url = job ? `/api/jobs/${job.id}` : '/api/jobs';
+      const method = job ? 'PUT' : 'POST';
+      
+      const payload = {
+        title: data.jobTitle,
+        companyName: data.companyName,
+        location: data.jobLocation,
+        description: data.jobDescription,
+        experienceLevelId: data.experienceLevelId,
+        jobTypeId: data.jobTypeId,
+        workplaceTypeId: data.workplaceTypeId,
+        domainId: data.domainId,
+        vacancies: data.vacancies,
+        contactEmail: data.email,
+        contactPhone: data.phoneNumber,
+        employeeLinkedIn: data.employeeLinkedIn,
+        salary: data.salary,
+        isReferral: true,
+        employeeId: 3, // Hardcoded for now
+        postedAt: job?.postedAt || new Date().toISOString(),
+      };
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: data.jobTitle,
-          companyName: data.companyName,
-          location: data.jobLocation,
-          description: data.jobDescription,
-          experienceLevelId: data.experienceLevelId,
-          jobTypeId: data.jobTypeId,
-          workplaceTypeId: data.workplaceTypeId,
-          domainId: data.domainId,
-          vacancies: data.vacancies,
-          contactEmail: data.email,
-          contactPhone: data.phoneNumber,
-          employeeLinkedIn: data.employeeLinkedIn,
-          salary: data.salary,
-          isReferral: true,
-          employeeId: 3, // Hardcoded for now
-          postedAt: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit referral');
+        throw new Error(errorData.error || `Failed to ${job ? 'update' : 'submit'} referral`);
       }
 
       toast({
-        title: "Referral Submitted!",
-        description: "Your referral job post has been successfully submitted.",
+        title: `Referral ${job ? 'Updated' : 'Submitted'}!`,
+        description: `Your referral job post has been successfully ${job ? 'updated' : 'submitted'}.`,
       });
       router.push('/');
     } catch (error: any) {
        toast({
         title: "Error",
-        description: error.message || "There was an error submitting your referral. Please try again.",
+        description: error.message || `There was an error ${job ? 'updating' : 'submitting'} your referral. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -204,7 +236,7 @@ export function ReferralReviewForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Employment Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                  <Select onValueChange={field.onChange} value={String(field.value || '')}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select employment type" />
@@ -224,7 +256,7 @@ export function ReferralReviewForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Workplace Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                  <Select onValueChange={field.onChange} value={String(field.value || '')}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select workplace type" />
@@ -246,7 +278,7 @@ export function ReferralReviewForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Experience Level</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                  <Select onValueChange={field.onChange} value={String(field.value || '')}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select experience level" />
@@ -266,7 +298,7 @@ export function ReferralReviewForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Domain</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a domain" />
@@ -352,8 +384,8 @@ export function ReferralReviewForm() {
             />
           <div className="flex justify-end pt-4">
              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <LoaderCircle className="animate-spin mr-2"/> : <ThumbsUp className="mr-2"/>}
-                Submit Referral
+                {isSubmitting ? <LoaderCircle className="animate-spin mr-2"/> : (job ? <Save className="mr-2" /> : <ThumbsUp className="mr-2" />)}
+                {job ? "Save Changes" : "Submit Referral"}
             </Button>
           </div>
         </form>

@@ -14,34 +14,84 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 
 export default function EmployeeDashboard() {
   const [referralJobs, setReferralJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+  const { toast } = useToast();
+
+  const fetchJobs = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/jobs?isReferral=true&employeeId=3');
+      const data = await res.json();
+      setReferralJobs(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch referral jobs", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch('/api/jobs?isReferral=true&employeeId=3');
-        const data = await res.json();
-        setReferralJobs(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Failed to fetch referral jobs", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchJobs();
   }, []);
+
+  const handleDeleteJob = async () => {
+    if (!jobToDelete) return;
+    try {
+      const response = await fetch(`/api/jobs/${jobToDelete.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete job');
+      }
+      toast({ title: 'Success', description: 'Job deleted successfully.' });
+      await fetchJobs();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete job.', variant: 'destructive' });
+      console.error(error);
+    } finally {
+      setJobToDelete(null);
+    }
+  };
+
 
   if (loading) {
     return <div>Loading...</div>
   }
 
   return (
+    <>
+    <AlertDialog open={!!jobToDelete} onOpenChange={(open) => !open && setJobToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the job posting for &quot;{jobToDelete?.title}&quot;.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setJobToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteJob}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
@@ -85,11 +135,13 @@ export default function EmployeeDashboard() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                      <DropdownMenuItem asChild>
+                         <Link href={`/referrals/edit/${job.id}`}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem onClick={() => setJobToDelete(job)} className="text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
@@ -102,5 +154,6 @@ export default function EmployeeDashboard() {
         </Table>
       </CardContent>
     </Card>
+    </>
   );
 }
