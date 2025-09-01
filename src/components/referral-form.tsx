@@ -384,7 +384,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
             />
           <div className="flex justify-end pt-4">
              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <LoaderCircle className="animate-spin mr-2"/> : (job ? <Save className="mr-2" /> : <ThumbsUp className="mr-2" />)}
+                {isSubmitting ? <LoaderCircle className="animate-spin mr-2 h-4 w-4"/> : (job ? <Save className="mr-2 h-4 w-4" /> : <ThumbsUp className="mr-2 h-4 w-4" />)}
                 {job ? "Save Changes" : "Submit Referral"}
             </Button>
           </div>

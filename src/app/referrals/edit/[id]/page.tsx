@@ -38,7 +38,9 @@ export default function EditReferralPage({ params }: { params: { id: string } })
                 setLoading(false);
             }
         };
-        loadJob();
+        if (params.id) {
+            loadJob();
+        }
     }, [params.id]);
 
 
