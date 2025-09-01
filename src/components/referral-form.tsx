@@ -302,7 +302,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a domain" />
-                      </T rigge r>
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {domains.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
