@@ -19,14 +19,14 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Senior Frontend Engineer",
     companyName: "Innovate Inc.",
-    locationId: 4, // San Francisco, CA -> Now an ID. Let's assume Mumbai is a stand-in for now
-    jobTypeId: 1, // Full-time
-    workplaceTypeId: 2, // Hybrid
+    locationId: 4, 
+    jobTypeId: 1, 
+    workplaceTypeId: 2, 
     salary: "$150,000 - $180,000",
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
     recruiterId: 2,
-    experienceLevelId: 3, // Senior Level
-    domainId: '1', // Software Engineering
+    experienceLevelId: 3,
+    domainId: '1', 
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -34,13 +34,13 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Product Manager",
     companyName: "Creative Solutions",
-    locationId: 2, // New York, NY -> Now an ID. Let's assume Delhi
-    jobTypeId: 1, // Full-time
-    workplaceTypeId: 1, // On-site
+    locationId: 2,
+    jobTypeId: 1, 
+    workplaceTypeId: 1,
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
     recruiterId: 2,
-    experienceLevelId: 2, // Mid Level
-    domainId: '2', // Product Management
+    experienceLevelId: 2, 
+    domainId: '2',
     vacancies: 1,
     contactEmail: "recruiter@creative.com",
     contactPhone: "123-456-7890",
@@ -48,16 +48,16 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Data Scientist (Referral)",
     companyName: "Data Insights Co.",
-    locationId: 1, // Remote
-    jobTypeId: 1, // Full-time
-    workplaceTypeId: 3, // Remote
+    locationId: 1, 
+    jobTypeId: 1, 
+    workplaceTypeId: 3, 
     salary: "$130,000 - $160,000",
     description: "Join our data science team and work on challenging problems in machine learning and data analysis.",
     isReferral: true,
     employeeId: 3,
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
-    experienceLevelId: 2, // Mid Level
-    domainId: '3', // Data Science
+    experienceLevelId: 2, 
+    domainId: '3',
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -65,13 +65,13 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "UX/UI Designer",
     companyName: "Innovate Inc.",
-    locationId: 4, // Mumbai
-    jobTypeId: 3, // Contract
-    workplaceTypeId: 1, // On-site
+    locationId: 4, 
+    jobTypeId: 3, 
+    workplaceTypeId: 1, 
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
     recruiterId: 2,
-    experienceLevelId: 1, // Entry Level
-    domainId: '4', // Design
+    experienceLevelId: 1, 
+    domainId: '4',
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -79,24 +79,24 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Backend Developer (Referral)",
     companyName: "Data Insights Co.",
-    locationId: 5, // Austin, TX -> Bengaluru
-    jobTypeId: 1, // Full-time
-    workplaceTypeId: 2, // Hybrid
+    locationId: 5, 
+    jobTypeId: 1,
+    workplaceTypeId: 2, 
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
     isReferral: true,
     employeeId: 3,
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
-    experienceLevelId: 3, // Senior Level
-    domainId: '1', // Software Engineering
+    experienceLevelId: 3,
+    domainId: '1',
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
   },
 ];
 
-const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId'>[] = [
-  { jobTitle: "Senior Frontend Engineer", companyName: "Innovate Inc.", userId: 1, status: "In Review" },
-  { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, status: "Applied" },
+const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId' | 'statusId'>[] = [
+  { jobTitle: "Senior Frontend Engineer", companyName: "Innovate Inc.", userId: 1, statusName: "In Review" },
+  { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, statusName: "Applied" },
 ];
 
 const domainsData: { id: string, name: string }[] = [
@@ -129,6 +129,18 @@ const locationsData = [
     { id: 14, name: 'Lucknow, India' },
     { id: 15, name: 'Kochi, India' },
 ];
+const applicationStatusesData = [
+  { id: 1, name: 'Applied' },
+  { id: 2, name: 'Profile Viewed' },
+  { id: 3, name: 'Not Suitable' },
+  { id: 4, name: 'Selected' },
+  // Adding back old statuses for seeding continuity
+  { id: 5, name: 'In Review' },
+  { id: 6, name: 'Interview' },
+  { id: 7, name: 'Offered' },
+  { id: 8, name: 'Rejected' },
+];
+
 
 export async function getDb() {
   if (db) return db;
@@ -149,6 +161,7 @@ export async function getDb() {
   await db.exec('DROP TABLE IF EXISTS workplace_types');
   await db.exec('DROP TABLE IF EXISTS experience_levels');
   await db.exec('DROP TABLE IF EXISTS locations');
+  await db.exec('DROP TABLE IF EXISTS application_statuses');
 
 
   // Create tables if not exist
@@ -192,6 +205,11 @@ export async function getDb() {
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL UNIQUE
     );
+    
+    CREATE TABLE IF NOT EXISTS application_statuses (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE
+    );
 
     CREATE TABLE IF NOT EXISTS jobs (
       id TEXT PRIMARY KEY,
@@ -227,10 +245,11 @@ export async function getDb() {
       jobTitle TEXT,
       companyName TEXT,
       userId INTEGER,
-      status TEXT,
+      statusId INTEGER,
       appliedAt TEXT,
       FOREIGN KEY(jobId) REFERENCES jobs(id) ON DELETE CASCADE,
-      FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+      FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY(statusId) REFERENCES application_statuses(id) ON DELETE SET NULL
     );
   `);
 
@@ -269,6 +288,12 @@ export async function getDb() {
         await locationStmt.run(loc.id, loc.name);
     }
     await locationStmt.finalize();
+
+    const appStatusStmt = await db.prepare('INSERT INTO application_statuses (id, name) VALUES (?, ?)');
+    for (const status of applicationStatusesData) {
+        await appStatusStmt.run(status.id, status.name);
+    }
+    await appStatusStmt.finalize();
 
     // Users
     const userStmt = await db.prepare(
@@ -324,15 +349,21 @@ export async function getDb() {
     await jobStmt.finalize();
 
     // Applications
+    const statusNameToId = applicationStatusesData.reduce((acc, status) => {
+        acc[status.name] = status.id;
+        return acc;
+    }, {} as Record<string, number>);
+
     const appStmt = await db.prepare(
-      'INSERT INTO applications (id, jobId, jobTitle, companyName, userId, status, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO applications (id, jobId, jobTitle, companyName, userId, statusId, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
     for (const [index, app] of applicationsData.entries()) {
       const newId = `app-${index + 1}`;
       const jobId = jobIds[app.jobTitle];
-      if (jobId) {
+      const statusId = statusNameToId[app.statusName as string];
+      if (jobId && statusId) {
         const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
-        await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, app.status, appliedAt);
+        await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, statusId, appliedAt);
       }
     }
     await appStmt.finalize();
@@ -340,5 +371,3 @@ export async function getDb() {
 
   return db;
 }
-
-    

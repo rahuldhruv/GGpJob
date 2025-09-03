@@ -8,10 +8,18 @@ export async function GET(request: Request) {
     const userId = searchParams.get('userId');
     
     let applications;
+    const baseQuery = `
+        SELECT 
+            a.*,
+            s.name as statusName
+        FROM applications a
+        LEFT JOIN application_statuses s ON a.statusId = s.id
+    `;
+
     if (userId) {
-      applications = await db.all('SELECT * FROM applications WHERE userId = ? ORDER BY appliedAt DESC', Number(userId));
+      applications = await db.all(`${baseQuery} WHERE a.userId = ? ORDER BY a.appliedAt DESC`, Number(userId));
     } else {
-      applications = await db.all('SELECT * FROM applications ORDER BY appliedAt DESC');
+      applications = await db.all(`${baseQuery} ORDER BY a.appliedAt DESC`);
     }
       
     return NextResponse.json(applications);

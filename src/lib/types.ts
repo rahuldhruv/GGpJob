@@ -63,19 +63,24 @@ export interface Job {
   domain?: string;
 }
 
+export interface ApplicationStatus {
+  id: number;
+  name: "Applied" | "Profile Viewed" | "Not Suitable" | "Selected" | "In Review" | "Interview" | "Offered" | "Rejected";
+}
+
 export interface Application {
   id: string;
   jobId: string;
   jobTitle: string;
   companyName: string;
   userId: number;
-  status: "Applied" | "In Review" | "Interview" | "Offered" | "Rejected";
+  statusId: number;
   appliedAt: Date | string;
+  // Joined fields
+  statusName?: ApplicationStatus['name'];
 }
 
 export interface Domain {
   id: string;
   name: string;
 }
-
-    

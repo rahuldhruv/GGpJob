@@ -48,12 +48,18 @@ export default function ApplicationsPage() {
         }
     }, [user]);
 
-    const getStatusBadge = (status: Application['status']) => {
+    const getStatusBadge = (status: Application['statusName']) => {
         switch (status) {
-            case 'In Review': return <Badge variant="secondary">In Review</Badge>;
-            case 'Interview': return <Badge className="bg-blue-100 text-blue-800">Interview</Badge>;
+            case 'In Review': 
+            case 'Profile Viewed':
+                return <Badge variant="secondary">In Review</Badge>;
+            case 'Interview': 
+            case 'Selected':
+                return <Badge className="bg-blue-100 text-blue-800">Interview</Badge>;
             case 'Offered': return <Badge className="bg-green-100 text-green-800">Offered</Badge>;
-            case 'Rejected': return <Badge variant="destructive">Rejected</Badge>;
+            case 'Rejected':
+            case 'Not Suitable': 
+                return <Badge variant="destructive">Rejected</Badge>;
             default: return <Badge variant="outline">Applied</Badge>;
         }
     };
@@ -91,7 +97,7 @@ export default function ApplicationsPage() {
                                         <TableCell className="font-medium">{app.jobTitle}</TableCell>
                                         <TableCell>{app.companyName}</TableCell>
                                         <TableCell>{format(new Date(app.appliedAt), 'PPP')}</TableCell>
-                                        <TableCell>{getStatusBadge(app.status)}</TableCell>
+                                        <TableCell>{getStatusBadge(app.statusName)}</TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="sm">
                                                 View Application <ArrowRight className="ml-2 h-4 w-4" />
