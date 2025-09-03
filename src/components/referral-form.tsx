@@ -19,12 +19,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, ThumbsUp, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Domain, JobType, WorkplaceType, ExperienceLevel, Job } from "@/lib/types";
+import type { Domain, JobType, WorkplaceType, ExperienceLevel, Job, Location } from "@/lib/types";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
-  jobLocation: z.string().min(2, "Job location is required."),
+  locationId: z.coerce.number().min(1, "Job location is required."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
   experienceLevelId: z.coerce.number().min(1, "Please select an experience level."),
   jobTypeId: z.coerce.number().min(1, "Please select a job type."),
@@ -51,21 +51,24 @@ export function ReferralForm({ job }: ReferralFormProps) {
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
   const [workplaceTypes, setWorkplaceTypes] = useState<WorkplaceType[]>([]);
   const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
 
   useEffect(() => {
     const fetchSelectData = async () => {
         try {
-            const [domainsRes, jobTypesRes, workplaceTypesRes, experienceLevelsRes] = await Promise.all([
+            const [domainsRes, jobTypesRes, workplaceTypesRes, experienceLevelsRes, locationsRes] = await Promise.all([
                 fetch('/api/domains'),
                 fetch('/api/job-types'),
                 fetch('/api/workplace-types'),
-                fetch('/api/experience-levels')
+                fetch('/api/experience-levels'),
+                fetch('/api/locations')
             ]);
             
             setDomains(await domainsRes.json());
             setJobTypes(await jobTypesRes.json());
             setWorkplaceTypes(await workplaceTypesRes.json());
             setExperienceLevels(await experienceLevelsRes.json());
+            setLocations(await locationsRes.json());
         } catch (error) {
             console.error("Failed to fetch form select data", error);
             toast({
@@ -83,7 +86,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
     defaultValues: {
       companyName: job?.companyName || "",
       jobTitle: job?.title || "",
-      jobLocation: job?.location || "",
+      locationId: job?.locationId,
       jobDescription: job?.description || "",
       vacancies: job?.vacancies || 1,
       email: job?.contactEmail || "",
@@ -102,7 +105,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
       form.reset({
         companyName: job.companyName || "",
         jobTitle: job.title || "",
-        jobLocation: job.location || "",
+        locationId: job.locationId,
         jobDescription: job.description || "",
         vacancies: job.vacancies || 1,
         email: job.contactEmail || "",
@@ -126,7 +129,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
       const payload = {
         title: data.jobTitle,
         companyName: data.companyName,
-        location: data.jobLocation,
+        locationId: data.locationId,
         description: data.jobDescription,
         experienceLevelId: data.experienceLevelId,
         jobTypeId: data.jobTypeId,
@@ -205,13 +208,20 @@ export function ReferralForm({ job }: ReferralFormProps) {
           </div>
            <FormField
               control={form.control}
-              name="jobLocation"
+              name="locationId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Job Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. San Francisco, CA" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select job location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -393,3 +403,5 @@ export function ReferralForm({ job }: ReferralFormProps) {
     </div>
   );
 }
+
+    

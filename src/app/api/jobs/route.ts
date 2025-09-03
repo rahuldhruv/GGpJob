@@ -24,12 +24,14 @@ export async function GET(request: Request) {
         jt.name as type,
         wt.name as workplaceType,
         el.name as experienceLevel,
-        d.name as domain
+        d.name as domain,
+        l.name as location
       FROM jobs j
       LEFT JOIN job_types jt ON j.jobTypeId = jt.id
       LEFT JOIN workplace_types wt ON j.workplaceTypeId = wt.id
       LEFT JOIN experience_levels el ON j.experienceLevelId = el.id
       LEFT JOIN domains d ON j.domainId = d.id
+      LEFT JOIN locations l ON j.locationId = l.id
     `;
     const conditions = [];
     const params: (string | number | boolean)[] = [];
@@ -62,7 +64,7 @@ export async function GET(request: Request) {
         }
     }
     if (location && location !== 'all') {
-        conditions.push('j.location = ?');
+        conditions.push('l.id = ?');
         params.push(location);
     }
     if (experience && experience !== 'all') {
@@ -105,14 +107,14 @@ export async function POST(request: Request) {
     };
     
     const stmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, jobTypeId, workplaceTypeId, experienceLevelId, domainId, employeeLinkedIn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, locationId, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, jobTypeId, workplaceTypeId, experienceLevelId, domainId, employeeLinkedIn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     await stmt.run(
         newJob.id,
         newJob.title,
         newJob.companyName,
-        newJob.location,
+        newJob.locationId,
         newJob.description,
         newJob.vacancies,
         newJob.contactEmail,
@@ -135,3 +137,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
   }
 }
+
+    

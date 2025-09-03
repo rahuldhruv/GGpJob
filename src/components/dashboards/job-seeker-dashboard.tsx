@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Job, Domain, ExperienceLevel } from "@/lib/types";
+import type { Job, Domain, ExperienceLevel, Location } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import JobCard from "../job-card";
 import { Button } from "../ui/button";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function JobSeekerDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [allLocations, setAllLocations] = useState<string[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,32 +48,27 @@ export default function JobSeekerDashboard() {
       setLoading(false);
     }
   }, [filters]);
+  
+  const fetchFilterData = async () => {
+     const [locationsRes, domainsRes, experienceLevelsRes] = await Promise.all([
+        fetch('/api/locations'),
+        fetch('/api/domains'),
+        fetch('/api/experience-levels'),
+    ]);
+    setLocations(await locationsRes.json());
+    setDomains(await domainsRes.json());
+    setExperienceLevels(await experienceLevelsRes.json());
+  }
 
   useEffect(() => {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const [jobsRes, domainsRes, experienceLevelsRes] = await Promise.all([
-          fetch('/api/jobs'),
-          fetch('/api/domains'),
-          fetch('/api/experience-levels'),
-        ]);
-        const jobsData = await jobsRes.json();
-        const domainsData = await domainsRes.json();
-        const experienceLevelsData = await experienceLevelsRes.json();
-        
-        if (Array.isArray(jobsData)) {
-          const uniqueLocations = Array.from(new Set(jobsData.map((j: Job) => j.location).filter(Boolean)));
-          setAllLocations(uniqueLocations as string[]);
-        }
-
+        await fetchFilterData();
         const initialJobsUrl = `/api/jobs?limit=3`;
         const initialJobsRes = await fetch(initialJobsUrl);
         const initialJobsData = await initialJobsRes.json();
-        
         setJobs(Array.isArray(initialJobsData) ? initialJobsData : []);
-        setDomains(Array.isArray(domainsData) ? domainsData : []);
-        setExperienceLevels(Array.isArray(experienceLevelsData) ? experienceLevelsData : []);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -163,7 +158,7 @@ export default function JobSeekerDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
-                  {allLocations.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
+                  {locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filters.experience} onValueChange={(value) => handleFilterChange('experience', value)}>
@@ -207,3 +202,5 @@ export default function JobSeekerDashboard() {
     </div>
   );
 }
+
+    

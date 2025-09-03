@@ -9,7 +9,7 @@ const saltRounds = 10;
 let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
 const usersData: Omit<User, 'id' | 'password'> & { passwordPlain: string }[] = [
-  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123", location: "San Francisco, CA" },
+  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123", locationId: 4 },
   { firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", passwordPlain: "password123" },
   { firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", passwordPlain: "password123" },
   { firstName: "Super", lastName: "Admin", name: "Super Admin", email: "admin@gmail.com", role: "Super Admin", phone: "444-555-6666", passwordPlain: "admin123", headline: "Platform Administrator" },
@@ -19,7 +19,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Senior Frontend Engineer",
     companyName: "Innovate Inc.",
-    location: "San Francisco, CA",
+    locationId: 4, // San Francisco, CA -> Now an ID. Let's assume Mumbai is a stand-in for now
     jobTypeId: 1, // Full-time
     workplaceTypeId: 2, // Hybrid
     salary: "$150,000 - $180,000",
@@ -34,7 +34,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Product Manager",
     companyName: "Creative Solutions",
-    location: "New York, NY",
+    locationId: 2, // New York, NY -> Now an ID. Let's assume Delhi
     jobTypeId: 1, // Full-time
     workplaceTypeId: 1, // On-site
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
@@ -48,7 +48,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Data Scientist (Referral)",
     companyName: "Data Insights Co.",
-    location: "Remote",
+    locationId: 1, // Remote
     jobTypeId: 1, // Full-time
     workplaceTypeId: 3, // Remote
     salary: "$130,000 - $160,000",
@@ -65,7 +65,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "UX/UI Designer",
     companyName: "Innovate Inc.",
-    location: "San Francisco, CA",
+    locationId: 4, // Mumbai
     jobTypeId: 3, // Contract
     workplaceTypeId: 1, // On-site
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
@@ -79,7 +79,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   {
     title: "Backend Developer (Referral)",
     companyName: "Data Insights Co.",
-    location: "Austin, TX",
+    locationId: 5, // Austin, TX -> Bengaluru
     jobTypeId: 1, // Full-time
     workplaceTypeId: 2, // Hybrid
     description: "Experienced with Node.js and GraphQL? Join our growing backend team and build scalable services.",
@@ -112,7 +112,23 @@ const domainsData: { id: string, name: string }[] = [
 const jobTypesData = [ {id: 1, name: "Full-time"}, {id: 2, name: "Part-time"}, {id: 3, name: "Contract"}, {id: 4, name: "Internship"} ];
 const workplaceTypesData = [ {id: 1, name: "On-site"}, {id: 2, name: "Hybrid"}, {id: 3, name: "Remote"} ];
 const experienceLevelsData = [ {id: 1, name: "Entry Level"}, {id: 2, name: "Mid Level"}, {id: 3, name: "Senior Level"} ];
-
+const locationsData = [
+    { id: 1, name: 'Remote' },
+    { id: 2, name: 'Delhi, India' },
+    { id: 3, name: 'Gurgaon, India' },
+    { id: 4, name: 'Mumbai, India' },
+    { id: 5, name: 'Bengaluru, India' },
+    { id: 6, name: 'Hyderabad, India' },
+    { id: 7, name: 'Chennai, India' },
+    { id: 8, name: 'Pune, India' },
+    { id: 9, name: 'Kolkata, India' },
+    { id: 10, name: 'Ahmedabad, India' },
+    { id: 11, name: 'Jaipur, India' },
+    { id: 12, name: 'Noida, India' },
+    { id: 13, name: 'Chandigarh, India' },
+    { id: 14, name: 'Lucknow, India' },
+    { id: 15, name: 'Kochi, India' },
+];
 
 export async function getDb() {
   if (db) return db;
@@ -132,6 +148,7 @@ export async function getDb() {
   await db.exec('DROP TABLE IF EXISTS job_types');
   await db.exec('DROP TABLE IF EXISTS workplace_types');
   await db.exec('DROP TABLE IF EXISTS experience_levels');
+  await db.exec('DROP TABLE IF EXISTS locations');
 
 
   // Create tables if not exist
@@ -146,8 +163,9 @@ export async function getDb() {
       role TEXT,
       headline TEXT,
       password TEXT,
-      location TEXT,
-      resume TEXT
+      locationId INTEGER,
+      resume TEXT,
+      FOREIGN KEY(locationId) REFERENCES locations(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS domains (
@@ -170,11 +188,16 @@ export async function getDb() {
         name TEXT NOT NULL UNIQUE
     );
 
+    CREATE TABLE IF NOT EXISTS locations (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE
+    );
+
     CREATE TABLE IF NOT EXISTS jobs (
       id TEXT PRIMARY KEY,
       title TEXT,
       companyName TEXT,
-      location TEXT,
+      locationId INTEGER,
       salary TEXT,
       description TEXT,
       postedAt TEXT,
@@ -194,7 +217,8 @@ export async function getDb() {
       FOREIGN KEY(jobTypeId) REFERENCES job_types(id) ON DELETE SET NULL,
       FOREIGN KEY(workplaceTypeId) REFERENCES workplace_types(id) ON DELETE SET NULL,
       FOREIGN KEY(experienceLevelId) REFERENCES experience_levels(id) ON DELETE SET NULL,
-      FOREIGN KEY(domainId) REFERENCES domains(id) ON DELETE SET NULL
+      FOREIGN KEY(domainId) REFERENCES domains(id) ON DELETE SET NULL,
+      FOREIGN KEY(locationId) REFERENCES locations(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS applications (
@@ -240,9 +264,15 @@ export async function getDb() {
     }
     await expLevelStmt.finalize();
 
+    const locationStmt = await db.prepare('INSERT INTO locations (id, name) VALUES (?, ?)');
+    for (const loc of locationsData) {
+        await locationStmt.run(loc.id, loc.name);
+    }
+    await locationStmt.finalize();
+
     // Users
     const userStmt = await db.prepare(
-      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password, locationId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     for (const [index, user] of usersData.entries()) {
       const hashedPassword = await bcrypt.hash(user.passwordPlain, saltRounds);
@@ -256,14 +286,14 @@ export async function getDb() {
         user.headline ?? null,
         user.phone,
         hashedPassword,
-        user.location ?? null
+        user.locationId ?? null
       );
     }
     await userStmt.finalize();
 
     // Jobs
     const jobStmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, location, salary, description, postedAt, isReferral, recruiterId, employeeId, employeeLinkedIn, vacancies, contactEmail, contactPhone, jobTypeId, workplaceTypeId, experienceLevelId, domainId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, locationId, salary, description, postedAt, isReferral, recruiterId, employeeId, employeeLinkedIn, vacancies, contactEmail, contactPhone, jobTypeId, workplaceTypeId, experienceLevelId, domainId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     const jobIds: { [key: string]: string } = {};
     for (const [index, job] of jobsData.entries()) {
@@ -274,7 +304,7 @@ export async function getDb() {
         newId,
         job.title,
         job.companyName,
-        job.location,
+        job.locationId,
         job.salary ?? null,
         job.description,
         postedAt,
@@ -310,3 +340,5 @@ export async function getDb() {
 
   return db;
 }
+
+    

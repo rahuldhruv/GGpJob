@@ -5,7 +5,7 @@ import { User } from '@/lib/types';
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const { firstName, lastName, email, phone, headline, location, resume } = await request.json();
+        const { firstName, lastName, email, phone, headline, locationId, resume } = await request.json();
         
         if (!firstName || !lastName || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -18,14 +18,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         const resumePath = resume ? `/resumes/user-${id}-${resume.name}` : null;
         
         const result = await db.run(
-            'UPDATE users SET firstName = ?, lastName = ?, name = ?, email = ?, phone = ?, headline = ?, location = ?, resume = ? WHERE id = ?',
+            'UPDATE users SET firstName = ?, lastName = ?, name = ?, email = ?, phone = ?, headline = ?, locationId = ?, resume = ? WHERE id = ?',
             firstName,
             lastName,
             `${firstName} ${lastName}`,
             email,
             phone,
             headline,
-            location,
+            locationId,
             resumePath,
             id
         );
@@ -34,7 +34,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const updatedUser: Omit<User, 'password' | 'role'> = await db.get('SELECT id, firstName, lastName, name, email, phone, role, headline, location, resume FROM users WHERE id = ?', id);
+        const updatedUser: Omit<User, 'password' | 'role'> = await db.get('SELECT id, firstName, lastName, name, email, phone, role, headline, locationId, resume FROM users WHERE id = ?', id);
 
         return NextResponse.json(updatedUser, { status: 200 });
 
@@ -70,3 +70,5 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
     }
 }
+
+    

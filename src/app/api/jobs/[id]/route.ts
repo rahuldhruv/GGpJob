@@ -27,13 +27,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         const db = await getDb();
         
         const stmt = await db.prepare(
-            'UPDATE jobs SET title = ?, companyName = ?, location = ?, description = ?, vacancies = ?, contactEmail = ?, contactPhone = ?, salary = ?, jobTypeId = ?, workplaceTypeId = ?, experienceLevelId = ?, domainId = ?, employeeLinkedIn = ? WHERE id = ?'
+            'UPDATE jobs SET title = ?, companyName = ?, locationId = ?, description = ?, vacancies = ?, contactEmail = ?, contactPhone = ?, salary = ?, jobTypeId = ?, workplaceTypeId = ?, experienceLevelId = ?, domainId = ?, employeeLinkedIn = ? WHERE id = ?'
         );
 
         await stmt.run(
             updatedJobData.title,
             updatedJobData.companyName,
-            updatedJobData.location,
+            updatedJobData.locationId,
             updatedJobData.description,
             updatedJobData.vacancies,
             updatedJobData.contactEmail,
@@ -76,3 +76,5 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         return NextResponse.json({ error: 'Failed to delete job' }, { status: 500 });
     }
 }
+
+    

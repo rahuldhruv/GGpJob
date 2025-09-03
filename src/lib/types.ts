@@ -10,8 +10,10 @@ export interface User {
   role: Role;
   password?: string;
   headline?: string;
-  location?: string;
+  locationId?: number;
   resume?: string;
+  // Joined fields
+  location?: string;
 }
 
 export interface JobType {
@@ -29,11 +31,16 @@ export interface ExperienceLevel {
     name: "Entry Level" | "Mid Level" | "Senior Level";
 }
 
+export interface Location {
+    id: number;
+    name: string;
+}
+
 export interface Job {
   id:string;
   title: string;
   companyName: string;
-  location: string;
+  locationId: number;
   jobTypeId: number;
   workplaceTypeId?: number;
   salary?: string;
@@ -49,6 +56,7 @@ export interface Job {
   contactEmail?: string;
   contactPhone?: string;
   // Joined fields
+  location?: string;
   type?: string;
   workplaceType?: string;
   experienceLevel?: string;
@@ -69,3 +77,5 @@ export interface Domain {
   id: string;
   name: string;
 }
+
+    

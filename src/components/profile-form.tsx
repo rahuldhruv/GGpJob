@@ -15,8 +15,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
-import { User } from "@/lib/types";
+import { User, Location } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters."),
@@ -24,7 +26,7 @@ const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   phone: z.string().min(10, "Please enter a valid phone number."),
   headline: z.string().optional(),
-  location: z.string().optional(),
+  locationId: z.coerce.number().optional(),
   resume: z.any().optional(), // Using `any` to handle FileList from input
 });
 
@@ -37,6 +39,20 @@ interface ProfileFormProps {
 export function ProfileForm({ user }: ProfileFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
+  const [locations, setLocations] = useState<Location[]>([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+        try {
+            const res = await fetch('/api/locations');
+            const data = await res.json();
+            setLocations(data);
+        } catch (error) {
+            console.error("Failed to fetch locations", error);
+        }
+    }
+    fetchLocations();
+  }, []);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(formSchema),
@@ -46,7 +62,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
-      location: user.location || "",
+      locationId: user.locationId,
     },
   });
 
@@ -163,14 +179,21 @@ export function ProfileForm({ user }: ProfileFormProps) {
         />
          <FormField
           control={form.control}
-          name="location"
+          name="locationId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. San Francisco, CA" {...field} />
-              </FormControl>
-              <FormMessage />
+                <FormLabel>Location</FormLabel>
+                <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                    <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select your location" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        {locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <FormMessage />
             </FormItem>
           )}
         />
@@ -202,3 +225,5 @@ export function ProfileForm({ user }: ProfileFormProps) {
     </Form>
   );
 }
+
+    
