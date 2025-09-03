@@ -2,14 +2,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Job, Application, Domain, ExperienceLevel } from "@/lib/types";
+import type { Job, Domain, ExperienceLevel } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import JobCard from "../job-card";
 import { Button } from "../ui/button";
-import { ArrowRight, Search, LoaderCircle, Filter, X } from "lucide-react";
-import { format } from 'date-fns';
+import { Search, LoaderCircle, Filter, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -18,7 +15,6 @@ export default function JobSeekerDashboard() {
   const [allLocations, setAllLocations] = useState<string[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
@@ -57,14 +53,12 @@ export default function JobSeekerDashboard() {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        const [jobsRes, appsRes, domainsRes, experienceLevelsRes] = await Promise.all([
+        const [jobsRes, domainsRes, experienceLevelsRes] = await Promise.all([
           fetch('/api/jobs'),
-          fetch('/api/applications?userId=1'),
           fetch('/api/domains'),
           fetch('/api/experience-levels'),
         ]);
         const jobsData = await jobsRes.json();
-        const appsData = await appsRes.json();
         const domainsData = await domainsRes.json();
         const experienceLevelsData = await experienceLevelsRes.json();
         
@@ -78,7 +72,6 @@ export default function JobSeekerDashboard() {
         const initialJobsData = await initialJobsRes.json();
         
         setJobs(Array.isArray(initialJobsData) ? initialJobsData : []);
-        setApplications(Array.isArray(appsData) ? appsData : []);
         setDomains(Array.isArray(domainsData) ? domainsData : []);
         setExperienceLevels(Array.isArray(experienceLevelsData) ? experienceLevelsData : []);
       } catch (error) {
@@ -117,16 +110,6 @@ export default function JobSeekerDashboard() {
   const hasActiveFilters = () => {
     return filters.search || filters.posted !== 'all' || filters.location !== 'all' || filters.experience !== 'all' || filters.domain !== 'all';
   }
-
-  const getStatusBadge = (status: Application['status']) => {
-    switch (status) {
-      case 'In Review': return <Badge variant="secondary">In Review</Badge>;
-      case 'Interview': return <Badge className="bg-blue-100 text-blue-800">Interview</Badge>;
-      case 'Offered': return <Badge className="bg-green-100 text-green-800">Offered</Badge>;
-      case 'Rejected': return <Badge variant="destructive">Rejected</Badge>;
-      default: return <Badge variant="outline">Applied</Badge>;
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -218,44 +201,6 @@ export default function JobSeekerDashboard() {
             </div>
           ) : (
             <p>No jobs found with the current criteria.</p>
-          )}
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>My Applications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {applications.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Job Title</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Date Applied</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {applications.map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell className="font-medium">{app.jobTitle}</TableCell>
-                    <TableCell>{app.companyName}</TableCell>
-                    <TableCell>{format(new Date(app.appliedAt), 'PPP')}</TableCell>
-                    <TableCell>{getStatusBadge(app.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        View Application <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-             <p className="text-sm text-muted-foreground">You have not applied to any jobs yet.</p>
           )}
         </CardContent>
       </Card>
