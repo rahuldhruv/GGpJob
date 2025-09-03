@@ -24,6 +24,8 @@ const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   phone: z.string().min(10, "Please enter a valid phone number."),
   headline: z.string().optional(),
+  location: z.string().optional(),
+  resume: z.any().optional(), // Using `any` to handle FileList from input
 });
 
 type ProfileFormValues = z.infer<typeof formSchema>;
@@ -44,6 +46,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
+      location: user.location || "",
     },
   });
 
@@ -51,10 +54,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   const onSubmit = async (data: ProfileFormValues) => {
     try {
+      const formData = {
+        ...data,
+        resume: data.resume?.[0], // Extract the file from the FileList
+      };
+
       const response = await fetch(`/api/users/${user.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -70,7 +78,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
         title: "Profile Updated!",
         description: "Your profile information has been successfully updated.",
       });
-      form.reset(updatedUser);
+      
+      const { resume, ...resetData } = updatedUser;
+      form.reset(resetData);
+
     } catch (error: any) {
       toast({
         title: "Error",
@@ -149,6 +160,37 @@ export function ProfileForm({ user }: ProfileFormProps) {
               <FormMessage />
             </FormItem>
           )}
+        />
+         <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Location</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. San Francisco, CA" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+            control={form.control}
+            name="resume"
+            render={({ field: { value, onChange, ...field } }) => (
+                <FormItem>
+                    <FormLabel>Resume</FormLabel>
+                    <FormControl>
+                        <Input 
+                          type="file" 
+                          accept=".pdf,.doc,.docx"
+                          onChange={(e) => onChange(e.target.files)}
+                          {...field}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
         />
         <div className="flex justify-end pt-2">
           <Button type="submit" disabled={isSubmitting}>

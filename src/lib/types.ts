@@ -10,6 +10,8 @@ export interface User {
   role: Role;
   password?: string;
   headline?: string;
+  location?: string;
+  resume?: string;
 }
 
 export interface JobType {

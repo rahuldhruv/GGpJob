@@ -9,7 +9,7 @@ const saltRounds = 10;
 let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
 const usersData: Omit<User, 'id' | 'password'> & { passwordPlain: string }[] = [
-  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123" },
+  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123", location: "San Francisco, CA" },
   { firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", passwordPlain: "password123" },
   { firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", passwordPlain: "password123" },
   { firstName: "Super", lastName: "Admin", name: "Super Admin", email: "admin@gmail.com", role: "Super Admin", phone: "444-555-6666", passwordPlain: "admin123", headline: "Platform Administrator" },
@@ -145,7 +145,9 @@ export async function getDb() {
       phone TEXT UNIQUE,
       role TEXT,
       headline TEXT,
-      password TEXT
+      password TEXT,
+      location TEXT,
+      resume TEXT
     );
 
     CREATE TABLE IF NOT EXISTS domains (
@@ -240,7 +242,7 @@ export async function getDb() {
 
     // Users
     const userStmt = await db.prepare(
-      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     for (const [index, user] of usersData.entries()) {
       const hashedPassword = await bcrypt.hash(user.passwordPlain, saltRounds);
@@ -253,7 +255,8 @@ export async function getDb() {
         user.role,
         user.headline ?? null,
         user.phone,
-        hashedPassword
+        hashedPassword,
+        user.location ?? null
       );
     }
     await userStmt.finalize();
