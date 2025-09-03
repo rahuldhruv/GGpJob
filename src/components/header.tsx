@@ -8,7 +8,8 @@ import {
   User,
   LogOut,
   LogIn,
-  UserPlus
+  UserPlus,
+  LayoutGrid
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,6 +62,14 @@ export default function Header() {
                     <span>Profile</span>
                   </Link>
                 </DropdownMenuItem>
+                 {user.role === 'Job Seeker' && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/applications">
+                      <LayoutGrid className="mr-2 h-4 w-4" />
+                      <span>My Applications</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
