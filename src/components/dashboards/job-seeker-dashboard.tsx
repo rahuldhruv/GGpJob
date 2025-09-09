@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import { Search, LoaderCircle, Filter, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MultiSelectFilter } from "../multi-select-filter";
 
 export default function JobSeekerDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -21,10 +22,10 @@ export default function JobSeekerDashboard() {
   const [filters, setFilters] = useState({
     search: "",
     posted: "all",
-    location: "all",
+    location: [] as string[],
     experience: "all",
-    domain: "all",
-    jobType: "all",
+    domain: [] as string[],
+    jobType: [] as string[],
   });
 
   const fetchJobs = useCallback(async () => {
@@ -33,11 +34,13 @@ export default function JobSeekerDashboard() {
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.posted !== 'all') params.append('posted', filters.posted);
-      if (filters.location !== 'all') params.append('location', filters.location);
+      filters.location.forEach(loc => params.append('location', loc));
       if (filters.experience !== 'all') params.append('experience', filters.experience);
-      if (filters.domain !== 'all') params.append('domain', filters.domain);
-      if (filters.jobType !== 'all') params.append('jobType', filters.jobType);
-      if (!filters.search && !params.has('posted') && !params.has('location') && !params.has('experience') && !params.has('domain') && !params.has('jobType')) {
+      filters.domain.forEach(dom => params.append('domain', dom));
+      filters.jobType.forEach(type => params.append('jobType', type));
+
+      const hasNoFilters = !filters.search && filters.posted === 'all' && filters.location.length === 0 && filters.experience === 'all' && filters.domain.length === 0 && filters.jobType.length === 0;
+      if (hasNoFilters) {
         params.append('limit', '3');
       }
 
@@ -92,7 +95,7 @@ export default function JobSeekerDashboard() {
     setFilters(prev => ({ ...prev, search: searchQuery }));
   };
 
-  const handleFilterChange = (filterName: string, value: string) => {
+  const handleFilterChange = (filterName: string, value: string | string[]) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
@@ -101,16 +104,20 @@ export default function JobSeekerDashboard() {
     setFilters({
       search: "",
       posted: "all",
-      location: "all",
+      location: [],
       experience: "all",
-      domain: "all",
-      jobType: "all",
+      domain: [],
+      jobType: [],
     });
   }
 
   const hasActiveFilters = () => {
-    return filters.search || filters.posted !== 'all' || filters.location !== 'all' || filters.experience !== 'all' || filters.domain !== 'all' || filters.jobType !== 'all';
+    return filters.search || filters.posted !== 'all' || filters.location.length > 0 || filters.experience !== 'all' || filters.domain.length > 0 || filters.jobType.length > 0;
   }
+  
+  const locationOptions = locations.map(loc => ({ value: String(loc.id), label: loc.name }));
+  const domainOptions = domains.map(d => ({ value: String(d.id), label: d.name }));
+  const jobTypeOptions = jobTypes.map(jt => ({ value: String(jt.id), label: jt.name }));
 
   return (
     <div className="space-y-8">
@@ -149,24 +156,18 @@ export default function JobSeekerDashboard() {
                   <SelectItem value="30">Last 30 days</SelectItem>
                 </SelectContent>
               </Select>
-               <Select value={filters.domain} onValueChange={(value) => handleFilterChange('domain', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Domain" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Domains</SelectItem>
-                  {domains.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={filters.location} onValueChange={(value) => handleFilterChange('location', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+               <MultiSelectFilter
+                  title="Domains"
+                  options={domainOptions}
+                  selectedValues={filters.domain}
+                  onChange={(selected) => handleFilterChange('domain', selected)}
+              />
+              <MultiSelectFilter
+                  title="Locations"
+                  options={locationOptions}
+                  selectedValues={filters.location}
+                  onChange={(selected) => handleFilterChange('location', selected)}
+              />
               <Select value={filters.experience} onValueChange={(value) => handleFilterChange('experience', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Experience Level" />
@@ -176,15 +177,12 @@ export default function JobSeekerDashboard() {
                   {experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Select value={filters.jobType} onValueChange={(value) => handleFilterChange('jobType', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Employment Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {jobTypes.map(type => <SelectItem key={type.id} value={String(type.id)}>{type.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+               <MultiSelectFilter
+                  title="Employment Types"
+                  options={jobTypeOptions}
+                  selectedValues={filters.jobType}
+                  onChange={(selected) => handleFilterChange('jobType', selected)}
+              />
               {hasActiveFilters() && (
                  <Button variant="ghost" onClick={resetFilters} className="text-sm text-muted-foreground flex items-center justify-start lg:justify-center col-span-full lg:col-span-1">
                     <X className="mr-2 h-4 w-4"/>
@@ -217,5 +215,3 @@ export default function JobSeekerDashboard() {
     </div>
   );
 }
-
-    

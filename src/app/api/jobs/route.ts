@@ -14,10 +14,10 @@ export async function GET(request: Request) {
     const employeeId = searchParams.get('employeeId');
     const search = searchParams.get('search');
     const posted = searchParams.get('posted');
-    const location = searchParams.get('location');
+    const locations = searchParams.getAll('location');
     const experience = searchParams.get('experience');
-    const domain = searchParams.get('domain');
-    const jobType = searchParams.get('jobType');
+    const domains = searchParams.getAll('domain');
+    const jobTypes = searchParams.getAll('jobType');
 
     let query = `
       SELECT 
@@ -64,21 +64,21 @@ export async function GET(request: Request) {
             params.push(date.toISOString());
         }
     }
-    if (location && location !== 'all') {
-        conditions.push('l.id = ?');
-        params.push(location);
+    if (locations.length > 0 && !locations.includes('all')) {
+        conditions.push(`l.id IN (${locations.map(() => '?').join(',')})`);
+        params.push(...locations);
     }
     if (experience && experience !== 'all') {
         conditions.push('el.name = ?');
         params.push(experience);
     }
-    if (domain && domain !== 'all') {
-        conditions.push('d.name = ?');
-        params.push(domain);
+    if (domains.length > 0 && !domains.includes('all')) {
+        conditions.push(`d.id IN (${domains.map(() => '?').join(',')})`);
+        params.push(...domains);
     }
-    if (jobType && jobType !== 'all') {
-        conditions.push('j.jobTypeId = ?');
-        params.push(jobType);
+    if (jobTypes.length > 0 && !jobTypes.includes('all')) {
+        conditions.push(`j.jobTypeId IN (${jobTypes.map(() => '?').join(',')})`);
+        params.push(...jobTypes);
     }
 
     if (conditions.length > 0) {
