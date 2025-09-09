@@ -1,3 +1,4 @@
+
 import * as sqlite3 from 'sqlite3';
 import { Database, open } from 'sqlite';
 import type { User, Job, Application, Domain } from './types';
@@ -134,11 +135,6 @@ const applicationStatusesData = [
   { id: 2, name: 'Profile Viewed' },
   { id: 3, name: 'Not Suitable' },
   { id: 4, name: 'Selected' },
-  // Adding back old statuses for seeding continuity
-  { id: 5, name: 'In Review' },
-  { id: 6, name: 'Interview' },
-  { id: 7, name: 'Offered' },
-  { id: 8, name: 'Rejected' },
 ];
 
 
@@ -360,7 +356,11 @@ export async function getDb() {
     for (const [index, app] of applicationsData.entries()) {
       const newId = `app-${index + 1}`;
       const jobId = jobIds[app.jobTitle];
-      const statusId = statusNameToId[app.statusName as string];
+      // The status 'In Review' is not in the new list, so this will fail.
+      // I'll update the seed data for applications as well.
+      // 'In Review' -> 'Profile Viewed'
+      const statusName = app.statusName === 'In Review' ? 'Profile Viewed' : app.statusName;
+      const statusId = statusNameToId[statusName as string];
       if (jobId && statusId) {
         const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
         await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, statusId, appliedAt);
@@ -371,3 +371,5 @@ export async function getDb() {
 
   return db;
 }
+
+    

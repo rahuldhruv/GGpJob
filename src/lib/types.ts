@@ -1,3 +1,4 @@
+
 export type Role = "Job Seeker" | "Recruiter" | "Employee" | "Admin" | "Super Admin";
 
 export interface User {
@@ -65,7 +66,7 @@ export interface Job {
 
 export interface ApplicationStatus {
   id: number;
-  name: "Applied" | "Profile Viewed" | "Not Suitable" | "Selected" | "In Review" | "Interview" | "Offered" | "Rejected";
+  name: "Applied" | "Profile Viewed" | "Not Suitable" | "Selected";
 }
 
 export interface Application {
@@ -84,3 +85,5 @@ export interface Domain {
   id: number;
   name: string;
 }
+
+    

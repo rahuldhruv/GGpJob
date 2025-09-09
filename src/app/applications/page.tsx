@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -50,16 +51,12 @@ export default function ApplicationsPage() {
 
     const getStatusBadge = (status: Application['statusName']) => {
         switch (status) {
-            case 'In Review': 
             case 'Profile Viewed':
                 return <Badge variant="secondary">In Review</Badge>;
-            case 'Interview': 
             case 'Selected':
-                return <Badge className="bg-blue-100 text-blue-800">Interview</Badge>;
-            case 'Offered': return <Badge className="bg-green-100 text-green-800">Offered</Badge>;
-            case 'Rejected':
+                return <Badge className="bg-blue-100 text-blue-800">Selected</Badge>;
             case 'Not Suitable': 
-                return <Badge variant="destructive">Rejected</Badge>;
+                return <Badge variant="destructive">Not Suitable</Badge>;
             default: return <Badge variant="outline">Applied</Badge>;
         }
     };
@@ -115,3 +112,5 @@ export default function ApplicationsPage() {
         </div>
     );
 }
+
+    
