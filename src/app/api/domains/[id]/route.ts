@@ -10,13 +10,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const db = await getDb();
-    const result = await db.run('UPDATE domains SET name = ? WHERE id = ?', name, id);
+    const result = await db.run('UPDATE domains SET name = ? WHERE id = ?', name, Number(id));
 
     if (result.changes === 0) {
         return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
     }
     
-    const updatedDomain = await db.get('SELECT * FROM domains WHERE id = ?', id);
+    const updatedDomain = await db.get('SELECT * FROM domains WHERE id = ?', Number(id));
 
     return NextResponse.json(updatedDomain, { status: 200 });
   } catch (e) {
@@ -33,7 +33,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         const { id } = params;
         const db = await getDb();
         
-        const result = await db.run('DELETE FROM domains WHERE id = ?', id);
+        const result = await db.run('DELETE FROM domains WHERE id = ?', Number(id));
         
         if (result.changes === 0) {
             return NextResponse.json({ error: 'Domain not found' }, { status: 404 });

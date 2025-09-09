@@ -47,7 +47,7 @@ export interface Job {
   description: string;
   postedAt: Date | string;
   experienceLevelId?: number;
-  domainId?: string;
+  domainId?: number;
   isReferral?: boolean;
   recruiterId?: number;
   employeeId?: number;
@@ -81,6 +81,6 @@ export interface Application {
 }
 
 export interface Domain {
-  id: string;
+  id: number;
   name: string;
 }

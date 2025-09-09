@@ -26,7 +26,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "Innovate Inc. is seeking a Senior Frontend Engineer to build and maintain our cutting-edge web applications using React and TypeScript.",
     recruiterId: 2,
     experienceLevelId: 3,
-    domainId: '1', 
+    domainId: 1, 
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -40,7 +40,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "Creative Solutions is looking for a Product Manager to lead the development of our new suite of design tools.",
     recruiterId: 2,
     experienceLevelId: 2, 
-    domainId: '2',
+    domainId: 2,
     vacancies: 1,
     contactEmail: "recruiter@creative.com",
     contactPhone: "123-456-7890",
@@ -57,7 +57,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     employeeId: 3,
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
     experienceLevelId: 2, 
-    domainId: '3',
+    domainId: 3,
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -71,7 +71,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     description: "We need a talented UX/UI Designer for a 6-month contract to help redesign our flagship product.",
     recruiterId: 2,
     experienceLevelId: 1, 
-    domainId: '4',
+    domainId: 4,
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -87,7 +87,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     employeeId: 3,
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
     experienceLevelId: 3,
-    domainId: '1',
+    domainId: 1,
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -99,14 +99,14 @@ const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId' | 'status
   { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, statusName: "Applied" },
 ];
 
-const domainsData: { id: string, name: string }[] = [
-  { id: "1", name: "Software Engineering" },
-  { id: "2", name: "Product Management" },
-  { id: "3", name: "Data Science" },
-  { id: "4", name: "Design" },
-  { id: "5", name: "Marketing" },
-  { id: "6", name: "Sales" },
-  { id: "7", name: "Human Resources" },
+const domainsData: Omit<Domain, ''>[] = [
+  { id: 1, name: "Software Engineering" },
+  { id: 2, name: "Product Management" },
+  { id: 3, name: "Data Science" },
+  { id: 4, name: "Design" },
+  { id: 5, name: "Marketing" },
+  { id: 6, name: "Sales" },
+  { id: 7, name: "Human Resources" },
 ];
 
 const jobTypesData = [ {id: 1, name: "Full-time"}, {id: 2, name: "Part-time"}, {id: 3, name: "Contract"}, {id: 4, name: "Internship"} ];
@@ -182,7 +182,7 @@ export async function getDb() {
     );
 
     CREATE TABLE IF NOT EXISTS domains (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY,
       name TEXT NOT NULL UNIQUE
     );
 
@@ -229,7 +229,7 @@ export async function getDb() {
       jobTypeId INTEGER,
       workplaceTypeId INTEGER,
       experienceLevelId INTEGER,
-      domainId TEXT,
+      domainId INTEGER,
       FOREIGN KEY(recruiterId) REFERENCES users(id) ON DELETE SET NULL,
       FOREIGN KEY(employeeId) REFERENCES users(id) ON DELETE SET NULL,
       FOREIGN KEY(jobTypeId) REFERENCES job_types(id) ON DELETE SET NULL,

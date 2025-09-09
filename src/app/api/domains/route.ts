@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { v4 as uuidv4 } from 'uuid';
 
 export async function GET() {
   try {
@@ -21,12 +20,13 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
+    
+    const result = await db.run('INSERT INTO domains (name) VALUES (?)', name);
+    
     const newDomain = {
-      id: uuidv4(),
+      id: result.lastID,
       name,
     };
-    
-    await db.run('INSERT INTO domains (id, name) VALUES (?, ?)', newDomain.id, newDomain.name);
     
     return NextResponse.json(newDomain, { status: 201 });
   } catch (e) {

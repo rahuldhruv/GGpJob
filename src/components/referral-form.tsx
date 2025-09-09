@@ -29,7 +29,7 @@ const formSchema = z.object({
   experienceLevelId: z.coerce.number().min(1, "Please select an experience level."),
   jobTypeId: z.coerce.number().min(1, "Please select a job type."),
   workplaceTypeId: z.coerce.number().min(1, "Please select a workplace type."),
-  domainId: z.string().min(1, "Please select a domain."),
+  domainId: z.coerce.number().min(1, "Please select a domain."),
   vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
   email: z.string().email("Please enter a valid email address."),
   phoneNumber: z.string().min(10, "Please enter a valid phone number."),
@@ -308,14 +308,14 @@ export function ReferralForm({ job }: ReferralFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Domain</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select onValueChange={field.onChange} value={String(field.value || '')}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a domain" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {domains.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                      {domains.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
