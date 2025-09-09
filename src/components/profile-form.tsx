@@ -197,24 +197,26 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-            control={form.control}
-            name="resume"
-            render={({ field: { value, onChange, ...field } }) => (
-                <FormItem>
-                    <FormLabel>Resume</FormLabel>
-                    <FormControl>
-                        <Input 
-                          type="file" 
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => onChange(e.target.files)}
-                          {...field}
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-            )}
-        />
+        {user.role === 'Job Seeker' && (
+            <FormField
+                control={form.control}
+                name="resume"
+                render={({ field: { value, onChange, ...field } }) => (
+                    <FormItem>
+                        <FormLabel>Resume</FormLabel>
+                        <FormControl>
+                            <Input 
+                            type="file" 
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => onChange(e.target.files)}
+                            {...field}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )}
         <div className="flex justify-end pt-2">
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
@@ -225,5 +227,3 @@ export function ProfileForm({ user }: ProfileFormProps) {
     </Form>
   );
 }
-
-    
