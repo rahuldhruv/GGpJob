@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     const location = searchParams.get('location');
     const experience = searchParams.get('experience');
     const domain = searchParams.get('domain');
+    const jobType = searchParams.get('jobType');
 
     let query = `
       SELECT 
@@ -74,6 +75,10 @@ export async function GET(request: Request) {
     if (domain && domain !== 'all') {
         conditions.push('d.name = ?');
         params.push(domain);
+    }
+    if (jobType && jobType !== 'all') {
+        conditions.push('j.jobTypeId = ?');
+        params.push(jobType);
     }
 
     if (conditions.length > 0) {

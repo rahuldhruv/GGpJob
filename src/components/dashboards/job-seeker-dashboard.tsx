@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Job, Domain, ExperienceLevel, Location } from "@/lib/types";
+import type { Job, Domain, ExperienceLevel, Location, JobType } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import JobCard from "../job-card";
 import { Button } from "../ui/button";
@@ -15,6 +15,7 @@ export default function JobSeekerDashboard() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
+  const [jobTypes, setJobTypes] = useState<JobType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
@@ -23,6 +24,7 @@ export default function JobSeekerDashboard() {
     location: "all",
     experience: "all",
     domain: "all",
+    jobType: "all",
   });
 
   const fetchJobs = useCallback(async () => {
@@ -34,7 +36,8 @@ export default function JobSeekerDashboard() {
       if (filters.location !== 'all') params.append('location', filters.location);
       if (filters.experience !== 'all') params.append('experience', filters.experience);
       if (filters.domain !== 'all') params.append('domain', filters.domain);
-      if (!filters.search && !params.has('posted') && !params.has('location') && !params.has('experience') && !params.has('domain')) {
+      if (filters.jobType !== 'all') params.append('jobType', filters.jobType);
+      if (!filters.search && !params.has('posted') && !params.has('location') && !params.has('experience') && !params.has('domain') && !params.has('jobType')) {
         params.append('limit', '3');
       }
 
@@ -50,14 +53,16 @@ export default function JobSeekerDashboard() {
   }, [filters]);
   
   const fetchFilterData = async () => {
-     const [locationsRes, domainsRes, experienceLevelsRes] = await Promise.all([
+     const [locationsRes, domainsRes, experienceLevelsRes, jobTypesRes] = await Promise.all([
         fetch('/api/locations'),
         fetch('/api/domains'),
         fetch('/api/experience-levels'),
+        fetch('/api/job-types'),
     ]);
     setLocations(await locationsRes.json());
     setDomains(await domainsRes.json());
     setExperienceLevels(await experienceLevelsRes.json());
+    setJobTypes(await jobTypesRes.json());
   }
 
   useEffect(() => {
@@ -99,11 +104,12 @@ export default function JobSeekerDashboard() {
       location: "all",
       experience: "all",
       domain: "all",
+      jobType: "all",
     });
   }
 
   const hasActiveFilters = () => {
-    return filters.search || filters.posted !== 'all' || filters.location !== 'all' || filters.experience !== 'all' || filters.domain !== 'all';
+    return filters.search || filters.posted !== 'all' || filters.location !== 'all' || filters.experience !== 'all' || filters.domain !== 'all' || filters.jobType !== 'all';
   }
 
   return (
@@ -168,6 +174,15 @@ export default function JobSeekerDashboard() {
                 <SelectContent>
                   <SelectItem value="all">All Levels</SelectItem>
                   {experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={filters.jobType} onValueChange={(value) => handleFilterChange('jobType', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Employment Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {jobTypes.map(type => <SelectItem key={type.id} value={String(type.id)}>{type.name}</SelectItem>)}
                 </SelectContent>
               </Select>
               {hasActiveFilters() && (
