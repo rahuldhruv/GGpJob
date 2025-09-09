@@ -44,21 +44,6 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     return { job, relatedJobs, userApplications };
 }
 
-// Placeholder for a server-side session utility
-async function getServerSession() {
-    // In a real app, this would involve parsing cookies or tokens.
-    // For this example, we'll return a mock user or null.
-    // This is a simplified stand-in for a real auth system.
-    // We'll simulate user ID 1 (Alice Johnson, Job Seeker) is logged in
-    const db = await getDb();
-    const user = await db.get('SELECT * FROM users WHERE id = 1');
-    if (user) {
-        return { user: { id: user.id, role: user.role, email: user.email } };
-    }
-    return null;
-}
-
-
 export default async function JobDetailsPage({ params }: { params: { id: string } }) {
     const { job, relatedJobs, userApplications } = await getJobData(params.id);
 
