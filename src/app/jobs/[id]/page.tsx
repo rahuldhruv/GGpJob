@@ -6,16 +6,22 @@ import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign
 import { format } from 'date-fns';
 import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
+import { headers } from 'next/headers';
 
 async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[] }> {
-    const jobRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs/${id}`, { cache: 'no-store' });
+    const headersList = headers();
+    const protocol = headersList.get('x-forwarded-proto') || 'http';
+    const host = headersList.get('host') || 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+
+    const jobRes = await fetch(`${baseUrl}/api/jobs/${id}`, { cache: 'no-store' });
     if (!jobRes.ok) {
         if (jobRes.status === 404) return { job: null, relatedJobs: [] };
         throw new Error('Failed to fetch job data');
     }
     const job: Job = await jobRes.json();
 
-    const relatedJobsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs?domain=${job.domainId}&limit=4`, { cache: 'no-store' });
+    const relatedJobsRes = await fetch(`${baseUrl}/api/jobs?domain=${job.domainId}&limit=4`, { cache: 'no-store' });
     let relatedJobs: Job[] = [];
     if (relatedJobsRes.ok) {
         const allRelated = await relatedJobsRes.json();
