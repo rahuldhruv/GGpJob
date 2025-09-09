@@ -1,4 +1,5 @@
 
+
 export type Role = "Job Seeker" | "Recruiter" | "Employee" | "Admin" | "Super Admin";
 
 export interface User {

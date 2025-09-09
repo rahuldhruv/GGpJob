@@ -1,4 +1,5 @@
 
+
 import * as sqlite3 from 'sqlite3';
 import { Database, open } from 'sqlite';
 import type { User, Job, Application, Domain } from './types';
@@ -95,9 +96,9 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
   },
 ];
 
-const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId' | 'statusId'>[] = [
-  { jobTitle: "Senior Frontend Engineer", companyName: "Innovate Inc.", userId: 1, statusName: "In Review" },
-  { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, statusName: "Applied" },
+const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId'>[] = [
+  { jobTitle: "Senior Frontend Engineer", companyName: "Innovate Inc.", userId: 1, statusId: 2 },
+  { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, statusId: 1 },
 ];
 
 const domainsData: Omit<Domain, ''>[] = [
@@ -345,25 +346,15 @@ export async function getDb() {
     await jobStmt.finalize();
 
     // Applications
-    const statusNameToId = applicationStatusesData.reduce((acc, status) => {
-        acc[status.name] = status.id;
-        return acc;
-    }, {} as Record<string, number>);
-
     const appStmt = await db.prepare(
       'INSERT INTO applications (id, jobId, jobTitle, companyName, userId, statusId, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
     for (const [index, app] of applicationsData.entries()) {
       const newId = `app-${index + 1}`;
       const jobId = jobIds[app.jobTitle];
-      // The status 'In Review' is not in the new list, so this will fail.
-      // I'll update the seed data for applications as well.
-      // 'In Review' -> 'Profile Viewed'
-      const statusName = app.statusName === 'In Review' ? 'Profile Viewed' : app.statusName;
-      const statusId = statusNameToId[statusName as string];
-      if (jobId && statusId) {
+      if (jobId) {
         const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
-        await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, statusId, appliedAt);
+        await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, app.statusId, appliedAt);
       }
     }
     await appStmt.finalize();
