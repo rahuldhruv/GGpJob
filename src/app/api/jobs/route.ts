@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     };
     
     const stmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, locationId, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, postedAt, jobTypeId, workplaceTypeId, experienceLevelId, domainId, employeeLinkedIn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, locationId, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, recruiterId, postedAt, jobTypeId, workplaceTypeId, experienceLevelId, domainId, employeeLinkedIn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     await stmt.run(
@@ -122,6 +122,7 @@ export async function POST(request: Request) {
         newJob.salary,
         newJob.isReferral ? 1 : 0,
         newJob.employeeId,
+        newJob.recruiterId,
         newJob.postedAt,
         newJob.jobTypeId,
         newJob.workplaceTypeId,
@@ -137,5 +138,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
   }
 }
-
-    
