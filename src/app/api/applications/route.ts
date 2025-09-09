@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: Request) {
   try {
@@ -46,4 +47,52 @@ export async function GET(request: Request) {
     console.error(e);
     return NextResponse.json({ error: 'Failed to fetch applications' }, { status: 500 });
   }
+}
+
+export async function POST(request: Request) {
+    try {
+        const { jobId, userId } = await request.json();
+        
+        if (!jobId || !userId) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        const db = await getDb();
+
+        const job = await db.get('SELECT title, companyName FROM jobs WHERE id = ?', jobId);
+        if (!job) {
+             return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+        }
+
+        const existingApplication = await db.get('SELECT id FROM applications WHERE jobId = ? AND userId = ?', jobId, userId);
+        if (existingApplication) {
+            return NextResponse.json({ error: 'You have already applied for this job' }, { status: 409 });
+        }
+
+        const newApplication = {
+            id: uuidv4(),
+            jobId,
+            jobTitle: job.title,
+            companyName: job.companyName,
+            userId,
+            statusId: 1, // 'Applied'
+            appliedAt: new Date().toISOString(),
+        };
+
+        const result = await db.run(
+            'INSERT INTO applications (id, jobId, jobTitle, companyName, userId, statusId, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            newApplication.id,
+            newApplication.jobId,
+            newApplication.jobTitle,
+            newApplication.companyName,
+            newApplication.userId,
+            newApplication.statusId,
+            newApplication.appliedAt
+        );
+
+        return NextResponse.json(newApplication, { status: 201 });
+    } catch (e: any) {
+        console.error(e);
+        return NextResponse.json({ error: 'Failed to submit application' }, { status: 500 });
+    }
 }

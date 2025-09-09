@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,9 @@ export default function JobCard({ job }: JobCardProps) {
           <Clock className="h-3 w-3" />
           {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
         </div>
-        <Button variant="secondary" size="sm">View Details</Button>
+        <Button asChild variant="secondary" size="sm">
+          <Link href={`/jobs/${job.id}`}>View Details</Link>
+        </Button>
       </CardFooter>
     </Card>
   );
