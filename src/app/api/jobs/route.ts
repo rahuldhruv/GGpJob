@@ -26,7 +26,8 @@ export async function GET(request: Request) {
         wt.name as workplaceType,
         el.name as experienceLevel,
         d.name as domain,
-        l.name as location
+        l.name as location,
+        (SELECT COUNT(*) FROM applications WHERE applications.jobId = j.id) as applicantCount
       FROM jobs j
       LEFT JOIN job_types jt ON j.jobTypeId = jt.id
       LEFT JOIN workplace_types wt ON j.workplaceTypeId = wt.id

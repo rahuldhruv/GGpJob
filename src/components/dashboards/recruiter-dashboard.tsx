@@ -128,7 +128,7 @@ export default function RecruiterDashboard() {
                       Open
                     </Badge>
                   </TableCell>
-                  <TableCell>{Math.floor(Math.random() * 50)}</TableCell>
+                  <TableCell>{job.applicantCount}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

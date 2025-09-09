@@ -63,6 +63,7 @@ export interface Job {
   workplaceType?: string;
   experienceLevel?: string;
   domain?: string;
+  applicantCount?: number;
 }
 
 export interface ApplicationStatus {
