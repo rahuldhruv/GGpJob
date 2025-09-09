@@ -1,5 +1,6 @@
+
 import { notFound } from 'next/navigation';
-import type { Job } from '@/lib/types';
+import type { Job, Application } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign, Workflow, Clock } from 'lucide-react';
@@ -7,8 +8,10 @@ import { format } from 'date-fns';
 import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
 import { headers } from 'next/headers';
+import { getDb } from '@/lib/db';
+import { getServerSession } from '@/lib/auth'; // A helper to get user session on server
 
-async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[] }> {
+async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[], userApplications: Application[] }> {
     const headersList = headers();
     const protocol = headersList.get('x-forwarded-proto') || 'http';
     const host = headersList.get('host') || 'localhost:3000';
@@ -16,7 +19,7 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
 
     const jobRes = await fetch(`${baseUrl}/api/jobs/${id}`, { cache: 'no-store' });
     if (!jobRes.ok) {
-        if (jobRes.status === 404) return { job: null, relatedJobs: [] };
+        if (jobRes.status === 404) return { job: null, relatedJobs: [], userApplications: [] };
         throw new Error('Failed to fetch job data');
     }
     const job: Job = await jobRes.json();
@@ -25,16 +28,39 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     let relatedJobs: Job[] = [];
     if (relatedJobsRes.ok) {
         const allRelated = await relatedJobsRes.json();
-        // Filter out the current job from the related list
         relatedJobs = allRelated.filter((j: Job) => j.id !== job.id).slice(0, 3);
     }
     
-    return { job, relatedJobs };
+    // This part is a placeholder for getting the logged-in user's data.
+    // In a real app with auth, you would get this from the session.
+    // For now, we'll assume a way to get the user and their applications.
+    const session = await getServerSession();
+    let userApplications: Application[] = [];
+    if (session?.user?.id) {
+       const db = await getDb();
+       userApplications = await db.all('SELECT * FROM applications WHERE userId = ?', session.user.id);
+    }
+    
+    return { job, relatedJobs, userApplications };
+}
+
+// Placeholder for a server-side session utility
+async function getServerSession() {
+    // In a real app, this would involve parsing cookies or tokens.
+    // For this example, we'll return a mock user or null.
+    // This is a simplified stand-in for a real auth system.
+    // We'll simulate user ID 1 (Alice Johnson, Job Seeker) is logged in
+    const db = await getDb();
+    const user = await db.get('SELECT * FROM users WHERE id = 1');
+    if (user) {
+        return { user: { id: user.id, role: user.role, email: user.email } };
+    }
+    return null;
 }
 
 
 export default async function JobDetailsPage({ params }: { params: { id: string } }) {
-    const { job, relatedJobs } = await getJobData(params.id);
+    const { job, relatedJobs, userApplications } = await getJobData(params.id);
 
     if (!job) {
         notFound();
@@ -90,7 +116,7 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <ApplyButton jobId={job.id} />
+                            <ApplyButton job={job} userApplications={userApplications} />
                         </CardFooter>
                     </Card>
                 </div>

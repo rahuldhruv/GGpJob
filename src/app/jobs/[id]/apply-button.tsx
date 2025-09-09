@@ -1,22 +1,37 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/contexts/user-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, LoaderCircle, TriangleAlert } from 'lucide-react';
+import { CheckCircle, LoaderCircle, Ban } from 'lucide-react';
+import { Application, Job } from '@/lib/types';
 
 interface ApplyButtonProps {
-    jobId: string;
+    job: Job;
+    userApplications: Application[];
 }
 
-export function ApplyButton({ jobId }: ApplyButtonProps) {
+export function ApplyButton({ job, userApplications }: ApplyButtonProps) {
     const { user } = useUser();
     const { toast } = useToast();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [isApplied, setIsApplied] = useState(false);
+    const [isJobOwner, setIsJobOwner] = useState(false);
+
+    useEffect(() => {
+      if(user && job) {
+        const alreadyApplied = userApplications.some(app => app.jobId === job.id);
+        setIsApplied(alreadyApplied);
+
+        const isOwner = job.recruiterId === user.id || job.employeeId === user.id;
+        setIsJobOwner(isOwner);
+      }
+    }, [user, job, userApplications]);
+
 
     const handleApply = async () => {
         if (!user) {
@@ -36,7 +51,7 @@ export function ApplyButton({ jobId }: ApplyButtonProps) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ jobId, userId: user.id }),
+                body: JSON.stringify({ jobId: job.id, userId: user.id }),
             });
 
             const data = await response.json();
@@ -66,6 +81,15 @@ export function ApplyButton({ jobId }: ApplyButtonProps) {
             setIsLoading(false);
         }
     };
+    
+    if (isJobOwner) {
+        return (
+            <Button disabled className="w-full" size="lg">
+                <Ban className="mr-2" />
+                You cannot apply to your own job post
+            </Button>
+        );
+    }
 
     return (
         <Button 

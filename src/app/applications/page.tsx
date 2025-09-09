@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { format } from 'date-fns';
+import Link from "next/link";
 
 export default function ApplicationsPage() {
     const { user, loading: userLoading } = useUser();
@@ -96,8 +97,10 @@ export default function ApplicationsPage() {
                                         <TableCell>{format(new Date(app.appliedAt), 'PPP')}</TableCell>
                                         <TableCell>{getStatusBadge(app.statusName)}</TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm">
-                                                View Application <ArrowRight className="ml-2 h-4 w-4" />
+                                            <Button asChild variant="ghost" size="sm">
+                                                <Link href={`/jobs/${app.jobId}`}>
+                                                    View Application <ArrowRight className="ml-2 h-4 w-4" />
+                                                </Link>
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -112,5 +115,3 @@ export default function ApplicationsPage() {
         </div>
     );
 }
-
-    
