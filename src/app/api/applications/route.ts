@@ -6,21 +6,40 @@ export async function GET(request: Request) {
     const db = await getDb();
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const jobId = searchParams.get('jobId');
     
     let applications;
     const baseQuery = `
         SELECT 
             a.*,
-            s.name as statusName
+            s.name as statusName,
+            u.name as applicantName,
+            u.email as applicantEmail,
+            u.headline as applicantHeadline
         FROM applications a
         LEFT JOIN application_statuses s ON a.statusId = s.id
+        LEFT JOIN users u ON a.userId = u.id
     `;
+    const conditions = [];
+    const params: (string | number)[] = [];
 
     if (userId) {
-      applications = await db.all(`${baseQuery} WHERE a.userId = ? ORDER BY a.appliedAt DESC`, Number(userId));
-    } else {
-      applications = await db.all(`${baseQuery} ORDER BY a.appliedAt DESC`);
+      conditions.push('a.userId = ?');
+      params.push(Number(userId));
     }
+
+    if (jobId) {
+        conditions.push('a.jobId = ?');
+        params.push(jobId);
+    }
+    
+    let query = baseQuery;
+    if(conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+    }
+    query += ' ORDER BY a.appliedAt DESC'
+
+    applications = await db.all(query, ...params);
       
     return NextResponse.json(applications);
   } catch (e) {

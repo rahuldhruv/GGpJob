@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
-import { PlusCircle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
 import { format } from "date-fns";
 import {
   DropdownMenu,
@@ -137,6 +137,12 @@ export default function RecruiterDashboard() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                         <DropdownMenuItem asChild>
+                            <Link href={`/jobs/${job.id}/applications`}>
+                                <Users className="mr-2 h-4 w-4" />
+                                View Applications
+                            </Link>
+                         </DropdownMenuItem>
                          <DropdownMenuItem asChild>
                            <Link href={`/jobs/edit/${job.id}`}>
                               <Edit className="mr-2 h-4 w-4" />

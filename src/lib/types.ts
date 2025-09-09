@@ -80,11 +80,12 @@ export interface Application {
   appliedAt: Date | string;
   // Joined fields
   statusName?: ApplicationStatus['name'];
+  applicantName?: string;
+  applicantEmail?: string;
+  applicantHeadline?: string;
 }
 
 export interface Domain {
   id: number;
   name: string;
 }
-
-    
