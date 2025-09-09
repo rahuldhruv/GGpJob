@@ -7,7 +7,22 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const { id } = params;
     const db = await getDb();
     
-    const job = await db.get('SELECT * FROM jobs WHERE id = ?', id);
+    const job = await db.get(`
+      SELECT 
+        j.*,
+        jt.name as type,
+        wt.name as workplaceType,
+        el.name as experienceLevel,
+        d.name as domain,
+        l.name as location
+      FROM jobs j
+      LEFT JOIN job_types jt ON j.jobTypeId = jt.id
+      LEFT JOIN workplace_types wt ON j.workplaceTypeId = wt.id
+      LEFT JOIN experience_levels el ON j.experienceLevelId = el.id
+      LEFT JOIN domains d ON j.domainId = d.id
+      LEFT JOIN locations l ON j.locationId = l.id
+      WHERE j.id = ?
+    `, id);
     
     if (!job) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
