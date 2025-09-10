@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useUser } from "@/contexts/user-context";
@@ -42,7 +43,7 @@ export default function ProfilePage() {
                 {user.role === 'Job Seeker' && (
                     <>
                         <Separator />
-                        <ProfileSections userId={user.id} />
+                        <ProfileSections userId={user.id} isEditable={true} />
                     </>
                 )}
 

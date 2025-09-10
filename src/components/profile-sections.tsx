@@ -29,6 +29,7 @@ type ProfileData = {
 
 interface ProfileSectionsProps {
     userId: number;
+    isEditable?: boolean;
 }
 
 const educationSchema = z.object({
@@ -209,7 +210,7 @@ const ProfileSectionForm = ({
 };
 
 
-export function ProfileSections({ userId }: ProfileSectionsProps) {
+export function ProfileSections({ userId, isEditable = false }: ProfileSectionsProps) {
     const [data, setData] = useState<ProfileData>({ education: [], employment: [], projects: [], languages: [] });
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -315,10 +316,12 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                             <div className="space-y-4">
                                 {data.employment.map(item => (
                                     <div key={item.id} className="p-4 border rounded-lg relative group">
-                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenForm('employment', item)}><Edit className="h-4 w-4" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete('employment', item.id)}><Trash2 className="h-4 w-4" /></Button>
-                                        </div>
+                                        {isEditable && (
+                                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenForm('employment', item)}><Edit className="h-4 w-4" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete('employment', item.id)}><Trash2 className="h-4 w-4" /></Button>
+                                            </div>
+                                        )}
                                         <h3 className="font-semibold">{item.title}</h3>
                                         <p className="text-sm">{item.company} · {item.employmentType}</p>
                                         <p className="text-xs text-muted-foreground">{formatDate(item.startDate)} - {formatDate(item.endDate)} · {item.location}</p>
@@ -326,9 +329,11 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                                     </div>
                                 ))}
                             </div>
-                            <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('employment')}>
-                                <PlusCircle className="mr-2" /> Add Employment
-                            </Button>
+                             {isEditable && (
+                                <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('employment')}>
+                                    <PlusCircle className="mr-2" /> Add Employment
+                                </Button>
+                             )}
                         </AccordionContent>
                     </Card>
                 </AccordionItem>
@@ -345,10 +350,12 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                             <div className="space-y-4">
                                 {data.education.map(item => (
                                     <div key={item.id} className="p-4 border rounded-lg relative group">
+                                        {isEditable && (
                                         <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenForm('education', item)}><Edit className="h-4 w-4" /></Button>
                                             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete('education', item.id)}><Trash2 className="h-4 w-4" /></Button>
                                         </div>
+                                        )}
                                         <h3 className="font-semibold">{item.institution}</h3>
                                         <p className="text-sm">{item.degree}, {item.fieldOfStudy}</p>
                                         <p className="text-xs text-muted-foreground">{formatDate(item.startDate)} - {formatDate(item.endDate)}</p>
@@ -356,9 +363,11 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                                     </div>
                                 ))}
                             </div>
-                            <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('education')}>
-                                <PlusCircle className="mr-2" /> Add Education
-                            </Button>
+                             {isEditable && (
+                                <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('education')}>
+                                    <PlusCircle className="mr-2" /> Add Education
+                                </Button>
+                             )}
                         </AccordionContent>
                     </Card>
                 </AccordionItem>
@@ -375,10 +384,12 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                             <div className="space-y-4">
                                 {data.projects.map(item => (
                                     <div key={item.id} className="p-4 border rounded-lg relative group">
-                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenForm('projects', item)}><Edit className="h-4 w-4" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete('projects', item.id)}><Trash2 className="h-4 w-4" /></Button>
-                                        </div>
+                                        {isEditable && (
+                                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenForm('projects', item)}><Edit className="h-4 w-4" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete('projects', item.id)}><Trash2 className="h-4 w-4" /></Button>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-2">
                                            <h3 className="font-semibold">{item.name}</h3>
                                            {item.url && <a href={item.url} target="_blank" rel="noopener noreferrer"><LinkIcon className="h-4 w-4 text-primary hover:underline"/></a>}
@@ -388,9 +399,11 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                                     </div>
                                 ))}
                             </div>
-                            <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('projects')}>
-                                <PlusCircle className="mr-2" /> Add Project
-                            </Button>
+                            {isEditable && (
+                                <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('projects')}>
+                                    <PlusCircle className="mr-2" /> Add Project
+                                </Button>
+                            )}
                         </AccordionContent>
                     </Card>
                 </AccordionItem>
@@ -407,18 +420,22 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                            <div className="space-y-4">
                                 {data.languages.map(item => (
                                     <div key={item.id} className="p-4 border rounded-lg relative group">
-                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenForm('languages', item)}><Edit className="h-4 w-4" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete('languages', item.id)}><Trash2 className="h-4 w-4" /></Button>
-                                        </div>
+                                        {isEditable && (
+                                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenForm('languages', item)}><Edit className="h-4 w-4" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete('languages', item.id)}><Trash2 className="h-4 w-4" /></Button>
+                                            </div>
+                                        )}
                                         <h3 className="font-semibold">{item.language}</h3>
                                         <p className="text-sm text-muted-foreground">{item.proficiency}</p>
                                     </div>
                                 ))}
-                            </div>
+                           </div>
+                           {isEditable && (
                             <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('languages')}>
                                 <PlusCircle className="mr-2" /> Add Language
                             </Button>
+                           )}
                         </AccordionContent>
                     </Card>
                 </AccordionItem>

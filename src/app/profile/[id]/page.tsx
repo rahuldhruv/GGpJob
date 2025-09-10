@@ -104,7 +104,7 @@ export default function PublicProfilePage() {
                 {profileUser.role === 'Job Seeker' && (
                     <>
                         <Separator />
-                        <ProfileSections userId={profileUser.id} />
+                        <ProfileSections userId={profileUser.id} isEditable={isOwnProfile} />
                     </>
                 )}
             </div>
