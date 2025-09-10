@@ -425,7 +425,7 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
             </Accordion>
         
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{editingItem ? 'Edit' : 'Add'} {currentSection}</DialogTitle>
                         <DialogDescription>
