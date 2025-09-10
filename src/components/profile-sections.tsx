@@ -72,6 +72,111 @@ const schemas = {
 type FormData = z.infer<typeof educationSchema> | z.infer<typeof employmentSchema> | z.infer<typeof projectSchema> | z.infer<typeof languageSchema>;
 
 
+const ProfileSectionForm = ({
+  currentSection,
+  editingItem,
+  onSubmit,
+}: {
+  currentSection: Section | null;
+  editingItem: any | null;
+  onSubmit: (values: FormData) => void;
+}) => {
+    if (!currentSection) return null;
+
+    const form = useForm({
+        resolver: zodResolver(schemas[currentSection]),
+        defaultValues: editingItem || {},
+    });
+
+    const { isSubmitting } = form.formState;
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {currentSection === 'education' && (
+                    <>
+                       <FormField control={form.control} name="institution" render={({ field }) => ( <FormItem> <FormLabel>Institution</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       <FormField control={form.control} name="degree" render={({ field }) => ( <FormItem> <FormLabel>Degree</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       <FormField control={form.control} name="fieldOfStudy" render={({ field }) => ( <FormItem> <FormLabel>Field of Study</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       <div className="grid grid-cols-2 gap-4">
+                         <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                         <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       </div>
+                       <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    </>
+                )}
+                {currentSection === 'employment' && (
+                     <>
+                       <FormField control={form.control} name="company" render={({ field }) => ( <FormItem> <FormLabel>Company</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       <FormField control={form.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Title</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       <FormField control={form.control} name="employmentType" render={({ field }) => (
+                           <FormItem>
+                               <FormLabel>Employment Type</FormLabel>
+                               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                   <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                                   <SelectContent>
+                                       <SelectItem value="Full-time">Full-time</SelectItem>
+                                       <SelectItem value="Part-time">Part-time</SelectItem>
+                                       <SelectItem value="Contract">Contract</SelectItem>
+                                       <SelectItem value="Internship">Internship</SelectItem>
+                                   </SelectContent>
+                               </Select>
+                               <FormMessage />
+                           </FormItem>
+                       )}/>
+                       <FormField control={form.control} name="location" render={({ field }) => ( <FormItem> <FormLabel>Location</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                       </div>
+                       <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    </>
+                )}
+                {currentSection === 'projects' && (
+                     <>
+                        <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Project Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField control={form.control} name="url" render={({ field }) => ( <FormItem> <FormLabel>Project URL</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                            <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                        </div>
+                        <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                     </>
+                )}
+                {currentSection === 'languages' && (
+                    <>
+                        <FormField control={form.control} name="language" render={({ field }) => ( <FormItem> <FormLabel>Language</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField control={form.control} name="proficiency" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Proficiency</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select proficiency" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Beginner">Beginner</SelectItem>
+                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                        <SelectItem value="Advanced">Advanced</SelectItem>
+                                        <SelectItem value="Native">Native</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}/>
+                    </>
+                )}
+                <div className="flex justify-end gap-2 pt-4">
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting}>
+                       {isSubmitting && <LoaderCircle className="animate-spin mr-2" />}
+                       Save Changes
+                    </Button>
+                </div>
+            </form>
+        </Form>
+    );
+};
+
 export function ProfileSections({ userId }: ProfileSectionsProps) {
     const [data, setData] = useState<ProfileData>({ education: [], employment: [], projects: [], languages: [] });
     const [loading, setLoading] = useState(true);
@@ -152,104 +257,6 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
         } catch (error: any) {
             toast({ title: 'Error', description: error.message, variant: 'destructive' });
         }
-    };
-
-
-    const renderForm = () => {
-        if (!currentSection) return null;
-        
-        const form = useForm({
-            resolver: zodResolver(schemas[currentSection]),
-            defaultValues: editingItem || {},
-        });
-        
-        const { isSubmitting } = form.formState;
-
-        return (
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-                    {currentSection === 'education' && (
-                        <>
-                           <FormField control={form.control} name="institution" render={({ field }) => ( <FormItem> <FormLabel>Institution</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           <FormField control={form.control} name="degree" render={({ field }) => ( <FormItem> <FormLabel>Degree</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           <FormField control={form.control} name="fieldOfStudy" render={({ field }) => ( <FormItem> <FormLabel>Field of Study</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           <div className="grid grid-cols-2 gap-4">
-                             <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                             <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           </div>
-                           <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                        </>
-                    )}
-                    {currentSection === 'employment' && (
-                         <>
-                           <FormField control={form.control} name="company" render={({ field }) => ( <FormItem> <FormLabel>Company</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           <FormField control={form.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Title</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           <FormField control={form.control} name="employmentType" render={({ field }) => (
-                               <FormItem>
-                                   <FormLabel>Employment Type</FormLabel>
-                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                       <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
-                                       <SelectContent>
-                                           <SelectItem value="Full-time">Full-time</SelectItem>
-                                           <SelectItem value="Part-time">Part-time</SelectItem>
-                                           <SelectItem value="Contract">Contract</SelectItem>
-                                           <SelectItem value="Internship">Internship</SelectItem>
-                                       </SelectContent>
-                                   </Select>
-                                   <FormMessage />
-                               </FormItem>
-                           )}/>
-                           <FormField control={form.control} name="location" render={({ field }) => ( <FormItem> <FormLabel>Location</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                            <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                           </div>
-                           <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                        </>
-                    )}
-                    {currentSection === 'projects' && (
-                         <>
-                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Project Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                            <FormField control={form.control} name="url" render={({ field }) => ( <FormItem> <FormLabel>Project URL</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                                <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                            </div>
-                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                         </>
-                    )}
-                    {currentSection === 'languages' && (
-                        <>
-                            <FormField control={form.control} name="language" render={({ field }) => ( <FormItem> <FormLabel>Language</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                            <FormField control={form.control} name="proficiency" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Proficiency</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Select proficiency" /></SelectTrigger></FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Beginner">Beginner</SelectItem>
-                                            <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                            <SelectItem value="Advanced">Advanced</SelectItem>
-                                            <SelectItem value="Native">Native</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}/>
-                        </>
-                    )}
-                    <div className="flex justify-end gap-2 pt-4">
-                        <DialogClose asChild>
-                            <Button type="button" variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button type="submit" disabled={isSubmitting}>
-                           {isSubmitting && <LoaderCircle className="animate-spin mr-2" />}
-                           Save Changes
-                        </Button>
-                    </div>
-                </form>
-            </Form>
-        );
     };
     
     const formatDate = (dateStr: string | undefined) => {
@@ -393,9 +400,14 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
                             Fill in the details below.
                         </DialogDescription>
                     </DialogHeader>
-                    {renderForm()}
+                    <ProfileSectionForm 
+                        currentSection={currentSection}
+                        editingItem={editingItem}
+                        onSubmit={handleFormSubmit}
+                    />
                 </DialogContent>
             </Dialog>
        </>
     )
 }
+
