@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -112,7 +113,7 @@ export default function EmployeeDashboard() {
               <TableHead>Job Title</TableHead>
               <TableHead>Date Posted</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Referrals</TableHead>
+              <TableHead>Applicants</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -126,7 +127,7 @@ export default function EmployeeDashboard() {
                     Open
                   </Badge>
                 </TableCell>
-                <TableCell>{Math.floor(Math.random() * 10)}</TableCell>
+                <TableCell>{job.applicantCount}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -1,6 +1,33 @@
+
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { User } from '@/lib/types';
+
+
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+    try {
+        const { id } = params;
+        const db = await getDb();
+        const user = await db.get<User>(`
+            SELECT u.*, l.name as location
+            FROM users u
+            LEFT JOIN locations l ON u.locationId = l.id
+            WHERE u.id = ?
+        `, id);
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+        
+        const { password, ...userWithoutPassword } = user;
+
+        return NextResponse.json(userWithoutPassword);
+    } catch (e) {
+        console.error(e);
+        return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
+    }
+}
+
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
@@ -70,5 +97,3 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
     }
 }
-
-    

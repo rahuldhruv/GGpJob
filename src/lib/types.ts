@@ -84,6 +84,7 @@ export interface Application {
   applicantName?: string;
   applicantEmail?: string;
   applicantHeadline?: string;
+  applicantId?: number;
 }
 
 export interface Domain {

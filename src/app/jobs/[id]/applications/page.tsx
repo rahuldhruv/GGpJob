@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, User } from "lucide-react";
+import Link from "next/link";
 
 
 export default function JobApplicationsPage() {
@@ -107,8 +109,14 @@ export default function JobApplicationsPage() {
                                         </TableCell>
                                         <TableCell>{app.applicantEmail}</TableCell>
                                         <TableCell>{getStatusBadge(app.statusName)}</TableCell>
-                                        <TableCell className="text-right">
-                                             <Button variant="ghost" size="sm">
+                                        <TableCell className="text-right space-x-2">
+                                            <Button asChild variant="outline" size="sm">
+                                                 <Link href={`/profile/${app.applicantId}`}>
+                                                    <User className="mr-2 h-4 w-4" />
+                                                    View Profile
+                                                </Link>
+                                            </Button>
+                                            <Button variant="ghost" size="sm">
                                                 <Download className="mr-2 h-4 w-4" />
                                                 Resume
                                             </Button>

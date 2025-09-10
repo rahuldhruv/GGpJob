@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,7 +17,8 @@ export async function GET(request: Request) {
             s.name as statusName,
             u.name as applicantName,
             u.email as applicantEmail,
-            u.headline as applicantHeadline
+            u.headline as applicantHeadline,
+            u.id as applicantId
         FROM applications a
         LEFT JOIN application_statuses s ON a.statusId = s.id
         LEFT JOIN users u ON a.userId = u.id
