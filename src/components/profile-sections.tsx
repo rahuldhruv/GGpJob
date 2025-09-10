@@ -262,7 +262,7 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
 
     return (
        <>
-         <Accordion type="multiple" collapsible className="w-full space-y-6" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']}>
+         <Accordion type="multiple" className="w-full space-y-6" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']}>
                 {/* Employment Section */}
                 <AccordionItem value="item-1">
                      <Card>
