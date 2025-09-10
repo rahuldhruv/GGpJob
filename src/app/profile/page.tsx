@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ChangePasswordForm } from "@/components/change-password-form";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ProfileSections } from "@/components/profile-sections";
 
 export default function ProfilePage() {
     const { user, loading } = useUser();
@@ -37,6 +38,14 @@ export default function ProfilePage() {
                         <ProfileForm user={user} />
                     </CardContent>
                 </Card>
+
+                {user.role === 'Job Seeker' && (
+                    <>
+                        <Separator />
+                        <ProfileSections userId={user.id} />
+                    </>
+                )}
+
                 <Separator />
                 <Card>
                     <CardHeader>

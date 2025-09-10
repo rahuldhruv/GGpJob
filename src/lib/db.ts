@@ -152,6 +152,10 @@ export async function getDb() {
   
   await db.exec('DROP TABLE IF EXISTS applications');
   await db.exec('DROP TABLE IF EXISTS jobs');
+  await db.exec('DROP TABLE IF EXISTS user_education');
+  await db.exec('DROP TABLE IF EXISTS user_projects');
+  await db.exec('DROP TABLE IF EXISTS user_employment');
+  await db.exec('DROP TABLE IF EXISTS user_languages');
   await db.exec('DROP TABLE IF EXISTS users');
   await db.exec('DROP TABLE IF EXISTS domains');
   await db.exec('DROP TABLE IF EXISTS job_types');
@@ -247,6 +251,50 @@ export async function getDb() {
       FOREIGN KEY(jobId) REFERENCES jobs(id) ON DELETE CASCADE,
       FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY(statusId) REFERENCES application_statuses(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS user_education (
+        id INTEGER PRIMARY KEY,
+        userId INTEGER,
+        institution TEXT NOT NULL,
+        degree TEXT NOT NULL,
+        fieldOfStudy TEXT,
+        startDate TEXT,
+        endDate TEXT,
+        description TEXT,
+        FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS user_projects (
+        id INTEGER PRIMARY KEY,
+        userId INTEGER,
+        name TEXT NOT NULL,
+        description TEXT,
+        url TEXT,
+        startDate TEXT,
+        endDate TEXT,
+        FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS user_employment (
+        id INTEGER PRIMARY KEY,
+        userId INTEGER,
+        company TEXT NOT NULL,
+        title TEXT NOT NULL,
+        employmentType TEXT,
+        location TEXT,
+        startDate TEXT,
+        endDate TEXT,
+        description TEXT,
+        FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS user_languages (
+        id INTEGER PRIMARY KEY,
+        userId INTEGER,
+        language TEXT NOT NULL,
+        proficiency TEXT NOT NULL,
+        FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
 

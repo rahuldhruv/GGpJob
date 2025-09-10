@@ -90,3 +90,43 @@ export interface Domain {
   id: number;
   name: string;
 }
+
+export interface Education {
+    id: number;
+    userId: number;
+    institution: string;
+    degree: string;
+    fieldOfStudy?: string;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+}
+
+export interface Project {
+    id: number;
+    userId: number;
+    name: string;
+    description?: string;
+    url?: string;
+    startDate?: string;
+    endDate?: string;
+}
+
+export interface Employment {
+    id: number;
+    userId: number;
+    company: string;
+    title: string;
+    employmentType?: 'Full-time' | 'Part-time' | 'Contract' | 'Internship';
+    location?: string;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+}
+
+export interface Language {
+    id: number;
+    userId: number;
+    language: string;
+    proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Native';
+}
