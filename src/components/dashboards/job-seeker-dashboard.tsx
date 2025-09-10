@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -115,9 +116,9 @@ export default function JobSeekerDashboard() {
     return filters.search || filters.posted !== 'all' || filters.location.length > 0 || filters.experience !== 'all' || filters.domain.length > 0 || filters.jobType.length > 0;
   }
   
-  const locationOptions = locations.map(loc => ({ value: String(loc.id), label: loc.name }));
-  const domainOptions = domains.map(d => ({ value: String(d.id), label: d.name }));
-  const jobTypeOptions = jobTypes.map(jt => ({ value: String(jt.id), label: jt.name }));
+  const locationOptions = Array.isArray(locations) ? locations.map(loc => ({ value: String(loc.id), label: loc.name })) : [];
+  const domainOptions = Array.isArray(domains) ? domains.map(d => ({ value: String(d.id), label: d.name })) : [];
+  const jobTypeOptions = Array.isArray(jobTypes) ? jobTypes.map(jt => ({ value: String(jt.id), label: jt.name })) : [];
 
   return (
     <div className="space-y-8">
