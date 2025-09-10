@@ -9,13 +9,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Download, User } from "lucide-react";
+import { Download, User, MoreHorizontal, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast";
 
 
 export default function JobApplicationsPage() {
     const params = useParams();
     const id = params.id as string;
+    const { toast } = useToast();
     const [job, setJob] = useState<Job | null>(null);
     const [applications, setApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,6 +75,35 @@ export default function JobApplicationsPage() {
             default: return <Badge variant="outline">Applied</Badge>;
         }
     };
+    
+    const handleStatusChange = async (applicationId: string, statusId: number, statusName: string) => {
+        try {
+            const response = await fetch(`/api/applications/${applicationId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ statusId }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update status');
+            }
+            setApplications(prev => 
+                prev.map(app => 
+                    app.id === applicationId ? { ...app, statusId, statusName } : app
+                )
+            );
+            toast({
+                title: "Status Updated",
+                description: `Applicant marked as ${statusName}.`,
+            });
+        } catch (error) {
+             toast({
+                title: "Error",
+                description: "Failed to update status. Please try again.",
+                variant: "destructive",
+            });
+            console.error(error);
+        }
+    }
 
 
     if (loading) {
@@ -110,16 +149,35 @@ export default function JobApplicationsPage() {
                                         <TableCell>{app.applicantEmail}</TableCell>
                                         <TableCell>{getStatusBadge(app.statusName)}</TableCell>
                                         <TableCell className="text-right space-x-2">
-                                            <Button asChild variant="outline" size="sm">
-                                                 <Link href={`/profile/${app.applicantId}`}>
-                                                    <User className="mr-2 h-4 w-4" />
-                                                    View Profile
-                                                </Link>
-                                            </Button>
-                                            <Button variant="ghost" size="sm">
-                                                <Download className="mr-2 h-4 w-4" />
-                                                Resume
-                                            </Button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={`/profile/${app.applicantId}`}>
+                                                            <User className="mr-2 h-4 w-4" />
+                                                            View Profile
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem>
+                                                        <Download className="mr-2 h-4 w-4" />
+                                                        Resume
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                                    <DropdownMenuItem onClick={() => handleStatusChange(app.id, 4, 'Selected')}>
+                                                        <CheckCircle className="mr-2 h-4 w-4 text-green-500"/>
+                                                        Mark as Selected
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleStatusChange(app.id, 3, 'Not Suitable')} className="text-destructive">
+                                                        <XCircle className="mr-2 h-4 w-4"/>
+                                                        Mark as Not Suitable
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}
