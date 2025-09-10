@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useState, useEffect, useCallback } from 'react';
@@ -69,8 +70,38 @@ const schemas = {
     languages: languageSchema,
 };
 
-type FormData = z.infer<typeof educationSchema> | z.infer<typeof employmentSchema> | z.infer<typeof projectSchema> | z.infer<typeof languageSchema>;
+const defaultValues = {
+    education: {
+        institution: '',
+        degree: '',
+        fieldOfStudy: '',
+        startDate: '',
+        endDate: '',
+        description: ''
+    },
+    employment: {
+        company: '',
+        title: '',
+        employmentType: 'Full-time' as const,
+        location: '',
+        startDate: '',
+        endDate: '',
+        description: ''
+    },
+    projects: {
+        name: '',
+        description: '',
+        url: '',
+        startDate: '',
+        endDate: ''
+    },
+    languages: {
+        language: '',
+        proficiency: 'Beginner' as const
+    }
+};
 
+type FormData = z.infer<typeof educationSchema> | z.infer<typeof employmentSchema> | z.infer<typeof projectSchema> | z.infer<typeof languageSchema>;
 
 const ProfileSectionForm = ({
   currentSection,
@@ -85,7 +116,7 @@ const ProfileSectionForm = ({
 
     const form = useForm({
         resolver: zodResolver(schemas[currentSection]),
-        defaultValues: editingItem || {},
+        defaultValues: editingItem || defaultValues[currentSection],
     });
 
     const { isSubmitting } = form.formState;
@@ -176,6 +207,7 @@ const ProfileSectionForm = ({
         </Form>
     );
 };
+
 
 export function ProfileSections({ userId }: ProfileSectionsProps) {
     const [data, setData] = useState<ProfileData>({ education: [], employment: [], projects: [], languages: [] });
@@ -410,4 +442,3 @@ export function ProfileSections({ userId }: ProfileSectionsProps) {
        </>
     )
 }
-
