@@ -111,7 +111,7 @@ const domainsData: Omit<Domain, ''>[] = [
   { id: 7, name: "Human Resources" },
 ];
 
-const jobTypesData = [ {id: 1, name: "Full-time"}, {id: 2, name: "Part-time"}, {id: 3, name: "Contract"}, {id: 4, name: "Internship"} ];
+const jobTypesData = [ {id: 1, name: "Full-time"}, {id: 2, name: "Part-time"}, {id: 3, name: "Contract"}, {id: 4, name: "Internship"}, {id: 5, name: "Walk-in Interview"} ];
 const workplaceTypesData = [ {id: 1, name: "On-site"}, {id: 2, name: "Hybrid"}, {id: 3, name: "Remote"} ];
 const experienceLevelsData = [ {id: 1, name: "Entry Level"}, {id: 2, name: "Mid Level"}, {id: 3, name: "Senior Level"} ];
 const locationsData = [

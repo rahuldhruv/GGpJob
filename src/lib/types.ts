@@ -20,7 +20,7 @@ export interface User {
 
 export interface JobType {
   id: number;
-  name: "Full-time" | "Part-time" | "Contract" | "Internship";
+  name: "Full-time" | "Part-time" | "Contract" | "Internship" | "Walk-in Interview";
 }
 
 export interface WorkplaceType {
