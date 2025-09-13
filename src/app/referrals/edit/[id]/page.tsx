@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams, notFound } from "next/navigation";
 import type { Job } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReferralForm } from "@/components/referral-form";
-import { notFound } from "next/navigation";
 
 async function getJobData(id: string): Promise<Job | null> {
     const res = await fetch(`/api/jobs/${id}`, { cache: 'no-store' });
@@ -17,8 +17,9 @@ async function getJobData(id: string): Promise<Job | null> {
     return res.json();
 }
 
-
-export default function EditReferralPage({ params }: { params: { id: string } }) {
+export default function EditReferralPage() {
+    const params = useParams();
+    const id = params.id as string;
     const [job, setJob] = useState<Job | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export default function EditReferralPage({ params }: { params: { id: string } })
         const loadJob = async () => {
             try {
                 setLoading(true);
-                const jobData = await getJobData(params.id);
+                const jobData = await getJobData(id);
                 if (!jobData) {
                     notFound();
                 }
@@ -38,10 +39,10 @@ export default function EditReferralPage({ params }: { params: { id: string } })
                 setLoading(false);
             }
         };
-        if (params.id) {
+        if (id) {
             loadJob();
         }
-    }, [params.id]);
+    }, [id]);
 
 
     if (loading) {
