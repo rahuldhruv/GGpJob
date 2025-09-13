@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -219,7 +220,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
+                      {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -253,7 +254,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {jobTypes.map(jt => <SelectItem key={jt.id} value={String(jt.id)}>{jt.name}</SelectItem>)}
+                      {Array.isArray(jobTypes) && jobTypes.map(jt => <SelectItem key={jt.id} value={String(jt.id)}>{jt.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -273,7 +274,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                       {workplaceTypes.map(wt => <SelectItem key={wt.id} value={String(wt.id)}>{wt.name}</SelectItem>)}
+                       {Array.isArray(workplaceTypes) && workplaceTypes.map(wt => <SelectItem key={wt.id} value={String(wt.id)}>{wt.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -295,7 +296,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {experienceLevels.map(el => <SelectItem key={el.id} value={String(el.id)}>{el.name}</SelectItem>)}
+                      {Array.isArray(experienceLevels) && experienceLevels.map(el => <SelectItem key={el.id} value={String(el.id)}>{el.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -315,7 +316,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {domains.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
+                      {Array.isArray(domains) && domains.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
