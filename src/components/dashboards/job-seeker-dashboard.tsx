@@ -121,54 +121,7 @@ export default function JobSeekerDashboard() {
 
   return (
     <div className="space-y-8">
-      {recommendedJobs.length > 0 && (
-         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <ThumbsUp className="text-primary"/>
-                    Recommended For You
-                </CardTitle>
-                <CardDescription>Based on your preferred domain, here are some jobs you might be interested in.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Carousel
-                    opts={{
-                        align: "start",
-                        loop: true,
-                    }}
-                    className="w-full"
-                >
-                    <CarouselContent>
-                        {recommendedJobs.map((job) => (
-                        <CarouselItem key={job.id} className="md:basis-1/2 lg:basis-1/3">
-                            <div className="p-1 h-full">
-                               <JobCard job={job} />
-                            </div>
-                        </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                    <CarouselPrevious />
-                    <CarouselNext />
-                </Carousel>
-            </CardContent>
-         </Card>
-      )}
-
-      {user && !user.domainId && (
-         <Card className="bg-primary-foreground border-primary/20">
-            <CardHeader>
-                <CardTitle>Get Personalized Job Recommendations!</CardTitle>
-                <CardDescription>Select your preferred job domain in your profile to see jobs tailored just for you.</CardDescription>
-            </CardHeader>
-             <CardContent>
-                <Button asChild>
-                    <Link href="/profile">Go to Profile</Link>
-                </Button>
-            </CardContent>
-         </Card>
-      )}
-      
-      <Card>
+       <Card>
         <CardHeader>
           <CardTitle>Find your next job</CardTitle>
           <CardDescription>Search by title, company, or keywords. Use filters to refine your search.</CardDescription>
@@ -240,6 +193,53 @@ export default function JobSeekerDashboard() {
           </form>
         </CardContent>
       </Card>
+      
+      {user && !user.domainId && (
+         <Card className="bg-primary-foreground border-primary/20">
+            <CardHeader>
+                <CardTitle>Get Personalized Job Recommendations!</CardTitle>
+                <CardDescription>Select your preferred job domain in your profile to see jobs tailored just for you.</CardDescription>
+            </CardHeader>
+             <CardContent>
+                <Button asChild>
+                    <Link href="/profile">Go to Profile</Link>
+                </Button>
+            </CardContent>
+         </Card>
+      )}
+
+      {recommendedJobs.length > 0 && (
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <ThumbsUp className="text-primary"/>
+                    Recommended For You
+                </CardTitle>
+                <CardDescription>Based on your preferred domain, here are some jobs you might be interested in.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Carousel
+                    opts={{
+                        align: "start",
+                        loop: true,
+                    }}
+                    className="w-full"
+                >
+                    <CarouselContent>
+                        {recommendedJobs.map((job) => (
+                        <CarouselItem key={job.id} className="md:basis-1/2 lg:basis-1/3">
+                            <div className="p-1 h-full">
+                               <JobCard job={job} />
+                            </div>
+                        </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                </Carousel>
+            </CardContent>
+         </Card>
+      )}
 
       <Card>
         <CardHeader>
