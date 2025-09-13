@@ -10,6 +10,7 @@ import JobCard from '@/components/job-card';
 import { headers } from 'next/headers';
 import { getDb } from '@/lib/db';
 import { getServerSession } from '@/lib/auth'; // A helper to get user session on server
+import { ShareButton } from '@/components/share-button';
 
 async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[], userApplications: Application[] }> {
     const headersList = headers();
@@ -74,7 +75,10 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
                                     <CardTitle className="text-3xl font-bold">{job.title}</CardTitle>
                                     <CardDescription className="text-xl text-muted-foreground">{job.companyName}</CardDescription>
                                 </div>
-                                {job.isReferral && <Badge variant="secondary">Referral</Badge>}
+                                <div className="flex items-center gap-2">
+                                     {job.isReferral && <Badge variant="secondary">Referral</Badge>}
+                                     <ShareButton jobId={job.id} jobTitle={job.title} />
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent>
