@@ -40,11 +40,6 @@ export default function JobSeekerDashboard() {
       filters.domain.forEach(dom => params.append('domain', dom));
       filters.jobType.forEach(type => params.append('jobType', type));
 
-      const hasNoFilters = !filters.search && filters.posted === 'all' && filters.location.length === 0 && filters.experience === 'all' && filters.domain.length === 0 && filters.jobType.length === 0;
-      if (hasNoFilters) {
-        params.append('limit', '3');
-      }
-
       const jobsUrl = `/api/jobs?${params.toString()}`;
       const jobsRes = await fetch(jobsUrl);
       const jobsData = await jobsRes.json();
@@ -70,21 +65,7 @@ export default function JobSeekerDashboard() {
   }
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setLoading(true);
-      try {
-        await fetchFilterData();
-        const initialJobsUrl = `/api/jobs?limit=3`;
-        const initialJobsRes = await fetch(initialJobsUrl);
-        const initialJobsData = await initialJobsRes.json();
-        setJobs(Array.isArray(initialJobsData) ? initialJobsData : []);
-      } catch (error) {
-        console.error("Failed to fetch data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInitialData();
+    fetchFilterData();
   }, []);
 
   useEffect(() => {
@@ -197,7 +178,7 @@ export default function JobSeekerDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{filters.search ? `Search Results for "${filters.search}"` : 'Featured Jobs'}</CardTitle>
+          <CardTitle>{filters.search ? `Search Results for "${filters.search}"` : 'Job Openings'}</CardTitle>
         </CardHeader>
         <CardContent>
            {loading ? (
