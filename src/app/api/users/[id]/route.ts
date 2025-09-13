@@ -32,7 +32,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const { firstName, lastName, email, phone, headline, locationId, resume } = await request.json();
+        const { firstName, lastName, email, phone, headline, locationId, domainId, resume } = await request.json();
         
         if (!firstName || !lastName || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -45,7 +45,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         const resumePath = resume ? `/resumes/user-${id}-${resume.name}` : null;
         
         const result = await db.run(
-            'UPDATE users SET firstName = ?, lastName = ?, name = ?, email = ?, phone = ?, headline = ?, locationId = ?, resume = ? WHERE id = ?',
+            'UPDATE users SET firstName = ?, lastName = ?, name = ?, email = ?, phone = ?, headline = ?, locationId = ?, domainId = ?, resume = ? WHERE id = ?',
             firstName,
             lastName,
             `${firstName} ${lastName}`,
@@ -53,6 +53,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             phone,
             headline,
             locationId,
+            domainId,
             resumePath,
             id
         );
@@ -61,7 +62,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const updatedUser: Omit<User, 'password' | 'role'> = await db.get('SELECT id, firstName, lastName, name, email, phone, role, headline, locationId, resume FROM users WHERE id = ?', id);
+        const updatedUser: Omit<User, 'password' | 'role'> = await db.get('SELECT id, firstName, lastName, name, email, phone, role, headline, locationId, domainId, resume FROM users WHERE id = ?', id);
 
         return NextResponse.json(updatedUser, { status: 200 });
 

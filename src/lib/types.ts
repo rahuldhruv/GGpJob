@@ -13,6 +13,7 @@ export interface User {
   password?: string;
   headline?: string;
   locationId?: number;
+  domainId?: number;
   resume?: string;
   // Joined fields
   location?: string;

@@ -11,7 +11,7 @@ const saltRounds = 10;
 let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
 const usersData: Omit<User, 'id' | 'password'> & { passwordPlain: string }[] = [
-  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123", locationId: 4 },
+  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123", locationId: 4, domainId: 1 },
   { firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", passwordPlain: "password123" },
   { firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", passwordPlain: "password123" },
   { firstName: "Super", lastName: "Admin", name: "Super Admin", email: "admin@gmail.com", role: "Super Admin", phone: "444-555-6666", passwordPlain: "admin123", headline: "Platform Administrator" },
@@ -92,6 +92,35 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     domainId: 1,
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
+    contactPhone: "123-456-7890",
+  },
+   {
+    title: "Junior Software Engineer",
+    companyName: "Startup Hub",
+    locationId: 3, 
+    jobTypeId: 1, 
+    workplaceTypeId: 1, 
+    salary: "$90,000 - $110,000",
+    description: "Eager to learn and grow? Join our dynamic team as a Junior Software Engineer and work on exciting new projects.",
+    recruiterId: 2,
+    experienceLevelId: 1,
+    domainId: 1, 
+    vacancies: 3,
+    contactEmail: "hr@startuphub.com",
+    contactPhone: "111-222-3333",
+  },
+   {
+    title: "Lead Product Designer",
+    companyName: "Creative Solutions",
+    locationId: 1, 
+    jobTypeId: 1, 
+    workplaceTypeId: 3, 
+    description: "Lead our design team and shape the future of our products. Extensive experience in product design required.",
+    recruiterId: 2,
+    experienceLevelId: 3, 
+    domainId: 4,
+    vacancies: 1,
+    contactEmail: "recruiter@creative.com",
     contactPhone: "123-456-7890",
   },
 ];
@@ -178,8 +207,10 @@ export async function getDb() {
       headline TEXT,
       password TEXT,
       locationId INTEGER,
+      domainId INTEGER,
       resume TEXT,
-      FOREIGN KEY(locationId) REFERENCES locations(id) ON DELETE SET NULL
+      FOREIGN KEY(locationId) REFERENCES locations(id) ON DELETE SET NULL,
+      FOREIGN KEY(domainId) REFERENCES domains(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS domains (
@@ -342,7 +373,7 @@ export async function getDb() {
 
     // Users
     const userStmt = await db.prepare(
-      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password, locationId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password, locationId, domainId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     for (const [index, user] of usersData.entries()) {
       const hashedPassword = await bcrypt.hash(user.passwordPlain, saltRounds);
@@ -356,7 +387,8 @@ export async function getDb() {
         user.headline ?? null,
         user.phone,
         hashedPassword,
-        user.locationId ?? null
+        user.locationId ?? null,
+        user.domainId ?? null
       );
     }
     await userStmt.finalize();
@@ -410,5 +442,3 @@ export async function getDb() {
 
   return db;
 }
-
-    

@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
-import { User, Location } from "@/lib/types";
+import { User, Location, Domain } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useEffect, useState } from "react";
@@ -27,6 +27,7 @@ const formSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number."),
   headline: z.string().optional(),
   locationId: z.coerce.number().optional(),
+  domainId: z.coerce.number().optional(),
   resume: z.any().optional(), // Using `any` to handle FileList from input
 });
 
@@ -40,18 +41,22 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const { toast } = useToast();
   const { setUser } = useUser();
   const [locations, setLocations] = useState<Location[]>([]);
+  const [domains, setDomains] = useState<Domain[]>([]);
 
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchData = async () => {
         try {
-            const res = await fetch('/api/locations');
-            const data = await res.json();
-            setLocations(data);
+            const [locationsRes, domainsRes] = await Promise.all([
+                fetch('/api/locations'),
+                fetch('/api/domains')
+            ]);
+            setLocations(await locationsRes.json());
+            setDomains(await domainsRes.json());
         } catch (error) {
-            console.error("Failed to fetch locations", error);
+            console.error("Failed to fetch form data", error);
         }
     }
-    fetchLocations();
+    fetchData();
   }, []);
 
   const form = useForm<ProfileFormValues>({
@@ -63,6 +68,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       phone: user.phone,
       headline: user.headline || "",
       locationId: user.locationId,
+      domainId: user.domainId,
     },
   });
 
@@ -190,7 +196,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                        {locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
+                        {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
                 <FormMessage />
@@ -198,24 +204,46 @@ export function ProfileForm({ user }: ProfileFormProps) {
           )}
         />
         {user.role === 'Job Seeker' && (
-            <FormField
+            <>
+                <FormField
                 control={form.control}
-                name="resume"
-                render={({ field: { value, onChange, ...field } }) => (
+                name="domainId"
+                render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Resume</FormLabel>
-                        <FormControl>
-                            <Input 
-                            type="file" 
-                            accept=".pdf,.doc,.docx"
-                            onChange={(e) => onChange(e.target.files)}
-                            {...field}
-                            />
-                        </FormControl>
+                        <FormLabel>Preferred Domain</FormLabel>
+                        <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select your preferred domain" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {Array.isArray(domains) && domains.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                         <FormMessage />
                     </FormItem>
                 )}
-            />
+                />
+                <FormField
+                    control={form.control}
+                    name="resume"
+                    render={({ field: { value, onChange, ...field } }) => (
+                        <FormItem>
+                            <FormLabel>Resume</FormLabel>
+                            <FormControl>
+                                <Input 
+                                type="file" 
+                                accept=".pdf,.doc,.docx"
+                                onChange={(e) => onChange(e.target.files)}
+                                {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </>
         )}
         <div className="flex justify-end pt-2">
           <Button type="submit" disabled={isSubmitting}>
