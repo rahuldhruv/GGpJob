@@ -59,6 +59,7 @@ export default function Header() {
       </nav>
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+        {user?.role !== 'Recruiter' && (
          <form onSubmit={handleSearch} className="ml-auto flex-1 sm:flex-initial">
            <div className="relative">
              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -70,6 +71,7 @@ export default function Header() {
              />
            </div>
          </form>
+        )}
         <div className="ml-auto flex items-center gap-2">
            {user ? (
             <DropdownMenu>
