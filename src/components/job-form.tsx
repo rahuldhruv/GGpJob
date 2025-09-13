@@ -132,6 +132,7 @@ export function JobForm({ job }: JobFormProps) {
       const payload = {
         ...data,
         title: data.jobTitle,
+        description: data.jobDescription,
         isReferral: false,
         recruiterId: user.id,
         postedAt: job?.postedAt || new Date().toISOString(),
