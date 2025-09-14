@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useUser } from "@/contexts/user-context";
-import { Sheet, SheetContent, SheetClose, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetClose, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "./ui/separator";
 import { JobFilters } from "./job-filters";
 import { useEffect, useState } from "react";
@@ -76,6 +76,9 @@ export default function Header() {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
+              <SheetHeader>
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              </SheetHeader>
                 <nav className="grid gap-6 text-lg font-medium">
                     <Link href="/" className="flex items-center gap-2 font-semibold">
                         <BriefcaseBusiness className="h-6 w-6 text-primary" />
@@ -178,6 +181,9 @@ export default function Header() {
                     </Button>
                   </SheetTrigger>
                   <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle className="sr-only">Job Filters</SheetTitle>
+                    </SheetHeader>
                     <JobFilters isSheet={true} />
                   </SheetContent>
                 </Sheet>
