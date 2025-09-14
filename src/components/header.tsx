@@ -30,12 +30,19 @@ import { useUser } from "@/contexts/user-context";
 import { Sheet, SheetContent, SheetClose, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "./ui/separator";
 import { JobFilters } from "./job-filters";
+import { useEffect, useState } from "react";
 
 export default function Header() {
-  const { user, setUser } = useUser();
+  const { user, setUser, loading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const isJobSearchPage = pathname === '/jobs';
 
@@ -52,7 +59,9 @@ export default function Header() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const searchQuery = formData.get("search") as string;
-    router.push(`/jobs?search=${searchQuery}`);
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set('search', searchQuery);
+    router.push(`/jobs?${newParams.toString()}`);
   }
 
   const activeFilterCount = () => {
@@ -83,14 +92,14 @@ export default function Header() {
                         <BriefcaseBusiness className="h-6 w-6 text-primary" />
                         <span className="text-lg">GGP Portal</span>
                     </Link>
-                    {user && (
+                    {isClient && !loading && user && (
                       <SheetClose asChild>
                           <Link href="/" className="text-muted-foreground hover:text-foreground">
                               Dashboard
                           </Link>
                       </SheetClose>
                     )}
-                    {user?.role === 'Job Seeker' && (
+                    {isClient && !loading && user?.role === 'Job Seeker' && (
                         <SheetClose asChild>
                             <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
                                 Jobs
@@ -98,7 +107,7 @@ export default function Header() {
                         </SheetClose>
                     )}
                 </nav>
-                {user && (
+                {isClient && !loading && user && (
                     <>
                         <Separator className="my-4" />
                         <nav className="grid gap-4 text-lg font-medium">
@@ -142,12 +151,12 @@ export default function Header() {
 
 
       <nav className="ml-6 hidden md:flex items-center gap-6 text-sm font-medium">
-        {user && (
+        {isClient && !loading && user && (
           <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
             Dashboard
           </Link>
         )}
-        {user?.role === 'Job Seeker' && (
+        {isClient && !loading && user?.role === 'Job Seeker' && (
             <Link href="/jobs" className="transition-colors hover:text-foreground/80 text-foreground/60">
                 Jobs
             </Link>
@@ -155,7 +164,7 @@ export default function Header() {
       </nav>
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        {user && user?.role !== 'Recruiter' && (
+        {isClient && !loading && user && user?.role !== 'Recruiter' && (
          <form onSubmit={handleSearch} className="ml-auto flex-1 sm:flex-initial">
            <div className="relative">
              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -164,12 +173,13 @@ export default function Header() {
                name="search"
                placeholder="Search jobs..."
                className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+               defaultValue={searchParams.get('search') || ''}
              />
            </div>
          </form>
         )}
         <div className="ml-auto flex items-center gap-2">
-           {isJobSearchPage && (
+           {isClient && !loading && isJobSearchPage && (
               <div className="md:hidden">
                 <Sheet>
                   <SheetTrigger asChild>
@@ -184,7 +194,7 @@ export default function Header() {
                 </Sheet>
               </div>
            )}
-           {user ? (
+           {isClient && !loading && user ? (
             <div className="hidden md:block">
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -224,20 +234,22 @@ export default function Header() {
                 </DropdownMenu>
             </div>
           ) : (
-            <>
-              <Button asChild variant="ghost">
-                <Link href="/login">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Login
-                </Link>
-              </Button>
-              <Button asChild>
-                 <Link href="/signup">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Sign Up
-                 </Link>
-              </Button>
-            </>
+             isClient && !loading && (
+                <>
+                <Button asChild variant="ghost">
+                    <Link href="/login">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                    </Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/signup">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Sign Up
+                    </Link>
+                </Button>
+                </>
+             )
           )}
         </div>
       </div>
