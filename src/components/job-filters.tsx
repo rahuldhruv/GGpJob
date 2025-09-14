@@ -4,10 +4,11 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Domain, ExperienceLevel, Location, JobType } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelectFilter } from "./multi-select-filter";
+import { X } from "lucide-react";
 
 export function JobFilters() {
     const router = useRouter();
@@ -61,14 +62,37 @@ export function JobFilters() {
         router.push(`/jobs?${params.toString()}`);
     }
 
+    const clearFilters = () => {
+        const params = new URLSearchParams(searchParams);
+        params.delete('posted');
+        params.delete('location');
+        params.delete('experience');
+        params.delete('domain');
+        params.delete('jobType');
+        router.push(`/jobs?${params.toString()}`);
+    }
+
+    const hasActiveFilters = 
+        filters.posted !== 'all' ||
+        filters.location.length > 0 ||
+        filters.experience !== 'all' ||
+        filters.domain.length > 0 ||
+        filters.jobType.length > 0;
+
     const locationOptions = Array.isArray(locations) ? locations.map(loc => ({ value: String(loc.id), label: loc.name })) : [];
     const domainOptions = Array.isArray(domains) ? domains.map(d => ({ value: String(d.id), label: d.name })) : [];
     const jobTypeOptions = Array.isArray(jobTypes) ? jobTypes.map(jt => ({ value: String(jt.id), label: jt.name })) : [];
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Filter Jobs</CardTitle>
+                {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                        <X className="mr-2 h-4 w-4"/>
+                        Clear
+                    </Button>
+                )}
             </CardHeader>
             <CardContent className="space-y-4">
                 <div>

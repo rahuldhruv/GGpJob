@@ -84,12 +84,6 @@ function JobSearchContent() {
                             </CardDescription>
                         </div>
                         <div className="flex items-center gap-2">
-                             {hasActiveFilters && (
-                                <Button variant="ghost" size="sm" onClick={() => window.location.href = '/jobs'}>
-                                    <X className="mr-2 h-4 w-4"/>
-                                    Clear Filters
-                                </Button>
-                             )}
                              <Sheet>
                                 <SheetTrigger asChild>
                                     <Button variant="outline" size="sm" className="lg:hidden">
