@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,6 +10,7 @@ import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelectFilter } from "./multi-select-filter";
 import { X } from "lucide-react";
+import { SheetClose } from "@/components/ui/sheet";
 
 export function JobFilters() {
     const router = useRouter();
@@ -150,7 +152,14 @@ export function JobFilters() {
                     />
                 </div>
 
-                <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
+                <div className="flex flex-col space-y-2">
+                    <SheetClose asChild>
+                        <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                        <Button variant="outline" className="w-full md:hidden">Cancel</Button>
+                    </SheetClose>
+                </div>
             </CardContent>
         </Card>
     );
