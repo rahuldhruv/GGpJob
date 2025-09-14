@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link";
@@ -66,9 +67,11 @@ export default function Header() {
                     <Link href="/" className="text-muted-foreground hover:text-foreground">
                         Dashboard
                     </Link>
-                    <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
-                        Jobs
-                    </Link>
+                    {user?.role === 'Job Seeker' && (
+                        <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
+                            Jobs
+                        </Link>
+                    )}
                 </nav>
             </SheetContent>
         </Sheet>
@@ -83,9 +86,11 @@ export default function Header() {
         <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
           Dashboard
         </Link>
-        <Link href="/jobs" className="transition-colors hover:text-foreground/80 text-foreground/60">
-            Jobs
-        </Link>
+        {user?.role === 'Job Seeker' && (
+            <Link href="/jobs" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                Jobs
+            </Link>
+        )}
       </nav>
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
