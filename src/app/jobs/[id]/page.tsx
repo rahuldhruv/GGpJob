@@ -1,6 +1,6 @@
 
 import { notFound } from 'next/navigation';
-import type { Job, Application } from '@/lib/types';
+import type { Job, Application, User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign, Workflow, Clock } from 'lucide-react';
@@ -12,7 +12,7 @@ import { getDb } from '@/lib/db';
 import { getServerSession } from '@/lib/auth'; // A helper to get user session on server
 import { ShareButton } from '@/components/share-button';
 
-async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[], userApplications: Application[] }> {
+async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[], userApplications: Application[], user: User | null }> {
     const headersList = headers();
     const protocol = headersList.get('x-forwarded-proto') || 'http';
     const host = headersList.get('host') || 'localhost:3000';
@@ -20,7 +20,7 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
 
     const jobRes = await fetch(`${baseUrl}/api/jobs/${id}`, { cache: 'no-store' });
     if (!jobRes.ok) {
-        if (jobRes.status === 404) return { job: null, relatedJobs: [], userApplications: [] };
+        if (jobRes.status === 404) return { job: null, relatedJobs: [], userApplications: [], user: null };
         throw new Error('Failed to fetch job data');
     }
     const job: Job = await jobRes.json();
@@ -42,11 +42,11 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
        userApplications = await db.all('SELECT * FROM applications WHERE userId = ?', session.user.id);
     }
     
-    return { job, relatedJobs, userApplications };
+    return { job, relatedJobs, userApplications, user: session?.user || null };
 }
 
 export default async function JobDetailsPage({ params }: { params: { id: string } }) {
-    const { job, relatedJobs, userApplications } = await getJobData(params.id);
+    const { job, relatedJobs, userApplications, user } = await getJobData(params.id);
 
     if (!job) {
         notFound();
@@ -118,9 +118,11 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
                            <p className="text-sm text-muted-foreground">
                             Contact for more info: <span className="font-semibold text-foreground">{job.contactEmail}</span>
                            </p>
-                           <p className="text-sm text-muted-foreground">
-                            Phone: <span className="font-semibold text-foreground">{job.contactPhone}</span>
-                           </p>
+                            {user?.role !== 'Job Seeker' && job.contactPhone && (
+                                <p className="text-sm text-muted-foreground">
+                                    Phone: <span className="font-semibold text-foreground">{job.contactPhone}</span>
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                     {relatedJobs.length > 0 && (
