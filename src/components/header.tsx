@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import Link from "next/link";
@@ -63,18 +64,6 @@ export default function Header() {
     newParams.set('search', searchQuery);
     router.push(`/jobs?${newParams.toString()}`);
   }
-
-  const activeFilterCount = () => {
-    let count = 0;
-    if (searchParams.get('search')) count++;
-    if (searchParams.get('posted') && searchParams.get('posted') !== 'all') count++;
-    if (searchParams.getAll('location').length > 0) count++;
-    if (searchParams.get('experience') && searchParams.get('experience') !== 'all') count++;
-    if (searchParams.getAll('domain').length > 0) count++;
-    if (searchParams.getAll('jobType').length > 0) count++;
-    return count;
-  }
-  const hasActiveFilters = activeFilterCount() > 0;
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
@@ -189,7 +178,7 @@ export default function Header() {
                     </Button>
                   </SheetTrigger>
                   <SheetContent>
-                    <JobFilters />
+                    <JobFilters isSheet={true} />
                   </SheetContent>
                 </Sheet>
               </div>

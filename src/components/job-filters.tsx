@@ -11,18 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MultiSelectFilter } from "./multi-select-filter";
 import { X } from "lucide-react";
 import { SheetClose } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-export function JobFilters() {
+interface JobFiltersProps {
+    isSheet?: boolean;
+}
+
+export function JobFilters({ isSheet = false }: JobFiltersProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const isMobile = useIsMobile();
-    const [isClient, setIsClient] = useState(false);
-
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-
+    
     const [locations, setLocations] = useState<Location[]>([]);
     const [domains, setDomains] = useState<Domain[]>([]);
     const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
@@ -170,13 +167,13 @@ export function JobFilters() {
                 </div>
 
                 <div className="flex flex-col space-y-2 pt-2">
-                   {isClient && isMobile ? (
+                   {isSheet ? (
                         <SheetClose asChild>
                             {ApplyButton}
                         </SheetClose>
                     ) : ApplyButton}
 
-                    {isClient && isMobile && (
+                    {isSheet && (
                         <SheetClose asChild>
                             <Button variant="outline" className="w-full">Cancel</Button>
                         </SheetClose>
