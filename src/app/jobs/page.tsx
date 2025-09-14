@@ -56,19 +56,6 @@ function JobSearchContent() {
         fetchJobs(filters);
     }, [searchParams, fetchJobs]);
     
-    const activeFilterCount = () => {
-        let count = 0;
-        if (searchParams.get('search')) count++;
-        if (searchParams.get('posted') && searchParams.get('posted') !== 'all') count++;
-        if (searchParams.getAll('location').length > 0) count++;
-        if (searchParams.get('experience') && searchParams.get('experience') !== 'all') count++;
-        if (searchParams.getAll('domain').length > 0) count++;
-        if (searchParams.getAll('jobType').length > 0) count++;
-        return count;
-    }
-    
-    const hasActiveFilters = activeFilterCount() > 0;
-
     return (
         <div className="grid lg:grid-cols-[280px_1fr] gap-8">
             <div className="hidden lg:block">
@@ -76,25 +63,12 @@ function JobSearchContent() {
             </div>
             <div>
                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
+                    <CardHeader>
                         <div>
                             <CardTitle>Job Openings</CardTitle>
                             <CardDescription>
                                 {loading ? 'Searching for jobs...' : `Found ${jobs.length} job openings.`}
                             </CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2">
-                             <Sheet>
-                                <SheetTrigger asChild>
-                                    <Button variant="outline" size="sm" className="lg:hidden">
-                                        <SlidersHorizontal className="mr-2 h-4 w-4"/>
-                                        Filters {hasActiveFilters && `(${activeFilterCount()})`}
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent>
-                                    <JobFilters />
-                                </SheetContent>
-                            </Sheet>
                         </div>
                     </CardHeader>
                     <CardContent>

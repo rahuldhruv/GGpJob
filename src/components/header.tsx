@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   BriefcaseBusiness,
   Settings,
@@ -12,7 +12,8 @@ import {
   UserPlus,
   LayoutGrid,
   Search,
-  Menu
+  Menu,
+  SlidersHorizontal
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,10 +29,15 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useUser } from "@/contexts/user-context";
 import { Sheet, SheetContent, SheetClose, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "./ui/separator";
+import { JobFilters } from "./job-filters";
 
 export default function Header() {
   const { user, setUser } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const isJobSearchPage = pathname === '/jobs';
 
   const handleLogout = () => {
     setUser(null);
@@ -48,6 +54,18 @@ export default function Header() {
     const searchQuery = formData.get("search") as string;
     router.push(`/jobs?search=${searchQuery}`);
   }
+
+  const activeFilterCount = () => {
+    let count = 0;
+    if (searchParams.get('search')) count++;
+    if (searchParams.get('posted') && searchParams.get('posted') !== 'all') count++;
+    if (searchParams.getAll('location').length > 0) count++;
+    if (searchParams.get('experience') && searchParams.get('experience') !== 'all') count++;
+    if (searchParams.getAll('domain').length > 0) count++;
+    if (searchParams.getAll('jobType').length > 0) count++;
+    return count;
+  }
+  const hasActiveFilters = activeFilterCount() > 0;
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
@@ -147,6 +165,21 @@ export default function Header() {
          </form>
         )}
         <div className="ml-auto flex items-center gap-2">
+           {isJobSearchPage && (
+              <div className="md:hidden">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <SlidersHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Open filters</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <JobFilters />
+                  </SheetContent>
+                </Sheet>
+              </div>
+           )}
            {user ? (
             <div className="hidden md:block">
                 <DropdownMenu>
