@@ -17,6 +17,12 @@ export function JobFilters() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isMobile = useIsMobile();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     const [locations, setLocations] = useState<Location[]>([]);
     const [domains, setDomains] = useState<Domain[]>([]);
     const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
@@ -83,11 +89,12 @@ export function JobFilters() {
     }
 
     const hasActiveFilters = 
-        searchParams.get('posted') !== null ||
-        searchParams.getAll('location').length > 0 ||
-        searchParams.get('experience') !== null ||
-        searchParams.getAll('domain').length > 0 ||
-        searchParams.getAll('jobType').length > 0;
+        searchParams.get('posted') !== null && searchParams.get('posted') !== 'all' ||
+        searchParams.getAll('location').length > 0 && !searchParams.getAll('location').includes('all') ||
+        searchParams.get('experience') !== null && searchParams.get('experience') !== 'all' ||
+        searchParams.getAll('domain').length > 0 && !searchParams.getAll('domain').includes('all') ||
+        searchParams.getAll('jobType').length > 0 && !searchParams.getAll('jobType').includes('all');
+
 
     const locationOptions = Array.isArray(locations) ? locations.map(loc => ({ value: String(loc.id), label: loc.name })) : [];
     const domainOptions = Array.isArray(domains) ? domains.map(d => ({ value: String(d.id), label: d.name })) : [];
@@ -163,14 +170,14 @@ export function JobFilters() {
                 </div>
 
                 <div className="flex flex-col space-y-2 pt-2">
-                    {isMobile ? (
-                         <SheetClose asChild>
-                           {ApplyButton}
-                         </SheetClose>
+                   {isClient && isMobile ? (
+                        <SheetClose asChild>
+                            {ApplyButton}
+                        </SheetClose>
                     ) : ApplyButton}
 
-                    {isMobile && (
-                         <SheetClose asChild>
+                    {isClient && isMobile && (
+                        <SheetClose asChild>
                             <Button variant="outline" className="w-full">Cancel</Button>
                         </SheetClose>
                     )}
