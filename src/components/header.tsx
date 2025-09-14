@@ -26,7 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useUser } from "@/contexts/user-context";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetClose, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "./ui/separator";
 
 export default function Header() {
   const { user, setUser } = useUser();
@@ -58,21 +59,59 @@ export default function Header() {
                     <span className="sr-only">Toggle navigation menu</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left">
+            <SheetContent side="left" className="flex flex-col">
                 <nav className="grid gap-6 text-lg font-medium">
                     <Link href="/" className="flex items-center gap-2 font-semibold">
                         <BriefcaseBusiness className="h-6 w-6 text-primary" />
                         <span className="text-lg">GGP Portal</span>
                     </Link>
-                    <Link href="/" className="text-muted-foreground hover:text-foreground">
-                        Dashboard
-                    </Link>
-                    {user?.role === 'Job Seeker' && (
-                        <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
-                            Jobs
+                    <SheetClose asChild>
+                        <Link href="/" className="text-muted-foreground hover:text-foreground">
+                            Dashboard
                         </Link>
+                    </SheetClose>
+                    {user?.role === 'Job Seeker' && (
+                        <SheetClose asChild>
+                            <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
+                                Jobs
+                            </Link>
+                        </SheetClose>
                     )}
                 </nav>
+                {user && (
+                    <>
+                        <Separator className="my-4" />
+                        <nav className="grid gap-4 text-lg font-medium">
+                           <div className="text-sm font-semibold text-muted-foreground px-1">My Account</div>
+                            <SheetClose asChild>
+                                <Link href="/profile" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
+                                    <User className="h-5 w-5" />
+                                    Profile
+                                </Link>
+                            </SheetClose>
+                            {user.role === 'Job Seeker' && (
+                                <SheetClose asChild>
+                                    <Link href="/applications" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
+                                        <LayoutGrid className="h-5 w-5" />
+                                        My Applications
+                                    </Link>
+                                </SheetClose>
+                            )}
+                             <SheetClose asChild>
+                                <Link href="#" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
+                                    <Settings className="h-5 w-5" />
+                                    Settings
+                                </Link>
+                            </SheetClose>
+                        </nav>
+                         <div className="mt-auto">
+                            <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-lg text-muted-foreground">
+                                <LogOut className="mr-3 h-5 w-5" />
+                                Logout
+                            </Button>
+                        </div>
+                    </>
+                )}
             </SheetContent>
         </Sheet>
         <Link href="/" className="hidden md:flex items-center gap-2 font-semibold whitespace-nowrap">
@@ -109,42 +148,44 @@ export default function Header() {
         )}
         <div className="ml-auto flex items-center gap-2">
            {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar>
-                    <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                 {user.role === 'Job Seeker' && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/applications">
-                      <LayoutGrid className="mr-2 h-4 w-4" />
-                      <span>My Applications</span>
+            <div className="hidden md:block">
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar>
+                        <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+                    </Avatar>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
                     </Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    </DropdownMenuItem>
+                    {user.role === 'Job Seeker' && (
+                    <DropdownMenuItem asChild>
+                        <Link href="/applications">
+                        <LayoutGrid className="mr-2 h-4 w-4" />
+                        <span>My Applications</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
           ) : (
             <>
               <Button asChild variant="ghost">
