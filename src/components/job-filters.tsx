@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MultiSelectFilter } from "./multi-select-filter";
 import { X } from "lucide-react";
 import { SheetClose } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function JobFilters() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const isMobile = useIsMobile();
     const [locations, setLocations] = useState<Location[]>([]);
     const [domains, setDomains] = useState<Domain[]>([]);
     const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
@@ -65,25 +67,35 @@ export function JobFilters() {
     }
 
     const clearFilters = () => {
-        const params = new URLSearchParams(searchParams);
-        params.delete('posted');
-        params.delete('location');
-        params.delete('experience');
-        params.delete('domain');
-        params.delete('jobType');
-        router.push(`/jobs?${params.toString()}`);
+        const currentSearch = searchParams.get('search');
+        const newParams = new URLSearchParams();
+        if (currentSearch) {
+            newParams.set('search', currentSearch);
+        }
+        router.push(`/jobs?${newParams.toString()}`);
+        setFilters({
+             posted: 'all',
+             location: [],
+             experience: 'all',
+             domain: [],
+             jobType: [],
+        });
     }
 
     const hasActiveFilters = 
-        filters.posted !== 'all' ||
-        filters.location.length > 0 ||
-        filters.experience !== 'all' ||
-        filters.domain.length > 0 ||
-        filters.jobType.length > 0;
+        searchParams.get('posted') !== null ||
+        searchParams.getAll('location').length > 0 ||
+        searchParams.get('experience') !== null ||
+        searchParams.getAll('domain').length > 0 ||
+        searchParams.getAll('jobType').length > 0;
 
     const locationOptions = Array.isArray(locations) ? locations.map(loc => ({ value: String(loc.id), label: loc.name })) : [];
     const domainOptions = Array.isArray(domains) ? domains.map(d => ({ value: String(d.id), label: d.name })) : [];
     const jobTypeOptions = Array.isArray(jobTypes) ? jobTypes.map(jt => ({ value: String(jt.id), label: jt.name })) : [];
+
+    const ApplyButton = (
+        <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
+    )
 
     return (
         <Card>
@@ -138,7 +150,7 @@ export function JobFilters() {
                         </SelectTrigger>
                         <SelectContent>
                         <SelectItem value="all">All Levels</SelectItem>
-                        {experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
+                        {Array.isArray(experienceLevels) && experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -152,13 +164,18 @@ export function JobFilters() {
                     />
                 </div>
 
-                <div className="flex flex-col space-y-2">
-                    <SheetClose asChild>
-                        <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
-                    </SheetClose>
-                    <SheetClose asChild>
-                        <Button variant="outline" className="w-full md:hidden">Cancel</Button>
-                    </SheetClose>
+                <div className="flex flex-col space-y-2 pt-2">
+                    {isMobile ? (
+                         <SheetClose asChild>
+                           {ApplyButton}
+                         </SheetClose>
+                    ) : ApplyButton}
+
+                    {isMobile && (
+                         <SheetClose asChild>
+                            <Button variant="outline" className="w-full">Cancel</Button>
+                        </SheetClose>
+                    )}
                 </div>
             </CardContent>
         </Card>

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
@@ -10,29 +11,18 @@ import { JobFilters } from "@/components/job-filters";
 import { X, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function JobSearchContent() {
     const searchParams = useSearchParams();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const fetchJobs = useCallback(async (filters: any) => {
+    const isMobile = useIsMobile();
+    
+    const fetchJobs = useCallback(async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams();
-            if (filters.search) params.append('search', filters.search);
-            if (filters.posted !== 'all') params.append('posted', filters.posted);
-            if(Array.isArray(filters.location)) {
-                filters.location.forEach((loc: string) => params.append('location', loc));
-            }
-            if (filters.experience !== 'all') params.append('experience', filters.experience);
-            if(Array.isArray(filters.domain)) {
-                filters.domain.forEach((dom: string) => params.append('domain', dom));
-            }
-            if(Array.isArray(filters.jobType)) {
-                filters.jobType.forEach((type: string) => params.append('jobType', type));
-            }
-
+            const params = new URLSearchParams(searchParams.toString());
             const jobsUrl = `/api/jobs?${params.toString()}`;
             const jobsRes = await fetch(jobsUrl);
             const jobsData = await jobsRes.json();
@@ -42,19 +32,32 @@ function JobSearchContent() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [searchParams]);
 
     useEffect(() => {
-        const filters = {
-            search: searchParams.get('search') || '',
-            posted: searchParams.get('posted') || 'all',
-            location: searchParams.getAll('location'),
-            experience: searchParams.get('experience') || 'all',
-            domain: searchParams.getAll('domain'),
-            jobType: searchParams.getAll('jobType'),
-        };
-        fetchJobs(filters);
-    }, [searchParams, fetchJobs]);
+        fetchJobs();
+    }, [fetchJobs]);
+
+    const renderJobCards = () => {
+        if (loading) {
+            return <div className="text-center p-8">Loading...</div>
+        }
+        if (jobs.length > 0) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {jobs.map((job) => (
+                        <JobCard key={job.id} job={job} />
+                    ))}
+                </div>
+            )
+        }
+        return (
+            <div className="text-center p-8">
+                <p className="text-lg font-semibold">No jobs found</p>
+                <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+            </div>
+        )
+    }
     
     return (
         <div className="grid lg:grid-cols-[280px_1fr] gap-8">
@@ -72,20 +75,7 @@ function JobSearchContent() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                    {loading ? (
-                        <div className="text-center p-8">Loading...</div>
-                    ) : jobs.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {jobs.map((job) => (
-                            <JobCard key={job.id} job={job} />
-                        ))}
-                        </div>
-                    ) : (
-                        <div className="text-center p-8">
-                            <p className="text-lg font-semibold">No jobs found</p>
-                            <p className="text-muted-foreground">Try adjusting your search or filters.</p>
-                        </div>
-                    )}
+                        {renderJobCards()}
                     </CardContent>
                 </Card>
             </div>
