@@ -10,7 +10,8 @@ import {
   LogIn,
   UserPlus,
   LayoutGrid,
-  Search
+  Search,
+  Menu
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useUser } from "@/contexts/user-context";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Header() {
   const { user, setUser } = useUser();
@@ -47,14 +49,42 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
-      <Link href="/" className="flex items-center gap-2 font-semibold whitespace-nowrap">
-        <BriefcaseBusiness className="h-6 w-6 text-primary" />
-        <span className="text-lg">GGP Portal</span>
-      </Link>
+       <div className="flex items-center gap-4">
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+                <nav className="grid gap-6 text-lg font-medium">
+                    <Link href="/" className="flex items-center gap-2 font-semibold">
+                        <BriefcaseBusiness className="h-6 w-6 text-primary" />
+                        <span className="text-lg">GGP Portal</span>
+                    </Link>
+                    <Link href="/" className="text-muted-foreground hover:text-foreground">
+                        Dashboard
+                    </Link>
+                    <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
+                        Jobs
+                    </Link>
+                </nav>
+            </SheetContent>
+        </Sheet>
+        <Link href="/" className="hidden md:flex items-center gap-2 font-semibold whitespace-nowrap">
+            <BriefcaseBusiness className="h-6 w-6 text-primary" />
+            <span className="text-lg">GGP Portal</span>
+        </Link>
+      </div>
+
 
       <nav className="ml-6 hidden md:flex items-center gap-6 text-sm font-medium">
         <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
           Dashboard
+        </Link>
+        <Link href="/jobs" className="transition-colors hover:text-foreground/80 text-foreground/60">
+            Jobs
         </Link>
       </nav>
 

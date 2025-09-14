@@ -7,24 +7,31 @@ import type { Job } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import JobCard from "@/components/job-card";
 import { JobFilters } from "@/components/job-filters";
-import { X } from "lucide-react";
+import { X, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 function JobSearchContent() {
     const searchParams = useSearchParams();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchJobs = useCallback(async (filters) => {
+    const fetchJobs = useCallback(async (filters: any) => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
             if (filters.search) params.append('search', filters.search);
             if (filters.posted !== 'all') params.append('posted', filters.posted);
-            filters.location.forEach(loc => params.append('location', loc));
+            if(Array.isArray(filters.location)) {
+                filters.location.forEach((loc: string) => params.append('location', loc));
+            }
             if (filters.experience !== 'all') params.append('experience', filters.experience);
-            filters.domain.forEach(dom => params.append('domain', dom));
-            filters.jobType.forEach(type => params.append('jobType', type));
+            if(Array.isArray(filters.domain)) {
+                filters.domain.forEach((dom: string) => params.append('domain', dom));
+            }
+            if(Array.isArray(filters.jobType)) {
+                filters.jobType.forEach((type: string) => params.append('jobType', type));
+            }
 
             const jobsUrl = `/api/jobs?${params.toString()}`;
             const jobsRes = await fetch(jobsUrl);
@@ -48,10 +55,19 @@ function JobSearchContent() {
         };
         fetchJobs(filters);
     }, [searchParams, fetchJobs]);
-
-    const hasActiveFilters = () => {
-        return searchParams.has('search') || searchParams.has('posted') || searchParams.has('location') || searchParams.has('experience') || searchParams.has('domain') || searchParams.has('jobType');
+    
+    const activeFilterCount = () => {
+        let count = 0;
+        if (searchParams.get('search')) count++;
+        if (searchParams.get('posted') && searchParams.get('posted') !== 'all') count++;
+        if (searchParams.getAll('location').length > 0) count++;
+        if (searchParams.get('experience') && searchParams.get('experience') !== 'all') count++;
+        if (searchParams.getAll('domain').length > 0) count++;
+        if (searchParams.getAll('jobType').length > 0) count++;
+        return count;
     }
+    
+    const hasActiveFilters = activeFilterCount() > 0;
 
     return (
         <div className="grid lg:grid-cols-[280px_1fr] gap-8">
@@ -60,19 +76,32 @@ function JobSearchContent() {
             </div>
             <div>
                  <Card>
-                    <CardHeader>
-                        <CardTitle>Job Openings</CardTitle>
-                        <CardDescription>
-                            {loading ? 'Searching for jobs...' : `Found ${jobs.length} job openings.`}
-                        </CardDescription>
-                        {hasActiveFilters() && (
-                             <div className="flex items-center gap-2 pt-2">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Job Openings</CardTitle>
+                            <CardDescription>
+                                {loading ? 'Searching for jobs...' : `Found ${jobs.length} job openings.`}
+                            </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                             {hasActiveFilters && (
                                 <Button variant="ghost" size="sm" onClick={() => window.location.href = '/jobs'}>
                                     <X className="mr-2 h-4 w-4"/>
                                     Clear Filters
                                 </Button>
-                             </div>
-                        )}
+                             )}
+                             <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" size="sm" className="lg:hidden">
+                                        <SlidersHorizontal className="mr-2 h-4 w-4"/>
+                                        Filters {hasActiveFilters && `(${activeFilterCount()})`}
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent>
+                                    <JobFilters />
+                                </SheetContent>
+                            </Sheet>
+                        </div>
                     </CardHeader>
                     <CardContent>
                     {loading ? (
@@ -106,4 +135,3 @@ export default function JobSearchPage() {
         </div>
     );
 }
-

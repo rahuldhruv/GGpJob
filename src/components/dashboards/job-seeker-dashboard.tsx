@@ -67,7 +67,6 @@ export default function JobSeekerDashboard() {
          <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <ThumbsUp className="text-primary"/>
                     Recommended For You
                 </CardTitle>
                 <CardDescription>Based on your preferred domain, here are some jobs you might be interested in.</CardDescription>
