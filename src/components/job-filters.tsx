@@ -93,9 +93,7 @@ export function JobFilters() {
     const domainOptions = Array.isArray(domains) ? domains.map(d => ({ value: String(d.id), label: d.name })) : [];
     const jobTypeOptions = Array.isArray(jobTypes) ? jobTypes.map(jt => ({ value: String(jt.id), label: jt.name })) : [];
 
-    const ApplyButton = (
-        <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
-    )
+    const ApplyButton = <Button onClick={applyFilters} className="w-full">Apply Filters</Button>;
 
     return (
         <Card>
