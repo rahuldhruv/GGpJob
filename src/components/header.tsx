@@ -119,6 +119,14 @@ export default function Header() {
                                     </Link>
                                 </SheetClose>
                             )}
+                             {user.role === 'Job Seeker' && (
+                                <SheetClose asChild>
+                                    <Link href="/applications" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
+                                        <MessageSquareQuote className="h-5 w-5" />
+                                        Feedback
+                                    </Link>
+                                </SheetClose>
+                            )}
                              {user.role === 'Super Admin' && (
                                 <SheetClose asChild>
                                     <Link href="/" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
