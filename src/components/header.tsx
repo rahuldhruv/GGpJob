@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import Link from "next/link";
@@ -35,16 +34,16 @@ import { JobFilters } from "./job-filters";
 import { useEffect, useState } from "react";
 
 export default function Header() {
-  const { user, setUser, loading } = useUser();
+  const { user, setUser } = useUser();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isClient, setIsClient] = useState(false);
+  const { loading } = useUser();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
 
   const isJobSearchPage = pathname === '/jobs';
 
@@ -121,7 +120,7 @@ export default function Header() {
                             )}
                              {user.role === 'Job Seeker' && (
                                 <SheetClose asChild>
-                                    <Link href="/applications" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
+                                    <Link href="/feedback" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
                                         <MessageSquareQuote className="h-5 w-5" />
                                         Feedback
                                     </Link>
@@ -248,6 +247,14 @@ export default function Header() {
                         <span>My Applications</span>
                         </Link>
                     </DropdownMenuItem>
+                    )}
+                    {user.role === 'Job Seeker' && (
+                        <DropdownMenuItem asChild>
+                            <Link href="/feedback">
+                                <MessageSquareQuote className="mr-2 h-4 w-4" />
+                                <span>Feedback</span>
+                            </Link>
+                        </DropdownMenuItem>
                     )}
                     <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
