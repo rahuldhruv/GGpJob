@@ -9,19 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { format } from 'date-fns';
 import Link from "next/link";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ApplicationFeedbackForm } from "@/components/application-feedback-form";
 
 export default function ApplicationsPage() {
     const { user, loading: userLoading } = useUser();
     const router = useRouter();
     const [applications, setApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-    const [isFeedbackFormOpen, setIsFeedbackFormOpen] = useState(false);
 
     const fetchApplications = async () => {
         if (user) {
@@ -66,11 +62,6 @@ export default function ApplicationsPage() {
         }
     };
     
-    const handleOpenFeedback = (app: Application) => {
-        setSelectedApp(app);
-        setIsFeedbackFormOpen(true);
-    }
-    
     if (userLoading || loading) {
         return <div className="container mx-auto p-4">Loading...</div>;
     }
@@ -81,26 +72,6 @@ export default function ApplicationsPage() {
 
     return (
         <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
-             <Dialog open={isFeedbackFormOpen} onOpenChange={setIsFeedbackFormOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Leave Feedback</DialogTitle>
-                        <DialogDescription>
-                            Let us know about your experience applying for {selectedApp?.jobTitle} at {selectedApp?.companyName}.
-                        </DialogDescription>
-                    </DialogHeader>
-                    {selectedApp && (
-                        <ApplicationFeedbackForm 
-                            application={selectedApp} 
-                            onSuccess={() => {
-                                setIsFeedbackFormOpen(false);
-                                fetchApplications();
-                            }}
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
-
             <Card>
                 <CardHeader>
                     <CardTitle>My Applications</CardTitle>
@@ -126,17 +97,6 @@ export default function ApplicationsPage() {
                                         <TableCell>{format(new Date(app.appliedAt), 'PPP')}</TableCell>
                                         <TableCell>{getStatusBadge(app.statusName)}</TableCell>
                                         <TableCell className="text-right space-x-2">
-                                            { (app.statusId === 3 || app.statusId === 4) && !app.rating && (
-                                                <Button variant="outline" size="sm" onClick={() => handleOpenFeedback(app)}>
-                                                    Leave Feedback
-                                                </Button>
-                                            )}
-                                            { app.rating && (
-                                                 <div className="flex items-center justify-end text-sm text-muted-foreground">
-                                                    <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
-                                                    Rated {app.rating}
-                                                </div>
-                                            )}
                                             <Button asChild variant="ghost" size="sm">
                                                 <Link href={`/jobs/${app.jobId}`}>
                                                     View Job <ArrowRight className="ml-2 h-4 w-4" />
