@@ -142,6 +142,22 @@ export default function Header() {
                         </div>
                     </>
                 )}
+                 {isClient && !loading && !user && (
+                  <div className="mt-auto flex flex-col gap-2">
+                     <Button asChild>
+                        <Link href="/login">
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Login
+                        </Link>
+                      </Button>
+                      <Button asChild variant="secondary">
+                        <Link href="/signup">
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Sign Up
+                        </Link>
+                      </Button>
+                  </div>
+                 )}
             </SheetContent>
         </Sheet>
         <Link href="/" className="hidden md:flex items-center gap-2 font-semibold whitespace-nowrap">
