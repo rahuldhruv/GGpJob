@@ -134,3 +134,14 @@ export interface Language {
     language: string;
     proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Native';
 }
+
+export interface PortalFeedback {
+    id: number;
+    userId: number;
+    rating: number;
+    feedback?: string;
+    submittedAt: string;
+    // Joined fields
+    userName?: string;
+    userEmail?: string;
+}

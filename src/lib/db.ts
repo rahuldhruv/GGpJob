@@ -179,6 +179,7 @@ export async function getDb() {
   await db.exec('PRAGMA journal_mode = WAL;');
   await db.exec('PRAGMA foreign_keys = ON;');
   
+  await db.exec('DROP TABLE IF EXISTS portal_feedback');
   await db.exec('DROP TABLE IF EXISTS applications');
   await db.exec('DROP TABLE IF EXISTS jobs');
   await db.exec('DROP TABLE IF EXISTS user_education');
@@ -328,6 +329,15 @@ export async function getDb() {
         language TEXT NOT NULL,
         proficiency TEXT NOT NULL,
         FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS portal_feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL,
+      rating INTEGER NOT NULL,
+      feedback TEXT,
+      submittedAt TEXT NOT NULL,
+      FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
 
