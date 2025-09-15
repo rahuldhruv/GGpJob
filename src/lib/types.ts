@@ -80,6 +80,8 @@ export interface Application {
   userId: number;
   statusId: number;
   appliedAt: Date | string;
+  rating?: number;
+  feedback?: string;
   // Joined fields
   statusName?: ApplicationStatus['name'];
   applicantName?: string;

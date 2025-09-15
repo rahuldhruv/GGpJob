@@ -126,8 +126,8 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
 ];
 
 const applicationsData: Omit<Application, 'id' | 'appliedAt' | 'jobId'>[] = [
-  { jobTitle: "Senior Frontend Engineer", companyName: "Innovate Inc.", userId: 1, statusId: 2 },
-  { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, statusId: 1 },
+  { jobTitle: "Senior Frontend Engineer", companyName: "Innovate Inc.", userId: 1, statusId: 4, rating: 5, feedback: "Great interview process!" },
+  { jobTitle: "Product Manager", companyName: "Creative Solutions", userId: 1, statusId: 3 },
 ];
 
 const domainsData: Omit<Domain, ''>[] = [
@@ -279,6 +279,8 @@ export async function getDb() {
       userId INTEGER,
       statusId INTEGER,
       appliedAt TEXT,
+      rating INTEGER,
+      feedback TEXT,
       FOREIGN KEY(jobId) REFERENCES jobs(id) ON DELETE CASCADE,
       FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY(statusId) REFERENCES application_statuses(id) ON DELETE SET NULL
@@ -427,14 +429,14 @@ export async function getDb() {
 
     // Applications
     const appStmt = await db.prepare(
-      'INSERT INTO applications (id, jobId, jobTitle, companyName, userId, statusId, appliedAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO applications (id, jobId, jobTitle, companyName, userId, statusId, appliedAt, rating, feedback) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     for (const [index, app] of applicationsData.entries()) {
       const newId = `app-${index + 1}`;
       const jobId = jobIds[app.jobTitle];
       if (jobId) {
         const appliedAt = new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString();
-        await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, app.statusId, appliedAt);
+        await appStmt.run(newId, jobId, app.jobTitle, app.companyName, app.userId, app.statusId, appliedAt, app.rating ?? null, app.feedback ?? null);
       }
     }
     await appStmt.finalize();
