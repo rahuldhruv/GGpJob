@@ -45,7 +45,8 @@ export function ApplicationFeedbackForm({ application, onSuccess }: ApplicationF
     },
   });
 
-  const { isSubmitting, watch } = form.formState;
+  const { watch } = form;
+  const { isSubmitting } = form.formState;
   const currentRating = watch("rating");
 
   const onSubmit = async (data: FeedbackFormValues) => {
