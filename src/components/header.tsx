@@ -14,7 +14,8 @@ import {
   LayoutGrid,
   Search,
   Menu,
-  SlidersHorizontal
+  SlidersHorizontal,
+  MessageSquareQuote
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -115,6 +116,14 @@ export default function Header() {
                                     <Link href="/applications" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
                                         <LayoutGrid className="h-5 w-5" />
                                         My Applications
+                                    </Link>
+                                </SheetClose>
+                            )}
+                             {user.role === 'Super Admin' && (
+                                <SheetClose asChild>
+                                    <Link href="/" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
+                                        <MessageSquareQuote className="h-5 w-5" />
+                                        Feedback
                                     </Link>
                                 </SheetClose>
                             )}
