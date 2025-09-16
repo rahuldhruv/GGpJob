@@ -64,6 +64,12 @@ export default function Header() {
     newParams.set('search', searchQuery);
     router.push(`/jobs?${newParams.toString()}`);
   }
+  
+  const showSearchBar = isClient && !loading && user && (
+    user.role === 'Job Seeker'
+      ? (pathname === '/' || pathname === '/jobs')
+      : user.role !== 'Recruiter'
+  );
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
@@ -98,11 +104,13 @@ export default function Header() {
                                 Jobs
                             </Link>
                         </SheetClose>
-                        <SheetClose asChild>
-                           <Link href={`/jobs?domain=${user.domainId}`} className="text-muted-foreground hover:text-foreground">
-                                Recommended Jobs
-                           </Link>
-                        </SheetClose>
+                        {user.domainId && (
+                            <SheetClose asChild>
+                               <Link href={`/jobs?domain=${user.domainId}`} className="text-muted-foreground hover:text-foreground">
+                                    Recommended Jobs
+                               </Link>
+                            </SheetClose>
+                        )}
                        </>
                     )}
                 </nav>
@@ -202,7 +210,7 @@ export default function Header() {
       </nav>
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        {isClient && !loading && user && user?.role !== 'Recruiter' && (
+        {showSearchBar && (
          <form onSubmit={handleSearch} className="ml-auto flex-1 sm:flex-initial">
            <div className="relative">
              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
