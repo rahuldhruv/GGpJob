@@ -21,18 +21,26 @@ export default function JobSeekerDashboard() {
     if (user) {
         try {
             const [jobsRes, appsRes] = await Promise.all([
-                 user.domainId ? fetch(`/api/jobs?domain=${user.domainId}&limit=6`) : Promise.resolve(null),
+                 user.domainId ? fetch(`/api/jobs?domain=${user.domainId}&limit=10`) : Promise.resolve(null),
                  fetch(`/api/applications?userId=${user.id}`)
             ]);
+            
+            let jobsData: Job[] = [];
+            let appsData: Application[] = [];
 
             if (jobsRes && jobsRes.ok) {
-                const jobsData = await jobsRes.json();
-                setRecommendedJobs(Array.isArray(jobsData) ? jobsData : []);
+                jobsData = await jobsRes.json();
             }
             
             if (appsRes.ok) {
-                 const appsData = await appsRes.json();
+                 appsData = await appsRes.json();
                  setUserApplications(Array.isArray(appsData) ? appsData : []);
+            }
+
+            if (Array.isArray(jobsData) && Array.isArray(appsData)) {
+                 const appliedJobIds = new Set(appsData.map(app => app.jobId));
+                 const filteredJobs = jobsData.filter(job => !appliedJobIds.has(job.id));
+                 setRecommendedJobs(filteredJobs.slice(0,6));
             }
 
         } catch(error) {

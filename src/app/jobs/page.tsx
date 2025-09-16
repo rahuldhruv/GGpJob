@@ -31,26 +31,37 @@ function JobSearchContent() {
             
             const [jobsRes, appsRes] = await Promise.all(fetchPromises);
 
+            let jobsData: Job[] = [];
+            let appsData: Application[] = [];
+
             if (jobsRes.ok) {
-                const jobsData = await jobsRes.json();
-                setJobs(Array.isArray(jobsData) ? jobsData : []);
+                jobsData = await jobsRes.json();
             }
             
             if (appsRes && appsRes.ok) {
-                 const appsData = await appsRes.json();
+                 appsData = await appsRes.json();
                  setUserApplications(Array.isArray(appsData) ? appsData : []);
             }
+
+            if (user?.role === 'Job Seeker' && Array.isArray(jobsData) && Array.isArray(appsData)) {
+                const appliedJobIds = new Set(appsData.map(app => app.jobId));
+                const filteredJobs = jobsData.filter(job => !appliedJobIds.has(job.id));
+                setJobs(filteredJobs);
+            } else {
+                 setJobs(Array.isArray(jobsData) ? jobsData : []);
+            }
+
 
         } catch (error) {
             console.error("Failed to fetch jobs", error);
         } finally {
             setLoading(false);
         }
-    }, [searchParams, user]);
+    }, [searchParams.toString(), user]);
 
     useEffect(() => {
         fetchJobs();
-    }, [fetchJobs, searchParams.toString()]);
+    }, [fetchJobs]);
     
     const appliedJobIds = new Set(userApplications.map(app => app.jobId));
 
@@ -70,7 +81,7 @@ function JobSearchContent() {
         return (
             <div className="text-center p-8">
                 <p className="text-lg font-semibold">No jobs found</p>
-                <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+                <p className="text-muted-foreground">Try adjusting your search or filters, or check back later for new openings.</p>
             </div>
         )
     }

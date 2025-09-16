@@ -25,12 +25,6 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     }
     const job: Job = await jobRes.json();
 
-    const relatedJobsRes = await fetch(`${baseUrl}/api/jobs?domain=${job.domainId}&limit=4`, { cache: 'no-store' });
-    let relatedJobs: Job[] = [];
-    if (relatedJobsRes.ok) {
-        const allRelated = await relatedJobsRes.json();
-        relatedJobs = allRelated.filter((j: Job) => j.id !== job.id).slice(0, 3);
-    }
     
     // This part is a placeholder for getting the logged-in user's data.
     // In a real app with auth, you would get this from the session.
@@ -40,6 +34,16 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     if (session?.user?.id) {
        const db = await getDb();
        userApplications = await db.all('SELECT * FROM applications WHERE userId = ?', session.user.id);
+    }
+
+    const relatedJobsRes = await fetch(`${baseUrl}/api/jobs?domain=${job.domainId}&limit=10`, { cache: 'no-store' });
+    let relatedJobs: Job[] = [];
+    if (relatedJobsRes.ok) {
+        const allRelated = await relatedJobsRes.json();
+        const appliedJobIds = new Set(userApplications.map(app => app.jobId));
+        relatedJobs = allRelated
+            .filter((j: Job) => j.id !== job.id && !appliedJobIds.has(j.id))
+            .slice(0, 3);
     }
     
     return { job, relatedJobs, userApplications, user: session?.user || null };
