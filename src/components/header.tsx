@@ -194,9 +194,8 @@ export default function Header() {
                     Jobs
                 </Link>
                 {user.domainId && (
-                     <Link href={`/jobs?domain=${user.domainId}`} className="transition-colors hover:text-foreground/80 text-foreground/60 flex items-center gap-2">
-                        <Star className="h-4 w-4 text-yellow-400" />
-                        Recommended
+                     <Link href={`/jobs?domain=${user.domainId}`} className="transition-colors hover:text-foreground/80 text-foreground/60">
+                        Recommended Jobs
                     </Link>
                 )}
             </>
