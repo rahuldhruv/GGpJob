@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Edit, Trash2, LoaderCircle, BookOpen, Briefcase, Lightbulb, Languages, Calendar, LinkIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
 
 type Section = 'education' | 'employment' | 'projects' | 'languages';
 type ProfileData = {
@@ -49,6 +51,7 @@ const employmentSchema = z.object({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     description: z.string().optional(),
+    isCurrent: z.boolean().optional(),
 });
 
 const projectSchema = z.object({
@@ -87,7 +90,8 @@ const defaultValues = {
         location: '',
         startDate: '',
         endDate: '',
-        description: ''
+        description: '',
+        isCurrent: false,
     },
     projects: {
         name: '',
@@ -117,10 +121,20 @@ const ProfileSectionForm = ({
 
     const form = useForm({
         resolver: zodResolver(schemas[currentSection]),
-        defaultValues: editingItem || defaultValues[currentSection],
+        defaultValues: editingItem 
+            ? { ...editingItem, isCurrent: !editingItem.endDate }
+            : defaultValues[currentSection],
     });
 
-    const { isSubmitting } = form.formState;
+    const { isSubmitting, watch, setValue } = form.formState;
+
+    const isCurrent = currentSection === 'employment' ? watch('isCurrent') : false;
+
+    useEffect(() => {
+        if (isCurrent) {
+            setValue('endDate', '');
+        }
+    }, [isCurrent, setValue]);
 
     return (
         <Form {...form}>
@@ -159,8 +173,21 @@ const ProfileSectionForm = ({
                        <FormField control={form.control} name="location" render={({ field }) => ( <FormItem> <FormLabel>Location</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                        <div className="grid grid-cols-2 gap-4">
                         <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                        <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} disabled={isCurrent} /></FormControl> <FormMessage /> </FormItem> )}/>
                        </div>
+                        <FormField control={form.control} name="isCurrent" render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel>I currently work here</FormLabel>
+                                </div>
+                            </FormItem>
+                        )}/>
                        <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     </>
                 )}
@@ -199,8 +226,8 @@ const ProfileSectionForm = ({
                     <DialogClose asChild>
                         <Button type="button" variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" disabled={isSubmitting}>
-                       {isSubmitting && <LoaderCircle className="animate-spin mr-2" />}
+                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                       {form.formState.isSubmitting && <LoaderCircle className="animate-spin mr-2" />}
                        Save Changes
                     </Button>
                 </div>
@@ -242,12 +269,20 @@ export function ProfileSections({ userId, isEditable = false }: ProfileSectionsP
         setIsFormOpen(true);
     };
     
-    const handleFormSubmit = async (values: FormData) => {
+    const handleFormSubmit = async (values: any) => {
         if (!currentSection) return;
+
         const isEditing = !!editingItem;
         const url = `/api/users/${userId}/profile?section=${currentSection}`;
         const method = isEditing ? 'PUT' : 'POST';
-        const body = JSON.stringify(isEditing ? { ...values, id: editingItem.id } : values);
+
+        let bodyData = { ...values };
+        if (currentSection === 'employment' && values.isCurrent) {
+            bodyData.endDate = '';
+        }
+        delete bodyData.isCurrent;
+
+        const body = JSON.stringify(isEditing ? { ...bodyData, id: editingItem.id } : bodyData);
 
         try {
             const response = await fetch(url, {
