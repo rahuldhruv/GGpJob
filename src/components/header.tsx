@@ -14,7 +14,9 @@ import {
   Search,
   Menu,
   SlidersHorizontal,
-  MessageSquareQuote
+  MessageSquareQuote,
+  ArrowLeft,
+  Share2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,6 +34,7 @@ import { Sheet, SheetContent, SheetClose, SheetTrigger, SheetHeader, SheetTitle 
 import { Separator } from "./ui/separator";
 import { JobFilters } from "./job-filters";
 import { useEffect, useState } from "react";
+import { ShareButton } from "./share-button";
 
 export default function Header() {
   const { user, setUser } = useUser();
@@ -46,6 +49,8 @@ export default function Header() {
   }, []);
 
   const isJobSearchPage = pathname === '/jobs';
+  const isJobDetailsPage = /^\/jobs\/[^/]+$/.test(pathname);
+  const isJobDetailsApplicationsPage = /^\/jobs\/[^/]+\/applications$/.test(pathname);
 
   const handleLogout = () => {
     setUser(null);
@@ -67,13 +72,20 @@ export default function Header() {
   
   const showSearchBar = isClient && !loading && user && (
     user.role === 'Job Seeker'
-      ? (pathname === '/' || pathname === '/jobs')
+      ? (pathname === '/' || pathname === '/jobs' || (pathname.startsWith('/jobs') && searchParams.get('domain') != null))
       : user.role !== 'Recruiter'
   );
 
-  return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
-       <div className="flex items-center gap-4">
+  const renderMobileLeftButton = () => {
+    if (isClient && isJobDetailsPage && user?.role === 'Job Seeker') {
+      return (
+        <Button variant="outline" size="icon" className="shrink-0 md:hidden" onClick={() => router.back()}>
+            <ArrowLeft className="h-5 w-5" />
+            <span className="sr-only">Back</span>
+        </Button>
+      );
+    }
+    return (
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -182,6 +194,41 @@ export default function Header() {
                  )}
             </SheetContent>
         </Sheet>
+    );
+  }
+
+  const renderMobileRightButton = () => {
+    if (isClient && isJobDetailsPage && user?.role === 'Job Seeker') {
+        const jobId = pathname.split('/')[2];
+        return <ShareButton jobId={jobId} jobTitle={""} />;
+    }
+     if (isClient && !loading && isJobSearchPage) {
+        return (
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <SlidersHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Open filters</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[80%]">
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <JobFilters isSheet={true} />
+                </SheetContent>
+              </Sheet>
+            </div>
+        )
+     }
+     return null;
+  }
+
+  return (
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 sm:px-6">
+       <div className="flex items-center gap-4">
+        {renderMobileLeftButton()}
         <Link href="/" className="hidden md:flex items-center gap-2 font-semibold whitespace-nowrap">
             <BriefcaseBusiness className="h-6 w-6 text-primary" />
             <span className="text-lg">GGP Portal</span>
@@ -225,24 +272,7 @@ export default function Header() {
          </form>
         )}
         <div className="ml-auto flex items-center gap-2">
-           {isClient && !loading && isJobSearchPage && (
-              <div className="md:hidden">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <SlidersHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open filters</span>
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="h-[80%]">
-                    <SheetHeader>
-                      <SheetTitle>Filters</SheetTitle>
-                    </SheetHeader>
-                    <JobFilters isSheet={true} />
-                  </SheetContent>
-                </Sheet>
-              </div>
-           )}
+           {renderMobileRightButton()}
            {isClient && !loading && user ? (
             <div className="hidden md:block">
                 <DropdownMenu>
