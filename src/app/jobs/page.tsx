@@ -113,7 +113,7 @@ function JobSearchContent() {
 
 export default function JobSearchPage() {
     return (
-        <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <Suspense fallback={<div>Loading...</div>}>
                 <JobSearchContent />
             </Suspense>

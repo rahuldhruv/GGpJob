@@ -23,7 +23,7 @@ export default function FeedbackPage() {
     }
 
     return (
-        <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center">
                  <Card className="w-full max-w-2xl">
                     <CardHeader>

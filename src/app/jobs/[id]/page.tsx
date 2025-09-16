@@ -71,7 +71,7 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
     const appliedJobIds = new Set(userApplications.map(app => app.jobId));
 
     return (
-       <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+       <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
                     <Card>

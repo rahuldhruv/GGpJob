@@ -192,7 +192,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     }
 
     return (
-        <Card>
+        <Card className="rounded-t-lg rounded-b-none">
             {isClient && hasActiveFilters && (
                 <CardHeader className="flex flex-row items-center justify-end pt-4 pb-2 px-4">
                     <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -264,5 +264,3 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
         </Card>
     );
 }
-
-    

@@ -71,11 +71,10 @@ export default function ApplicationsPage() {
     }
 
     return (
-        <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <Card>
                 <CardHeader>
                     <CardTitle>My Applications</CardTitle>
-                    <CardDescription>Here is a list of jobs you have applied for.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {applications.length > 0 ? (

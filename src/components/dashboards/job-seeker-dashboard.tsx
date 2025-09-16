@@ -57,7 +57,7 @@ export default function JobSeekerDashboard() {
   const appliedJobIds = new Set(userApplications.map(app => app.jobId));
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
        <Card>
         <CardHeader>
           <CardTitle>Find your next job</CardTitle>
@@ -93,7 +93,7 @@ export default function JobSeekerDashboard() {
                     <CardTitle className="flex items-center gap-2">
                         Recommended For You
                     </CardTitle>
-                    <CardDescription>Based on your preferred domain, here are some jobs you might be interested in.</CardDescription>
+                    
                 </div>
                  {user?.domainId && (
                     <Button asChild variant="outline">
