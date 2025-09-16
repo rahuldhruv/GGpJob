@@ -101,8 +101,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Filter Jobs</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-end pt-4 pb-2 px-4">
                 {hasActiveFilters && (
                     <Button variant="ghost" size="sm" onClick={clearFilters}>
                         <X className="mr-2 h-4 w-4"/>
@@ -110,7 +109,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
                     </Button>
                 )}
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 px-4 pb-4">
                 <div>
                     <label className="text-sm font-medium">Date Posted</label>
                     <Select value={filters.posted} onValueChange={(value) => handleFilterChange('posted', value)}>
