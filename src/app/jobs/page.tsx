@@ -4,14 +4,17 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import type { Job } from "@/lib/types";
+import type { Job, Application } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import JobCard from "@/components/job-card";
 import { JobFilters } from "@/components/job-filters";
+import { useUser } from "@/contexts/user-context";
 
 function JobSearchContent() {
     const searchParams = useSearchParams();
+    const { user } = useUser();
     const [jobs, setJobs] = useState<Job[]>([]);
+    const [userApplications, setUserApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const isRecommended = searchParams.has('domain') && searchParams.get('domain') !== 'all';
     
@@ -20,19 +23,36 @@ function JobSearchContent() {
         try {
             const params = new URLSearchParams(searchParams.toString());
             const jobsUrl = `/api/jobs?${params.toString()}`;
-            const jobsRes = await fetch(jobsUrl);
-            const jobsData = await jobsRes.json();
-            setJobs(Array.isArray(jobsData) ? jobsData : []);
+            
+            const fetchPromises: [Promise<Response>, Promise<Response> | null] = [
+                fetch(jobsUrl),
+                user ? fetch(`/api/applications?userId=${user.id}`) : null
+            ];
+            
+            const [jobsRes, appsRes] = await Promise.all(fetchPromises);
+
+            if (jobsRes.ok) {
+                const jobsData = await jobsRes.json();
+                setJobs(Array.isArray(jobsData) ? jobsData : []);
+            }
+            
+            if (appsRes && appsRes.ok) {
+                 const appsData = await appsRes.json();
+                 setUserApplications(Array.isArray(appsData) ? appsData : []);
+            }
+
         } catch (error) {
             console.error("Failed to fetch jobs", error);
         } finally {
             setLoading(false);
         }
-    }, [searchParams]);
+    }, [searchParams, user]);
 
     useEffect(() => {
         fetchJobs();
     }, [fetchJobs, searchParams.toString()]);
+    
+    const appliedJobIds = new Set(userApplications.map(app => app.jobId));
 
     const renderJobCards = () => {
         if (loading) {
@@ -42,7 +62,7 @@ function JobSearchContent() {
             return (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {jobs.map((job) => (
-                        <JobCard key={job.id} job={job} />
+                        <JobCard key={job.id} job={job} isApplied={appliedJobIds.has(job.id)} />
                     ))}
                 </div>
             )

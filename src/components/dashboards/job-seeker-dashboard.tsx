@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Job } from "@/lib/types";
+import type { Job, Application } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import JobCard from "../job-card";
 import { Button } from "../ui/button";
@@ -15,23 +15,38 @@ import Link from "next/link";
 export default function JobSeekerDashboard() {
   const { user } = useUser();
   const [recommendedJobs, setRecommendedJobs] = useState<Job[]>([]);
+  const [userApplications, setUserApplications] = useState<Application[]>([]);
   
-  const fetchRecommendedJobs = useCallback(async () => {
-    if (user?.domainId) {
+  const fetchData = useCallback(async () => {
+    if (user) {
         try {
-            const res = await fetch(`/api/jobs?domain=${user.domainId}&limit=6`);
-            const data = await res.json();
-            setRecommendedJobs(Array.isArray(data) ? data : []);
+            const [jobsRes, appsRes] = await Promise.all([
+                 user.domainId ? fetch(`/api/jobs?domain=${user.domainId}&limit=6`) : Promise.resolve(null),
+                 fetch(`/api/applications?userId=${user.id}`)
+            ]);
+
+            if (jobsRes && jobsRes.ok) {
+                const jobsData = await jobsRes.json();
+                setRecommendedJobs(Array.isArray(jobsData) ? jobsData : []);
+            }
+            
+            if (appsRes.ok) {
+                 const appsData = await appsRes.json();
+                 setUserApplications(Array.isArray(appsData) ? appsData : []);
+            }
+
         } catch(error) {
-            console.error("Failed to fetch recommended jobs", error);
+            console.error("Failed to fetch dashboard data", error);
         }
     }
-  }, [user?.domainId]);
+  }, [user]);
 
 
   useEffect(() => {
-    fetchRecommendedJobs();
-  }, [fetchRecommendedJobs]);
+    fetchData();
+  }, [fetchData]);
+  
+  const appliedJobIds = new Set(userApplications.map(app => app.jobId));
   
   return (
     <div className="space-y-8">
@@ -92,7 +107,7 @@ export default function JobSeekerDashboard() {
                         {recommendedJobs.map((job) => (
                         <CarouselItem key={job.id} className="md:basis-1/2 lg:basis-1/3">
                             <div className="p-1 h-full">
-                               <JobCard job={job} />
+                               <JobCard job={job} isApplied={appliedJobIds.has(job.id)} />
                             </div>
                         </CarouselItem>
                         ))}

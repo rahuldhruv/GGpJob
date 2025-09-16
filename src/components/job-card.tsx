@@ -3,14 +3,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Job } from "@/lib/types";
-import { MapPin, Briefcase, Clock, Star } from 'lucide-react';
+import { MapPin, Briefcase, Clock, Star, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface JobCardProps {
   job: Job;
+  isApplied?: boolean;
 }
 
-export default function JobCard({ job }: JobCardProps) {
+export default function JobCard({ job, isApplied = false }: JobCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
       <CardHeader>
@@ -49,9 +50,16 @@ export default function JobCard({ job }: JobCardProps) {
           <Clock className="h-3 w-3" />
           {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
         </div>
-        <Button asChild variant="secondary" size="sm">
-          <Link href={`/jobs/${job.id}`}>View Details</Link>
-        </Button>
+        {isApplied ? (
+            <Badge variant="secondary" className="flex items-center gap-1.5 border-green-300 bg-green-50 text-green-800">
+                <CheckCircle className="h-4 w-4" />
+                Applied
+            </Badge>
+        ) : (
+            <Button asChild variant="secondary" size="sm">
+                <Link href={`/jobs/${job.id}`}>View Details</Link>
+            </Button>
+        )}
       </CardFooter>
     </Card>
   );

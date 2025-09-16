@@ -63,6 +63,7 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
         { icon: Clock, label: "Vacancies", value: job.vacancies },
     ];
 
+    const appliedJobIds = new Set(userApplications.map(app => app.jobId));
 
     return (
        <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -130,7 +131,7 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
                             <h3 className="text-xl font-bold mb-4">Related Jobs</h3>
                             <div className="space-y-4">
                                 {relatedJobs.map(relatedJob => (
-                                    <JobCard key={relatedJob.id} job={relatedJob} />
+                                    <JobCard key={relatedJob.id} job={relatedJob} isApplied={appliedJobIds.has(relatedJob.id)} />
                                 ))}
                             </div>
                         </div>
