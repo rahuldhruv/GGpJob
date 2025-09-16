@@ -217,7 +217,7 @@ export default function Header() {
                     <span className="sr-only">Open filters</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="h-[80%]">
+                <SheetContent side="bottom" className="h-[80%] rounded-t-lg">
                   <SheetHeader>
                     <SheetTitle>Filters</SheetTitle>
                   </SheetHeader>
