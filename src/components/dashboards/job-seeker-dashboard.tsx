@@ -120,8 +120,8 @@ export default function JobSeekerDashboard() {
                         </CarouselItem>
                         ))}
                     </CarouselContent>
-                    <CarouselPrevious />
-                    <CarouselNext />
+                    <CarouselPrevious className="hidden md:flex" />
+                    <CarouselNext className="hidden md:flex" />
                 </Carousel>
             </CardContent>
          </Card>
