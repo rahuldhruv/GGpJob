@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Job, Application, User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign, Workflow, Clock } from 'lucide-react';
+import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign, Workflow, Clock, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
@@ -61,6 +61,7 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
         { icon: Briefcase, label: "Job Type", value: job.type },
         { icon: BadgeDollarSign, label: "Salary", value: job.salary },
         { icon: Workflow, label: "Domain", value: job.domain },
+        { icon: UserCheck, label: "Role", value: job.role },
         { icon: Building, label: "Workplace", value: job.workplaceType },
         { icon: Users, label: "Experience", value: job.experienceLevel },
         { icon: Calendar, label: "Posted On", value: format(new Date(job.postedAt), "PPP") },

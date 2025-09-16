@@ -26,6 +26,7 @@ const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
   locationId: z.coerce.number().min(1, "Job location is required."),
+  role: z.string().min(2, "Role must be at least 2 characters long."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
   experienceLevelId: z.coerce.number().min(1, "Please select an experience level."),
   jobTypeId: z.coerce.number().min(1, "Please select a job type."),
@@ -88,6 +89,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
       companyName: job?.companyName || "",
       jobTitle: job?.title || "",
       locationId: job?.locationId,
+      role: job?.role || "",
       jobDescription: job?.description || "",
       vacancies: job?.vacancies || 1,
       email: job?.contactEmail || "",
@@ -107,6 +109,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
         companyName: job.companyName || "",
         jobTitle: job.title || "",
         locationId: job.locationId,
+        role: job.role || "",
         jobDescription: job.description || "",
         vacancies: job.vacancies || 1,
         email: job.contactEmail || "",
@@ -136,6 +139,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
         jobTypeId: data.jobTypeId,
         workplaceTypeId: data.workplaceTypeId,
         domainId: data.domainId,
+        role: data.role,
         vacancies: data.vacancies,
         contactEmail: data.email,
         contactPhone: data.phoneNumber,
@@ -225,6 +229,19 @@ export function ReferralForm({ job }: ReferralFormProps) {
                   </Select>
                   <FormMessage />
                 </FormItem>
+              )}
+            />
+           <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <FormControl>
+                      <Input placeholder="e.g. Software Engineer" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
               )}
             />
           <FormField
@@ -404,5 +421,3 @@ export function ReferralForm({ job }: ReferralFormProps) {
     </div>
   );
 }
-
-    

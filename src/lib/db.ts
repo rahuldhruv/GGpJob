@@ -29,6 +29,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     recruiterId: 2,
     experienceLevelId: 3,
     domainId: 1, 
+    role: "Software Engineer",
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -43,6 +44,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     recruiterId: 2,
     experienceLevelId: 2, 
     domainId: 2,
+    role: "Product Manager",
     vacancies: 1,
     contactEmail: "recruiter@creative.com",
     contactPhone: "123-456-7890",
@@ -60,6 +62,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
     experienceLevelId: 2, 
     domainId: 3,
+    role: "Data Scientist",
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -74,6 +77,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     recruiterId: 2,
     experienceLevelId: 1, 
     domainId: 4,
+    role: "Designer",
     vacancies: 1,
     contactEmail: "recruiter@innovate.com",
     contactPhone: "123-456-7890",
@@ -90,6 +94,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     employeeLinkedIn: "https://linkedin.com/in/charliebrown",
     experienceLevelId: 3,
     domainId: 1,
+    role: "Software Engineer",
     vacancies: 1,
     contactEmail: "referrals@data-insights.com",
     contactPhone: "123-456-7890",
@@ -105,6 +110,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     recruiterId: 2,
     experienceLevelId: 1,
     domainId: 1, 
+    role: "Software Engineer",
     vacancies: 3,
     contactEmail: "hr@startuphub.com",
     contactPhone: "111-222-3333",
@@ -119,6 +125,7 @@ const jobsData: Omit<Job, 'id' | 'postedAt'>[] = [
     recruiterId: 2,
     experienceLevelId: 3, 
     domainId: 4,
+    role: "Designer",
     vacancies: 1,
     contactEmail: "recruiter@creative.com",
     contactPhone: "123-456-7890",
@@ -263,6 +270,7 @@ export async function getDb() {
       workplaceTypeId INTEGER,
       experienceLevelId INTEGER,
       domainId INTEGER,
+      role TEXT,
       FOREIGN KEY(recruiterId) REFERENCES users(id) ON DELETE SET NULL,
       FOREIGN KEY(employeeId) REFERENCES users(id) ON DELETE SET NULL,
       FOREIGN KEY(jobTypeId) REFERENCES job_types(id) ON DELETE SET NULL,
@@ -407,7 +415,7 @@ export async function getDb() {
 
     // Jobs
     const jobStmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, locationId, salary, description, postedAt, isReferral, recruiterId, employeeId, employeeLinkedIn, vacancies, contactEmail, contactPhone, jobTypeId, workplaceTypeId, experienceLevelId, domainId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO jobs (id, title, companyName, locationId, salary, description, postedAt, isReferral, recruiterId, employeeId, employeeLinkedIn, vacancies, contactEmail, contactPhone, jobTypeId, workplaceTypeId, experienceLevelId, domainId, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     const jobIds: { [key: string]: string } = {};
     for (const [index, job] of jobsData.entries()) {
@@ -432,7 +440,8 @@ export async function getDb() {
         job.jobTypeId,
         job.workplaceTypeId,
         job.experienceLevelId,
-        job.domainId
+        job.domainId,
+        job.role ?? null
       );
     }
     await jobStmt.finalize();

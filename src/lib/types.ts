@@ -51,6 +51,7 @@ export interface Job {
   postedAt: Date | string;
   experienceLevelId?: number;
   domainId?: number;
+  role?: string;
   isReferral?: boolean;
   recruiterId?: number;
   employeeId?: number;

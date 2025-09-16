@@ -42,7 +42,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         const db = await getDb();
         
         const stmt = await db.prepare(
-            'UPDATE jobs SET title = ?, companyName = ?, locationId = ?, description = ?, vacancies = ?, contactEmail = ?, contactPhone = ?, salary = ?, jobTypeId = ?, workplaceTypeId = ?, experienceLevelId = ?, domainId = ?, employeeLinkedIn = ? WHERE id = ?'
+            'UPDATE jobs SET title = ?, companyName = ?, locationId = ?, description = ?, vacancies = ?, contactEmail = ?, contactPhone = ?, salary = ?, jobTypeId = ?, workplaceTypeId = ?, experienceLevelId = ?, domainId = ?, employeeLinkedIn = ?, role = ? WHERE id = ?'
         );
 
         await stmt.run(
@@ -59,6 +59,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             updatedJobData.experienceLevelId,
             updatedJobData.domainId,
             updatedJobData.employeeLinkedIn,
+            updatedJobData.role,
             id
         );
         await stmt.finalize();

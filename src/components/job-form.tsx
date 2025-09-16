@@ -27,6 +27,7 @@ const formSchema = z.object({
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   locationId: z.coerce.number().min(1, "Job location is required."),
+  role: z.string().min(2, "Role must be at least 2 characters long."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
   experienceLevelId: z.coerce.number().min(1, "Please select an experience level."),
   jobTypeId: z.coerce.number().min(1, "Please select a job type."),
@@ -89,6 +90,7 @@ export function JobForm({ job }: JobFormProps) {
       jobTitle: job?.title || "",
       companyName: job?.companyName || "",
       locationId: job?.locationId,
+      role: job?.role || "",
       jobDescription: job?.description || "",
       vacancies: job?.vacancies || 1,
       contactEmail: job?.contactEmail || "",
@@ -107,6 +109,7 @@ export function JobForm({ job }: JobFormProps) {
         jobTitle: job.title || "",
         companyName: job.companyName || "",
         locationId: job.locationId,
+        role: job.role || "",
         jobDescription: job.description || "",
         vacancies: job.vacancies || 1,
         contactEmail: job.contactEmail || "",
@@ -217,6 +220,19 @@ export function JobForm({ job }: JobFormProps) {
               </FormItem>
             )}
           />
+        <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Role</FormLabel>
+                <FormControl>
+                    <Input placeholder="e.g. Software Engineer" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
         <FormField
           control={form.control}
           name="jobDescription"
@@ -380,5 +396,3 @@ export function JobForm({ job }: JobFormProps) {
     </Form>
   );
 }
-
-    
