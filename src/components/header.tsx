@@ -14,7 +14,8 @@ import {
   Search,
   Menu,
   SlidersHorizontal,
-  MessageSquareQuote
+  MessageSquareQuote,
+  Star
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -91,12 +92,19 @@ export default function Header() {
                           </Link>
                       </SheetClose>
                     )}
-                    {isClient && !loading && user?.role === 'Job Seeker' && (
+                     {isClient && !loading && user?.role === 'Job Seeker' && (
+                       <>
                         <SheetClose asChild>
                             <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
                                 Jobs
                             </Link>
                         </SheetClose>
+                        <SheetClose asChild>
+                           <Link href={`/jobs?domain=${user.domainId}`} className="text-muted-foreground hover:text-foreground">
+                                Recommended Jobs
+                           </Link>
+                        </SheetClose>
+                       </>
                     )}
                 </nav>
                 {isClient && !loading && user && (
@@ -181,9 +189,17 @@ export default function Header() {
           </Link>
         )}
         {isClient && !loading && user?.role === 'Job Seeker' && (
-            <Link href="/jobs" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                Jobs
-            </Link>
+            <>
+                <Link href="/jobs" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                    Jobs
+                </Link>
+                {user.domainId && (
+                     <Link href={`/jobs?domain=${user.domainId}`} className="transition-colors hover:text-foreground/80 text-foreground/60 flex items-center gap-2">
+                        <Star className="h-4 w-4 text-yellow-400" />
+                        Recommended
+                    </Link>
+                )}
+            </>
         )}
       </nav>
 
@@ -214,7 +230,7 @@ export default function Header() {
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
-                      <SheetTitle className="sr-only">Job Filters</SheetTitle>
+                      <SheetTitle>Job Filters</SheetTitle>
                     </SheetHeader>
                     <JobFilters isSheet={true} />
                   </SheetContent>

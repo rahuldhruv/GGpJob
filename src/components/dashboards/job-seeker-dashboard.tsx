@@ -7,7 +7,7 @@ import type { Job } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import JobCard from "../job-card";
 import { Button } from "../ui/button";
-import { ThumbsUp, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Link from "next/link";
@@ -65,11 +65,20 @@ export default function JobSeekerDashboard() {
 
       {recommendedJobs.length > 0 && (
          <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    Recommended For You
-                </CardTitle>
-                <CardDescription>Based on your preferred domain, here are some jobs you might be interested in.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="flex items-center gap-2">
+                        Recommended For You
+                    </CardTitle>
+                    <CardDescription>Based on your preferred domain, here are some jobs you might be interested in.</CardDescription>
+                </div>
+                 {user?.domainId && (
+                    <Button asChild variant="outline">
+                        <Link href={`/jobs?domain=${user.domainId}`}>
+                            View All <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                )}
             </CardHeader>
             <CardContent>
                 <Carousel
