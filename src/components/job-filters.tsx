@@ -126,8 +126,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
                                     activeCategory === cat.id && "bg-background"
                                 )}
                             >
-                                <span className="flex items-center gap-2">
-                                   <cat.icon className="h-4 w-4" />
+                                <span className="flex items-center">
                                    {cat.label}
                                 </span>
                                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
