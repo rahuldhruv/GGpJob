@@ -9,12 +9,16 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelectFilter } from "./multi-select-filter";
-import { X } from "lucide-react";
+import { X, Calendar, MapPin, Briefcase, ChevronRight, Layers, Award } from "lucide-react";
 import { SheetClose } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 interface JobFiltersProps {
     isSheet?: boolean;
 }
+
+type FilterCategory = 'posted' | 'domain' | 'location' | 'experience' | 'jobType';
+
 
 export function JobFilters({ isSheet = false }: JobFiltersProps) {
     const router = useRouter();
@@ -25,6 +29,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
     const [jobTypes, setJobTypes] = useState<JobType[]>([]);
     const [isClient, setIsClient] = useState(false);
+    const [activeCategory, setActiveCategory] = useState<FilterCategory>('posted');
     
     const [filters, setFilters] = useState({
         posted: searchParams.get('posted') || 'all',
@@ -99,7 +104,93 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     const domainOptions = Array.isArray(domains) ? domains.map(d => ({ value: String(d.id), label: d.name })) : [];
     const jobTypeOptions = Array.isArray(jobTypes) ? jobTypes.map(jt => ({ value: String(jt.id), label: jt.name })) : [];
 
-    const ApplyButton = <Button onClick={applyFilters} className="w-full">Apply Filters</Button>;
+    const filterCategories: { id: FilterCategory; label: string; icon: React.ElementType }[] = [
+        { id: 'posted', label: 'Date Posted', icon: Calendar },
+        { id: 'domain', label: 'Domains', icon: Layers },
+        { id: 'location', label: 'Locations', icon: MapPin },
+        { id: 'experience', label: 'Experience', icon: Award },
+        { id: 'jobType', label: 'Employment', icon: Briefcase },
+    ];
+    
+    if (isSheet) {
+        return (
+            <div className="h-full flex flex-col">
+                <div className="grid grid-cols-3 h-full overflow-hidden">
+                    <div className="col-span-1 bg-muted/50 border-r overflow-y-auto">
+                        {filterCategories.map(cat => (
+                            <button 
+                                key={cat.id} 
+                                onClick={() => setActiveCategory(cat.id)}
+                                className={cn(
+                                    "w-full text-left p-3 text-sm font-medium flex items-center justify-between",
+                                    activeCategory === cat.id && "bg-background"
+                                )}
+                            >
+                                <span className="flex items-center gap-2">
+                                   <cat.icon className="h-4 w-4" />
+                                   {cat.label}
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            </button>
+                        ))}
+                    </div>
+                    <div className="col-span-2 p-4 overflow-y-auto">
+                        {activeCategory === 'posted' && (
+                             <div>
+                                <label className="text-sm font-medium">Date Posted</label>
+                                <Select value={filters.posted} onValueChange={(value) => handleFilterChange('posted', value)}>
+                                    <SelectTrigger><SelectValue placeholder="Date Posted" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Dates</SelectItem>
+                                        <SelectItem value="1">Last 24 hours</SelectItem>
+                                        <SelectItem value="7">Last 7 days</SelectItem>
+                                        <SelectItem value="14">Last 14 days</SelectItem>
+                                        <SelectItem value="30">Last 30 days</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                         {activeCategory === 'domain' && (
+                             <div>
+                                <label className="text-sm font-medium">Domains</label>
+                                <MultiSelectFilter title="Domains" options={domainOptions} selectedValues={filters.domain} onChange={(selected) => handleFilterChange('domain', selected)} />
+                            </div>
+                        )}
+                        {activeCategory === 'location' && (
+                             <div>
+                                <label className="text-sm font-medium">Locations</label>
+                                <MultiSelectFilter title="Locations" options={locationOptions} selectedValues={filters.location} onChange={(selected) => handleFilterChange('location', selected)} />
+                            </div>
+                        )}
+                        {activeCategory === 'experience' && (
+                            <div>
+                                <label className="text-sm font-medium">Experience Level</label>
+                                <Select value={filters.experience} onValueChange={(value) => handleFilterChange('experience', value)}>
+                                    <SelectTrigger><SelectValue placeholder="Experience Level" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Levels</SelectItem>
+                                        {Array.isArray(experienceLevels) && experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                        {activeCategory === 'jobType' && (
+                             <div>
+                                <label className="text-sm font-medium">Employment Types</label>
+                                <MultiSelectFilter title="Employment Types" options={jobTypeOptions} selectedValues={filters.jobType} onChange={(selected) => handleFilterChange('jobType', selected)} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+                 <div className="p-4 border-t mt-auto grid grid-cols-2 gap-2">
+                     <Button variant="ghost" onClick={clearFilters} disabled={!hasActiveFilters}>Clear All</Button>
+                    <SheetClose asChild>
+                        <Button onClick={applyFilters}>Apply Filters</Button>
+                    </SheetClose>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <Card>
@@ -167,20 +258,12 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
                     />
                 </div>
 
-                <div className="flex flex-col space-y-2 pt-2">
-                   {isSheet ? (
-                        <SheetClose asChild>
-                            {ApplyButton}
-                        </SheetClose>
-                    ) : ApplyButton}
-
-                    {isSheet && (
-                        <SheetClose asChild>
-                            <Button variant="outline" className="w-full">Cancel</Button>
-                        </SheetClose>
-                    )}
+                <div className="pt-2">
+                   <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
                 </div>
             </CardContent>
         </Card>
     );
 }
+
+    

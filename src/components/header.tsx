@@ -14,8 +14,7 @@ import {
   Search,
   Menu,
   SlidersHorizontal,
-  MessageSquareQuote,
-  Star
+  MessageSquareQuote
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -227,9 +226,9 @@ export default function Header() {
                       <span className="sr-only">Open filters</span>
                     </Button>
                   </SheetTrigger>
-                  <SheetContent>
+                  <SheetContent side="bottom" className="h-[80%]">
                     <SheetHeader>
-                      <SheetTitle>Job Filters</SheetTitle>
+                      <SheetTitle>Filters</SheetTitle>
                     </SheetHeader>
                     <JobFilters isSheet={true} />
                   </SheetContent>
@@ -306,3 +305,5 @@ export default function Header() {
     </header>
   );
 }
+
+    
