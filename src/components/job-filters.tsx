@@ -170,7 +170,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
                                 </RadioGroup>
                             )}
                             {activeCategory === 'domain' && (
-                                <div className="space-y-2">
+                                <div className="space-y-4">
                                     {domainOptions.map(option => (
                                         <div key={option.value} className="flex items-center space-x-2">
                                             <Checkbox
@@ -189,7 +189,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
                                 </div>
                             )}
                             {activeCategory === 'location' && (
-                                <div className="space-y-2">
+                                <div className="space-y-4">
                                     {locationOptions.map(option => (
                                         <div key={option.value} className="flex items-center space-x-2">
                                             <Checkbox
@@ -222,7 +222,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
                                 </RadioGroup>
                             )}
                              {activeCategory === 'jobType' && (
-                                 <div className="space-y-2">
+                                 <div className="space-y-4">
                                     {jobTypeOptions.map(option => (
                                         <div key={option.value} className="flex items-center space-x-2">
                                             <Checkbox
