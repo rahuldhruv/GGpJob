@@ -126,7 +126,7 @@ const ProfileSectionForm = ({
             : defaultValues[currentSection],
     });
 
-    const { isSubmitting, watch, setValue } = form.formState;
+    const { watch, setValue, formState: { isSubmitting } } = form;
 
     const isCurrent = currentSection === 'employment' ? watch('isCurrent') : false;
 
