@@ -12,6 +12,10 @@ import { MultiSelectFilter } from "./multi-select-filter";
 import { X, Calendar, MapPin, Briefcase, ChevronRight, Layers, Award } from "lucide-react";
 import { SheetClose } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface JobFiltersProps {
     isSheet?: boolean;
@@ -91,7 +95,9 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
             params.delete(filterKey);
             const value = filters[filterKey];
              if (Array.isArray(value)) {
-                value.forEach(v => params.append(filterKey, v));
+                if (value.length > 0) {
+                    value.forEach(v => params.append(filterKey, v));
+                }
             } else if (value && value !== 'all') {
                 params.set(filterKey, value);
             }
@@ -113,6 +119,14 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     const locationOptions = Array.isArray(locations) ? locations.map(loc => ({ value: String(loc.id), label: loc.name })) : [];
     const domainOptions = Array.isArray(domains) ? domains.map(d => ({ value: String(d.id), label: d.name })) : [];
     const jobTypeOptions = Array.isArray(jobTypes) ? jobTypes.map(jt => ({ value: String(jt.id), label: jt.name })) : [];
+
+    const postedOptions = [
+        { value: "all", label: "All Dates" },
+        { value: "1", label: "Last 24 hours" },
+        { value: "7", label: "Last 7 days" },
+        { value: "14", label: "Last 14 days" },
+        { value: "30", label: "Last 30 days" },
+    ];
 
     const filterCategories: { id: FilterCategory; label: string; icon: React.ElementType }[] = [
         { id: 'posted', label: 'Date Posted', icon: Calendar },
@@ -144,51 +158,89 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
                         ))}
                     </div>
                     <div className="col-span-2 p-4 overflow-y-auto">
-                        {activeCategory === 'posted' && (
-                             <div>
-                                <label className="text-sm font-medium">Date Posted</label>
-                                <Select value={filters.posted} onValueChange={(value) => handleFilterChange('posted', value)}>
-                                    <SelectTrigger><SelectValue placeholder="Date Posted" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Dates</SelectItem>
-                                        <SelectItem value="1">Last 24 hours</SelectItem>
-                                        <SelectItem value="7">Last 7 days</SelectItem>
-                                        <SelectItem value="14">Last 14 days</SelectItem>
-                                        <SelectItem value="30">Last 30 days</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                         {activeCategory === 'domain' && (
-                             <div>
-                                <label className="text-sm font-medium">Domains</label>
-                                <MultiSelectFilter title="Domains" options={domainOptions} selectedValues={filters.domain} onChange={(selected) => handleFilterChange('domain', selected)} />
-                            </div>
-                        )}
-                        {activeCategory === 'location' && (
-                             <div>
-                                <label className="text-sm font-medium">Locations</label>
-                                <MultiSelectFilter title="Locations" options={locationOptions} selectedValues={filters.location} onChange={(selected) => handleFilterChange('location', selected)} />
-                            </div>
-                        )}
-                        {activeCategory === 'experience' && (
-                            <div>
-                                <label className="text-sm font-medium">Experience Level</label>
-                                <Select value={filters.experience} onValueChange={(value) => handleFilterChange('experience', value)}>
-                                    <SelectTrigger><SelectValue placeholder="Experience Level" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Levels</SelectItem>
-                                        {Array.isArray(experienceLevels) && experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                        {activeCategory === 'jobType' && (
-                             <div>
-                                <label className="text-sm font-medium">Employment Types</label>
-                                <MultiSelectFilter title="Employment Types" options={jobTypeOptions} selectedValues={filters.jobType} onChange={(selected) => handleFilterChange('jobType', selected)} />
-                            </div>
-                        )}
+                        <ScrollArea className="h-full pr-4">
+                            {activeCategory === 'posted' && (
+                                <RadioGroup value={filters.posted} onValueChange={(value) => handleFilterChange('posted', value)} className="space-y-2">
+                                    {postedOptions.map(option => (
+                                        <div key={option.value} className="flex items-center space-x-2">
+                                            <RadioGroupItem value={option.value} id={`posted-${option.value}`} />
+                                            <Label htmlFor={`posted-${option.value}`}>{option.label}</Label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
+                            )}
+                            {activeCategory === 'domain' && (
+                                <div className="space-y-2">
+                                    {domainOptions.map(option => (
+                                        <div key={option.value} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`domain-${option.value}`}
+                                                checked={filters.domain.includes(option.value)}
+                                                onCheckedChange={(checked) => {
+                                                    const newSelection = checked
+                                                        ? [...filters.domain, option.value]
+                                                        : filters.domain.filter(v => v !== option.value);
+                                                    handleFilterChange('domain', newSelection);
+                                                }}
+                                            />
+                                            <Label htmlFor={`domain-${option.value}`}>{option.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {activeCategory === 'location' && (
+                                <div className="space-y-2">
+                                    {locationOptions.map(option => (
+                                        <div key={option.value} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`location-${option.value}`}
+                                                checked={filters.location.includes(option.value)}
+                                                onCheckedChange={(checked) => {
+                                                    const newSelection = checked
+                                                        ? [...filters.location, option.value]
+                                                        : filters.location.filter(v => v !== option.value);
+                                                    handleFilterChange('location', newSelection);
+                                                }}
+                                            />
+                                            <Label htmlFor={`location-${option.value}`}>{option.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {activeCategory === 'experience' && (
+                                <RadioGroup value={filters.experience} onValueChange={(value) => handleFilterChange('experience', value)} className="space-y-2">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="all" id="exp-all" />
+                                        <Label htmlFor="exp-all">All Levels</Label>
+                                    </div>
+                                    {Array.isArray(experienceLevels) && experienceLevels.map(level => (
+                                        <div key={level.id} className="flex items-center space-x-2">
+                                            <RadioGroupItem value={level.name} id={`exp-${level.id}`} />
+                                            <Label htmlFor={`exp-${level.id}`}>{level.name}</Label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
+                            )}
+                             {activeCategory === 'jobType' && (
+                                 <div className="space-y-2">
+                                    {jobTypeOptions.map(option => (
+                                        <div key={option.value} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`jobType-${option.value}`}
+                                                checked={filters.jobType.includes(option.value)}
+                                                onCheckedChange={(checked) => {
+                                                    const newSelection = checked
+                                                        ? [...filters.jobType, option.value]
+                                                        : filters.jobType.filter(v => v !== option.value);
+                                                    handleFilterChange('jobType', newSelection);
+                                                }}
+                                            />
+                                            <Label htmlFor={`jobType-${option.value}`}>{option.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </ScrollArea>
                     </div>
                 </div>
                  <div className="p-4 border-t mt-auto grid grid-cols-2 gap-2">
@@ -202,7 +254,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     }
 
     return (
-        <Card className={cn(isClient && 'rounded-t-lg')}>
+        <Card className={cn(isClient && "rounded-t-lg")}>
             {isClient && hasActiveFilters && (
                 <CardHeader className="flex flex-row items-center justify-end pt-4 pb-2 px-4">
                     <Button variant="ghost" size="sm" onClick={clearFilters}>
