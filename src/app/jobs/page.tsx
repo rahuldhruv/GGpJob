@@ -32,7 +32,7 @@ function JobSearchContent() {
 
     useEffect(() => {
         fetchJobs();
-    }, [fetchJobs]);
+    }, [fetchJobs, searchParams.toString()]);
 
     const renderJobCards = () => {
         if (loading) {
