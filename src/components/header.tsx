@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import Link from "next/link";
@@ -200,7 +201,11 @@ export default function Header() {
   const renderMobileRightButton = () => {
     if (isClient && isJobDetailsPage && user?.role === 'Job Seeker') {
         const jobId = pathname.split('/')[2];
-        return <ShareButton jobId={jobId} jobTitle={""} />;
+        return (
+            <div className="md:hidden">
+                <ShareButton jobId={jobId} jobTitle={""} />
+            </div>
+        );
     }
      if (isClient && !loading && isJobSearchPage) {
         return (
