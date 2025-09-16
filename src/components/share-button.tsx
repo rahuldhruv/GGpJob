@@ -16,7 +16,7 @@ export function ShareButton({ jobId, jobTitle }: ShareButtonProps) {
     const handleShare = async () => {
         const jobUrl = `${window.location.origin}/jobs/${jobId}`;
         const shareData = {
-            title: jobTitle,
+            title: `Job Opening: ${jobTitle}`,
             text: `Check out this job: ${jobTitle}`,
             url: jobUrl,
         };
