@@ -38,6 +38,8 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
         domain: searchParams.getAll('domain') || [],
         jobType: searchParams.getAll('jobType') || [],
     });
+    
+    const [hasActiveFilters, setHasActiveFilters] = useState(false);
 
      useEffect(() => {
         setIsClient(true);
@@ -56,12 +58,15 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
         fetchFilterData();
     }, []);
 
-    const hasActiveFilters = 
-        searchParams.get('posted') !== null && searchParams.get('posted') !== 'all' ||
-        searchParams.getAll('location').length > 0 && !searchParams.getAll('location').includes('all') ||
-        searchParams.get('experience') !== null && searchParams.get('experience') !== 'all' ||
-        searchParams.getAll('domain').length > 0 && !searchParams.getAll('domain').includes('all') ||
-        searchParams.getAll('jobType').length > 0 && !searchParams.getAll('jobType').includes('all');
+    useEffect(() => {
+        setHasActiveFilters(
+            searchParams.get('posted') !== null && searchParams.get('posted') !== 'all' ||
+            searchParams.getAll('location').length > 0 && !searchParams.getAll('location').includes('all') ||
+            searchParams.get('experience') !== null && searchParams.get('experience') !== 'all' ||
+            searchParams.getAll('domain').length > 0 && !searchParams.getAll('domain').includes('all') ||
+            searchParams.getAll('jobType').length > 0 && !searchParams.getAll('jobType').includes('all')
+        );
+    }, [searchParams]);
 
 
     useEffect(() => {
@@ -197,77 +202,75 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     }
 
     return (
-        <div className="rounded-t-lg">
-            <Card>
-                {isClient && hasActiveFilters && (
-                    <CardHeader className="flex flex-row items-center justify-end pt-4 pb-2 px-4">
-                        <Button variant="ghost" size="sm" onClick={clearFilters}>
-                            <X className="mr-2 h-4 w-4"/>
-                            Clear
-                        </Button>
-                    </CardHeader>
-                )}
-                <CardContent className="space-y-4 px-4 pb-4 pt-6">
-                    <div>
-                        <label className="text-sm font-medium">Date Posted</label>
-                        <Select value={filters.posted} onValueChange={(value) => handleFilterChange('posted', value)}>
-                            <SelectTrigger>
-                            <SelectValue placeholder="Date Posted" />
-                            </SelectTrigger>
-                            <SelectContent>
-                            <SelectItem value="all">All Dates</SelectItem>
-                            <SelectItem value="1">Last 24 hours</SelectItem>
-                            <SelectItem value="7">Last 7 days</SelectItem>
-                            <SelectItem value="14">Last 14 days</SelectItem>
-                            <SelectItem value="30">Last 30 days</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium">Domains</label>
-                        <MultiSelectFilter
-                            title="Domains"
-                            options={domainOptions}
-                            selectedValues={filters.domain}
-                            onChange={(selected) => handleFilterChange('domain', selected)}
-                        />
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium">Locations</label>
-                        <MultiSelectFilter
-                            title="Locations"
-                            options={locationOptions}
-                            selectedValues={filters.location}
-                            onChange={(selected) => handleFilterChange('location', selected)}
-                        />
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium">Experience Level</label>
-                        <Select value={filters.experience} onValueChange={(value) => handleFilterChange('experience', value)}>
-                            <SelectTrigger>
-                            <SelectValue placeholder="Experience Level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                            <SelectItem value="all">All Levels</SelectItem>
-                            {Array.isArray(experienceLevels) && experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium">Employment Types</label>
-                        <MultiSelectFilter
-                            title="Employment Types"
-                            options={jobTypeOptions}
-                            selectedValues={filters.jobType}
-                            onChange={(selected) => handleFilterChange('jobType', selected)}
-                        />
-                    </div>
+        <Card className={cn(isClient && 'rounded-t-lg')}>
+            {isClient && hasActiveFilters && (
+                <CardHeader className="flex flex-row items-center justify-end pt-4 pb-2 px-4">
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                        <X className="mr-2 h-4 w-4"/>
+                        Clear
+                    </Button>
+                </CardHeader>
+            )}
+            <CardContent className="space-y-4 px-4 pb-4 pt-6">
+                <div>
+                    <label className="text-sm font-medium">Date Posted</label>
+                    <Select value={filters.posted} onValueChange={(value) => handleFilterChange('posted', value)}>
+                        <SelectTrigger>
+                        <SelectValue placeholder="Date Posted" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="all">All Dates</SelectItem>
+                        <SelectItem value="1">Last 24 hours</SelectItem>
+                        <SelectItem value="7">Last 7 days</SelectItem>
+                        <SelectItem value="14">Last 14 days</SelectItem>
+                        <SelectItem value="30">Last 30 days</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <label className="text-sm font-medium">Domains</label>
+                    <MultiSelectFilter
+                        title="Domains"
+                        options={domainOptions}
+                        selectedValues={filters.domain}
+                        onChange={(selected) => handleFilterChange('domain', selected)}
+                    />
+                </div>
+                <div>
+                    <label className="text-sm font-medium">Locations</label>
+                    <MultiSelectFilter
+                        title="Locations"
+                        options={locationOptions}
+                        selectedValues={filters.location}
+                        onChange={(selected) => handleFilterChange('location', selected)}
+                    />
+                </div>
+                <div>
+                    <label className="text-sm font-medium">Experience Level</label>
+                    <Select value={filters.experience} onValueChange={(value) => handleFilterChange('experience', value)}>
+                        <SelectTrigger>
+                        <SelectValue placeholder="Experience Level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="all">All Levels</SelectItem>
+                        {Array.isArray(experienceLevels) && experienceLevels.map(level => <SelectItem key={level.id} value={level.name}>{level.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <label className="text-sm font-medium">Employment Types</label>
+                    <MultiSelectFilter
+                        title="Employment Types"
+                        options={jobTypeOptions}
+                        selectedValues={filters.jobType}
+                        onChange={(selected) => handleFilterChange('jobType', selected)}
+                    />
+                </div>
 
-                    <div className="pt-2">
-                    <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                <div className="pt-2">
+                <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
