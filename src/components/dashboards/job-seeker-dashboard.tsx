@@ -96,9 +96,9 @@ export default function JobSeekerDashboard() {
                     
                 </div>
                  {user?.domainId && (
-                    <Button asChild variant="outline">
+                    <Button asChild variant="link">
                         <Link href={`/jobs?domain=${user.domainId}`}>
-                            View All <ArrowRight className="ml-2 h-4 w-4" />
+                            View All
                         </Link>
                     </Button>
                 )}
