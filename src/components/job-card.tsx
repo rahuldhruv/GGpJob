@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,16 +51,17 @@ export default function JobCard({ job, isApplied = false }: JobCardProps) {
           <Clock className="h-3 w-3" />
           {formatDistanceToNow(new Date(job.postedAt), { addSuffix: true })}
         </div>
-        {isApplied ? (
-            <Badge variant="secondary" className="flex items-center gap-1.5 border-green-300 bg-green-50 text-green-800">
-                <CheckCircle className="h-4 w-4" />
-                Applied
-            </Badge>
-        ) : (
+        <div className="flex items-center gap-2">
+            {isApplied && (
+                <Badge variant="secondary" className="flex items-center gap-1.5 border-green-300 bg-green-50 text-green-800">
+                    <CheckCircle className="h-4 w-4" />
+                    Applied
+                </Badge>
+            )}
             <Button asChild variant="secondary" size="sm">
                 <Link href={`/jobs/${job.id}`}>View Details</Link>
             </Button>
-        )}
+        </div>
       </CardFooter>
     </Card>
   );
