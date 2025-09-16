@@ -13,6 +13,7 @@ function JobSearchContent() {
     const searchParams = useSearchParams();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
+    const isRecommended = searchParams.has('domain') && searchParams.get('domain') !== 'all';
     
     const fetchJobs = useCallback(async () => {
         setLoading(true);
@@ -63,7 +64,7 @@ function JobSearchContent() {
                  <Card>
                     <CardHeader>
                         <div>
-                            <CardTitle>Job Openings</CardTitle>
+                            <CardTitle>{isRecommended ? 'Recommended Jobs' : 'Job Openings'}</CardTitle>
                             <CardDescription>
                                 {loading ? 'Searching for jobs...' : `Found ${jobs.length} job openings.`}
                             </CardDescription>
