@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Domain, ExperienceLevel, Location, JobType } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelectFilter } from "./multi-select-filter";
@@ -24,6 +24,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     const [domains, setDomains] = useState<Domain[]>([]);
     const [experienceLevels, setExperienceLevels] = useState<ExperienceLevel[]>([]);
     const [jobTypes, setJobTypes] = useState<JobType[]>([]);
+    const [isClient, setIsClient] = useState(false);
     
     const [filters, setFilters] = useState({
         posted: searchParams.get('posted') || 'all',
@@ -34,6 +35,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     });
 
     useEffect(() => {
+        setIsClient(true);
         const fetchFilterData = async () => {
             const [locationsRes, domainsRes, experienceLevelsRes, jobTypesRes] = await Promise.all([
                 fetch('/api/locations'),
@@ -102,7 +104,7 @@ export function JobFilters({ isSheet = false }: JobFiltersProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-end pt-4 pb-2 px-4">
-                {hasActiveFilters && (
+                {isClient && hasActiveFilters && (
                     <Button variant="ghost" size="sm" onClick={clearFilters}>
                         <X className="mr-2 h-4 w-4"/>
                         Clear
