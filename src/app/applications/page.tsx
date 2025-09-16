@@ -5,11 +5,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/user-context";
 import type { Application } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Briefcase, Calendar } from "lucide-react";
 import { format } from 'date-fns';
 import Link from "next/link";
 
@@ -79,34 +79,72 @@ export default function ApplicationsPage() {
                 </CardHeader>
                 <CardContent>
                     {applications.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Job Title</TableHead>
-                                    <TableHead>Company</TableHead>
-                                    <TableHead>Date Applied</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                        <>
+                            {/* Mobile View - Cards */}
+                            <div className="md:hidden space-y-4">
                                 {applications.map((app) => (
-                                    <TableRow key={app.id}>
-                                        <TableCell className="font-medium">{app.jobTitle}</TableCell>
-                                        <TableCell>{app.companyName}</TableCell>
-                                        <TableCell>{format(new Date(app.appliedAt), 'PPP')}</TableCell>
-                                        <TableCell>{getStatusBadge(app.statusName)}</TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <Button asChild variant="ghost" size="sm">
+                                    <Card key={app.id} className="w-full">
+                                        <CardHeader>
+                                            <CardTitle className="text-base">{app.jobTitle}</CardTitle>
+                                            <CardDescription className="flex items-center gap-2 pt-1">
+                                                <Briefcase className="h-4 w-4" /> {app.companyName}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-muted-foreground flex items-center gap-2">
+                                                    <Calendar className="h-4 w-4"/> Date Applied
+                                                </span>
+                                                <span>{format(new Date(app.appliedAt), 'PPP')}</span>
+                                            </div>
+                                             <div className="flex items-center justify-between text-sm">
+                                                <span className="text-muted-foreground">Status</span>
+                                                {getStatusBadge(app.statusName)}
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter>
+                                             <Button asChild variant="secondary" size="sm" className="w-full">
                                                 <Link href={`/jobs/${app.jobId}`}>
                                                     View Job <ArrowRight className="ml-2 h-4 w-4" />
                                                 </Link>
                                             </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                        </CardFooter>
+                                    </Card>
                                 ))}
-                            </TableBody>
-                        </Table>
+                            </div>
+                            
+                            {/* Desktop View - Table */}
+                            <div className="hidden md:block">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Job Title</TableHead>
+                                            <TableHead>Company</TableHead>
+                                            <TableHead>Date Applied</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {applications.map((app) => (
+                                            <TableRow key={app.id}>
+                                                <TableCell className="font-medium">{app.jobTitle}</TableCell>
+                                                <TableCell>{app.companyName}</TableCell>
+                                                <TableCell>{format(new Date(app.appliedAt), 'PPP')}</TableCell>
+                                                <TableCell>{getStatusBadge(app.statusName)}</TableCell>
+                                                <TableCell className="text-right space-x-2">
+                                                    <Button asChild variant="ghost" size="sm">
+                                                        <Link href={`/jobs/${app.jobId}`}>
+                                                            View Job <ArrowRight className="ml-2 h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </>
                     ) : (
                         <p className="text-sm text-muted-foreground">You have not applied to any jobs yet.</p>
                     )}
