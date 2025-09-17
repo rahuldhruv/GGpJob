@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, FileText, Upload } from "lucide-react";
+import { LoaderCircle, FileText, Upload, CheckCircle } from "lucide-react";
 import { User } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   resume: z.any().refine(files => files?.length > 0, "Please select a file to upload."),
@@ -35,12 +36,14 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
   const { toast } = useToast();
   const { user, setUser } = useUser();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+
 
   const form = useForm<ResumeFormValues>({
     resolver: zodResolver(formSchema),
   });
 
-  const { isSubmitting } = form.formState;
+  const { isSubmitting, formState: { isValid } } = form;
 
   const onSubmit = async (data: ResumeFormValues) => {
     const file = data.resume[0];
@@ -80,6 +83,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
         fileInputRef.current.value = "";
       }
       form.reset();
+      setSelectedFileName(null);
       
     } catch (error: any) {
       toast({
@@ -91,11 +95,21 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
   };
   
   const currentResume = user?.resume;
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (files: FileList | null) => void) => {
+    const files = e.target.files;
+    fieldChange(files);
+    if (files && files.length > 0) {
+      setSelectedFileName(files[0].name);
+    } else {
+      setSelectedFileName(null);
+    }
+  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {currentResume ? (
+        {currentResume && !selectedFileName ? (
           <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
             <div className="flex items-center gap-2 text-sm">
               <FileText className="h-4 w-4" />
@@ -105,8 +119,17 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
                 View
             </Link>
           </div>
-        ) : (
+        ) : !selectedFileName ? (
           <p className="text-sm text-muted-foreground">No resume uploaded yet.</p>
+        ): null}
+        
+        {selectedFileName && (
+             <div className="flex items-center justify-between p-3 border rounded-md border-primary/50 bg-primary/10">
+                <div className="flex items-center gap-2 text-sm text-primary font-medium">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>{selectedFileName}</span>
+                </div>
+             </div>
         )}
 
         <FormField
@@ -118,7 +141,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
               <FormControl>
                 <div className="relative">
                     <Button asChild variant="outline" className="w-full">
-                      <label htmlFor="resume-upload">
+                      <label htmlFor="resume-upload" className="cursor-pointer">
                         <Upload className="mr-2 h-4 w-4"/>
                         {currentResume ? 'Upload New Resume' : 'Upload Resume'}
                       </label>
@@ -128,7 +151,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
                         type="file" 
                         accept=".pdf,.doc,.docx"
                         className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                        onChange={(e) => onChange(e.target.files)}
+                        onChange={(e) => handleFileChange(e, onChange)}
                         onBlur={onBlur}
                         name={name}
                         ref={(e) => {
@@ -143,7 +166,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
           )}
         />
         <div className="flex justify-end pt-2">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting || !isValid}>
             {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
             Save Resume
           </Button>
