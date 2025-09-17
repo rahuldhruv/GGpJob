@@ -43,7 +43,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
     resolver: zodResolver(formSchema),
   });
 
-  const { isSubmitting, formState: { isValid } } = form;
+  const { isSubmitting, isValid, reset } = form;
 
   const onSubmit = async (data: ResumeFormValues) => {
     const file = data.resume[0];
@@ -82,7 +82,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
       if(fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      form.reset();
+      reset();
       setSelectedFileName(null);
       
     } catch (error: any) {
@@ -116,7 +116,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
               <span className="font-medium">{currentResume.split('/').pop()}</span>
             </div>
             <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                <Link href={currentResume} target="_blank">
+                <Link href={currentResume} target="_blank" download>
                     <Download className="h-4 w-4" />
                 </Link>
             </Button>
@@ -177,3 +177,4 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
     </Form>
   );
 }
+
