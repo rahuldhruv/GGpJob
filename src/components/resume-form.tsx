@@ -41,7 +41,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
     resolver: zodResolver(formSchema),
   });
 
-  const { isSubmitting, isValid, reset } = form;
+  const { formState: { isSubmitting, isValid }, reset } = form;
 
   const onSubmit = async (data: ResumeFormValues) => {
     if (!user) return;
@@ -69,8 +69,9 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
         throw new Error(errorData.error || "Failed to update resume");
       }
       
-      const updatedUser = await response.json();
-      setUser({ ...user, ...updatedUser });
+      const updatedData = await response.json();
+      // Explicitly update the user context with the new resume information.
+      setUser({ ...user, resume: updatedData.resume });
 
       toast({
         title: "Resume Updated!",
