@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, FileText, Upload, CheckCircle } from "lucide-react";
+import { LoaderCircle, FileText, Upload, CheckCircle, Download } from "lucide-react";
 import { User } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import Link from "next/link";
@@ -115,9 +115,11 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
               <FileText className="h-4 w-4" />
               <span className="font-medium">{currentResume.split('/').pop()}</span>
             </div>
-            <Link href={currentResume} target="_blank" className="text-sm text-primary hover:underline">
-                View
-            </Link>
+            <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                <Link href={currentResume} target="_blank">
+                    <Download className="h-4 w-4" />
+                </Link>
+            </Button>
           </div>
         ) : !selectedFileName ? (
           <p className="text-sm text-muted-foreground">No resume uploaded yet.</p>
