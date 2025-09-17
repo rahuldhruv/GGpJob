@@ -11,7 +11,7 @@ const saltRounds = 10;
 let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
 const usersData: Omit<User, 'id' | 'password'> & { passwordPlain: string }[] = [
-  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123", locationId: 4, domainId: 1 },
+  { firstName: "Alice", lastName: "Johnson", name: "Alice Johnson", email: "alice@example.com", role: "Job Seeker", headline: "Frontend Developer", phone: "111-222-3333", passwordPlain: "password123", locationId: 4, domainId: 1, resumeUrl: 'https://example.com/alice_resume.pdf' },
   { firstName: "Bob", lastName: "Williams", name: "Bob Williams", email: "bob@example.com", role: "Recruiter", phone: "222-333-4444", passwordPlain: "password123" },
   { firstName: "Charlie", lastName: "Brown", name: "Charlie Brown", email: "charlie@example.com", role: "Employee", phone: "333-444-5555", passwordPlain: "password123" },
   { firstName: "Super", lastName: "Admin", name: "Super Admin", email: "admin@gmail.com", role: "Super Admin", phone: "444-555-6666", passwordPlain: "admin123", headline: "Platform Administrator" },
@@ -216,7 +216,7 @@ export async function getDb() {
       password TEXT,
       locationId INTEGER,
       domainId INTEGER,
-      resume TEXT,
+      resumeUrl TEXT,
       FOREIGN KEY(locationId) REFERENCES locations(id) ON DELETE SET NULL,
       FOREIGN KEY(domainId) REFERENCES domains(id) ON DELETE SET NULL
     );
@@ -393,7 +393,7 @@ export async function getDb() {
 
     // Users
     const userStmt = await db.prepare(
-      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password, locationId, domainId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO users (id, firstName, lastName, name, email, role, headline, phone, password, locationId, domainId, resumeUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     for (const [index, user] of usersData.entries()) {
       const hashedPassword = await bcrypt.hash(user.passwordPlain, saltRounds);
@@ -408,7 +408,8 @@ export async function getDb() {
         user.phone,
         hashedPassword,
         user.locationId ?? null,
-        user.domainId ?? null
+        user.domainId ?? null,
+        user.resumeUrl ?? null
       );
     }
     await userStmt.finalize();

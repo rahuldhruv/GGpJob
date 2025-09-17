@@ -6,17 +6,13 @@ import { User } from '@/lib/types';
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const { resume } = await request.json();
+        const { resumeUrl } = await request.json();
         
-        if (!resume) {
-            return NextResponse.json({ error: 'Resume file path is required' }, { status: 400 });
-        }
-
         const db = await getDb();
         
         const result = await db.run(
-            'UPDATE users SET resume = ? WHERE id = ?',
-            resume,
+            'UPDATE users SET resumeUrl = ? WHERE id = ?',
+            resumeUrl,
             id
         );
 
@@ -24,7 +20,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const updatedUser: Partial<User> = await db.get('SELECT resume FROM users WHERE id = ?', id);
+        const updatedUser: Partial<User> = await db.get('SELECT resumeUrl FROM users WHERE id = ?', id);
 
         return NextResponse.json(updatedUser, { status: 200 });
 

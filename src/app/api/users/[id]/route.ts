@@ -57,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const updatedUser: Omit<User, 'password' | 'role'> = await db.get('SELECT id, firstName, lastName, name, email, phone, role, headline, locationId, domainId, resume FROM users WHERE id = ?', id);
+        const updatedUser: Omit<User, 'password' | 'role'> = await db.get('SELECT id, firstName, lastName, name, email, phone, role, headline, locationId, domainId, resumeUrl FROM users WHERE id = ?', id);
 
         return NextResponse.json(updatedUser, { status: 200 });
 

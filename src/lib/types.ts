@@ -14,7 +14,7 @@ export interface User {
   headline?: string;
   locationId?: number;
   domainId?: number;
-  resume?: string;
+  resumeUrl?: string;
   // Joined fields
   location?: string;
 }
