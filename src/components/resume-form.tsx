@@ -16,13 +16,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, FileText, Upload, CheckCircle, Download, FileType } from "lucide-react";
-import { User, Education, Employment, Project, Language } from "@/lib/types";
+import { LoaderCircle, FileText, Upload, CheckCircle, Download } from "lucide-react";
+import { User } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import Link from "next/link";
-import { generateResume } from "@/ai/flows/generate-resume";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 const formSchema = z.object({
   resume: z.any().refine(files => files?.length > 0, "Please select a file to upload."),
@@ -39,8 +36,6 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
   const { user, setUser } = useUser();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-
 
   const form = useForm<ResumeFormValues>({
     resolver: zodResolver(formSchema),
@@ -97,51 +92,6 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
       });
     }
   };
-
-  const handleDownloadPdf = async () => {
-    if (!user) return;
-    setIsGeneratingPdf(true);
-    try {
-        const profileRes = await fetch(`/api/users/${user.id}/profile`);
-        if (!profileRes.ok) throw new Error("Failed to fetch profile data.");
-        const profileData: { education: Education[], employment: Employment[], projects: Project[], languages: Language[] } = await profileRes.json();
-        
-        const resumeInput = {
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            headline: user.headline,
-            location: user.location,
-            ...profileData
-        };
-
-        const result = await generateResume(resumeInput);
-        const html = result.resumeHtml;
-
-        const pdf = new jsPDF('p', 'pt', 'a4');
-        const pdfContainer = document.createElement('div');
-        pdfContainer.innerHTML = html;
-        document.body.appendChild(pdfContainer);
-        
-        const canvas = await html2canvas(pdfContainer, { scale: 2 });
-        document.body.removeChild(pdfContainer);
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save('resume.pdf');
-
-        toast({ title: 'Success', description: 'Your resume has been downloaded.' });
-    } catch (error: any) {
-        console.error(error);
-        toast({ title: "PDF Generation Failed", description: error.message || "Could not generate PDF.", variant: "destructive" });
-    } finally {
-        setIsGeneratingPdf(false);
-    }
-};
-
   
   const currentResume = user?.resume;
   
@@ -157,22 +107,6 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-          <Button onClick={handleDownloadPdf} disabled={isGeneratingPdf} variant="outline">
-              {isGeneratingPdf ? <LoaderCircle className="animate-spin mr-2"/> : <FileType className="mr-2" />}
-              {isGeneratingPdf ? 'Generating...' : 'Download as PDF'}
-          </Button>
-      </div>
-
-       <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or Upload a File</span>
-            </div>
-        </div>
-    
         <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {currentResume && !selectedFileName ? (
