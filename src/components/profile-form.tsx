@@ -74,9 +74,23 @@ export function ProfileForm({ user }: ProfileFormProps) {
     },
   });
   
-  const { register } = form;
+  const { register, reset } = form;
 
   const { isSubmitting } = form.formState;
+
+  useEffect(() => {
+    reset({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      headline: user.headline || "",
+      locationId: user.locationId,
+      domainId: user.domainId,
+      resume: null,
+    });
+  }, [user, reset]);
+
 
   const onSubmit = async (data: ProfileFormValues) => {
     try {
@@ -105,9 +119,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
         description: "Your profile information has been successfully updated.",
       });
       
-      const { resume, ...resetData } = updatedUser;
-      form.reset({...resetData, resume: null });
-
     } catch (error: any) {
       toast({
         title: "Error",
