@@ -40,9 +40,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
         const db = await getDb();
         
+        const currentUser = await db.get<User>('SELECT resume FROM users WHERE id = ?', id);
+        
         // In a real app, you'd handle file uploads to a storage service
         // For now, we'll just save the file name (or a placeholder)
-        const resumePath = resume ? `/resumes/user-${id}-${resume.name}` : null;
+        let resumePath = currentUser?.resume || null;
+        if (resume && resume.name) {
+            resumePath = `/resumes/user-${id}-${resume.name}`;
+        }
         
         const result = await db.run(
             'UPDATE users SET firstName = ?, lastName = ?, name = ?, email = ?, phone = ?, headline = ?, locationId = ?, domainId = ?, resume = ? WHERE id = ?',
