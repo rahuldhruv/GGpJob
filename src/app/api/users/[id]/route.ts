@@ -32,7 +32,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const { firstName, lastName, email, phone, headline, locationId, domainId, resume } = await request.json();
+        const { firstName, lastName, email, phone, headline, locationId, domainId } = await request.json();
         
         if (!firstName || !lastName || !email || !phone) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -40,17 +40,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
         const db = await getDb();
         
-        const currentUser = await db.get<User>('SELECT resume FROM users WHERE id = ?', id);
-        
-        // In a real app, you'd handle file uploads to a storage service
-        // For now, we'll just save the file name (or a placeholder)
-        let resumePath = currentUser?.resume || null;
-        if (resume && resume.name) {
-            resumePath = `/resumes/user-${id}-${resume.name}`;
-        }
-        
         const result = await db.run(
-            'UPDATE users SET firstName = ?, lastName = ?, name = ?, email = ?, phone = ?, headline = ?, locationId = ?, domainId = ?, resume = ? WHERE id = ?',
+            'UPDATE users SET firstName = ?, lastName = ?, name = ?, email = ?, phone = ?, headline = ?, locationId = ?, domainId = ? WHERE id = ?',
             firstName,
             lastName,
             `${firstName} ${lastName}`,
@@ -59,7 +50,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             headline,
             locationId,
             domainId,
-            resumePath,
             id
         );
 

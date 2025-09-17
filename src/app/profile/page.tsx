@@ -9,6 +9,7 @@ import { ChangePasswordForm } from "@/components/change-password-form";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { ProfileSections } from "@/components/profile-sections";
+import { ResumeForm } from "@/components/resume-form";
 
 export default function ProfilePage() {
     const { user, loading } = useUser();
@@ -42,6 +43,18 @@ export default function ProfilePage() {
 
                 {user.role === 'Job Seeker' && (
                     <>
+                        <Separator />
+                         <Card>
+                            <CardHeader>
+                                <CardTitle>My Resume</CardTitle>
+                                <CardDescription>
+                                    Manage your resume here.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ResumeForm user={user} />
+                            </CardContent>
+                        </Card>
                         <Separator />
                         <ProfileSections userId={user.id} isEditable={true} />
                     </>

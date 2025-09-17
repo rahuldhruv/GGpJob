@@ -15,12 +15,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, FileText, Upload } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { User, Location, Domain } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 const formSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters."),
@@ -30,7 +29,6 @@ const formSchema = z.object({
   headline: z.string().optional(),
   locationId: z.coerce.number().optional(),
   domainId: z.coerce.number().optional(),
-  resume: z.any().optional(), // Using `any` to handle FileList from input
 });
 
 type ProfileFormValues = z.infer<typeof formSchema>;
@@ -74,7 +72,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     },
   });
   
-  const { register, reset } = form;
+  const { reset } = form;
 
   const { isSubmitting } = form.formState;
 
@@ -87,22 +85,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
       headline: user.headline || "",
       locationId: user.locationId,
       domainId: user.domainId,
-      resume: null,
     });
   }, [user, reset]);
 
 
   const onSubmit = async (data: ProfileFormValues) => {
     try {
-      const formData = {
-        ...data,
-        resume: data.resume?.[0], // Extract the file from the FileList
-      };
-
       const response = await fetch(`/api/users/${user.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
@@ -240,40 +232,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     </FormItem>
                 )}
                 />
-                <FormItem>
-                  <FormLabel>Resume</FormLabel>
-                   {user.resume ? (
-                     <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-                        <div className="flex items-center gap-2 text-sm">
-                          <FileText className="h-4 w-4" />
-                          <span className="font-medium">{user.resume.split('/').pop()}</span>
-                        </div>
-                        <Link href={user.resume} target="_blank" className="text-sm text-primary hover:underline">
-                            View
-                        </Link>
-                     </div>
-                   ) : (
-                    <p className="text-sm text-muted-foreground">No resume uploaded yet.</p>
-                   )}
-                   <FormControl>
-                    <div className="relative">
-                        <Button asChild variant="outline" className="w-full">
-                           <label htmlFor="resume-upload">
-                             <Upload className="mr-2 h-4 w-4"/>
-                             {user.resume ? 'Upload a New Resume' : 'Upload Resume'}
-                           </label>
-                        </Button>
-                        <Input 
-                            id="resume-upload"
-                            type="file" 
-                            accept=".pdf,.doc,.docx"
-                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                            {...register("resume")}
-                        />
-                    </div>
-                   </FormControl>
-                   <FormMessage>{form.formState.errors.resume?.message as React.ReactNode}</FormMessage>
-                </FormItem>
             </>
         )}
         <div className="flex justify-end pt-2">
