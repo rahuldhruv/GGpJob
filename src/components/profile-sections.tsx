@@ -45,7 +45,12 @@ export function ProfileSections({ userId, isEditable = false }: ProfileSectionsP
         try {
             const res = await fetch(`/api/users/${userId}/profile`);
             const fetchedData = await res.json();
-            setData(fetchedData);
+            setData({
+                education: fetchedData.education || [],
+                employment: fetchedData.employment || [],
+                projects: fetchedData.projects || [],
+                languages: fetchedData.languages || [],
+            });
         } catch (error) {
             console.error("Failed to fetch profile sections", error);
             toast({ title: "Error", description: "Could not fetch profile details." });
