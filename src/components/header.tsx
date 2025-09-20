@@ -252,7 +252,7 @@ export default function Header() {
             <span className="text-lg">GGP Portal</span>
         </Link>
         {isClient && isProfileSectionEditPage && (
-          <div className="md:hidden text-lg font-semibold">
+          <div className="md:hidden text-lg font-semibold whitespace-nowrap">
             {getProfileSectionTitle()}
           </div>
         )}
