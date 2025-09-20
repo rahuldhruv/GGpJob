@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Job, Application } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import JobCard from "@/components/job-card";
 import { JobFilters } from "@/components/job-filters";
 import { useUser } from "@/contexts/user-context";
