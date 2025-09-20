@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Briefcase, Calendar } from "lucide-react";
 import { format } from 'date-fns';
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ApplicationsPage() {
     const { user, loading: userLoading } = useUser();
@@ -63,7 +64,68 @@ export default function ApplicationsPage() {
     };
     
     if (userLoading || loading) {
-        return <div className="container mx-auto p-4">Loading...</div>;
+        return (
+            <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>My Applications</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         {/* Mobile Skeleton */}
+                        <div className="md:hidden space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                                <Card key={i}>
+                                    <CardHeader>
+                                        <Skeleton className="h-6 w-3/4" />
+                                        <Skeleton className="h-4 w-1/2 mt-1" />
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <Skeleton className="h-4 w-1/4" />
+                                            <Skeleton className="h-4 w-1/3" />
+                                        </div>
+                                         <div className="flex items-center justify-between">
+                                            <Skeleton className="h-4 w-1/5" />
+                                            <Skeleton className="h-6 w-1/4" />
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter>
+                                         <Skeleton className="h-9 w-full" />
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
+                        {/* Desktop Skeleton */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Job Title</TableHead>
+                                        <TableHead>Company</TableHead>
+                                        <TableHead>Date Applied</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {[...Array(5)].map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                                            <TableCell className="text-right">
+                                                <Skeleton className="h-8 w-24 inline-block" />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
     }
 
     if (!user) {
