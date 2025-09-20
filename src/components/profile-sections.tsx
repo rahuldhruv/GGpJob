@@ -4,24 +4,26 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Education, Project, Employment, Language } from '@/lib/types';
+import type { Education, Project, Employment, Language, Skill } from '@/lib/types';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, BookOpen, Briefcase, Lightbulb, Languages, LinkIcon } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, BookOpen, Briefcase, Lightbulb, Languages, LinkIcon, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
 import { ProfileSectionForm } from './profile-section-form';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Badge } from './ui/badge';
 
 
-type Section = 'education' | 'employment' | 'projects' | 'languages';
+type Section = 'education' | 'employment' | 'projects' | 'languages' | 'skills';
 type ProfileData = {
     education: Education[],
     employment: Employment[],
     projects: Project[],
-    languages: Language[]
+    languages: Language[],
+    skills: Skill[],
 };
 
 interface ProfileSectionsProps {
@@ -30,7 +32,7 @@ interface ProfileSectionsProps {
 }
 
 export function ProfileSections({ userId, isEditable = false }: ProfileSectionsProps) {
-    const [data, setData] = useState<ProfileData>({ education: [], employment: [], projects: [], languages: [] });
+    const [data, setData] = useState<ProfileData>({ education: [], employment: [], projects: [], languages: [], skills: [] });
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [currentSection, setCurrentSection] = useState<Section | null>(null);
@@ -50,6 +52,7 @@ export function ProfileSections({ userId, isEditable = false }: ProfileSectionsP
                 employment: fetchedData.employment || [],
                 projects: fetchedData.projects || [],
                 languages: fetchedData.languages || [],
+                skills: fetchedData.skills || [],
             });
         } catch (error) {
             console.error("Failed to fetch profile sections", error);
@@ -146,7 +149,43 @@ export function ProfileSections({ userId, isEditable = false }: ProfileSectionsP
 
     return (
        <>
-         <Accordion type="multiple" className="w-full space-y-6" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']}>
+         <Accordion type="multiple" className="w-full space-y-6" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5']}>
+                 {/* Skills Section */}
+                <AccordionItem value="item-5">
+                     <Card>
+                        <AccordionTrigger className="p-6">
+                             <div className="flex items-center gap-4">
+                                <Wrench className="h-6 w-6 text-primary" />
+                                <CardTitle className="text-xl">Skills</CardTitle>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-6 pt-0">
+                            <div className="flex flex-wrap gap-2">
+                                {data.skills.map(item => (
+                                    <div key={item.id} className="relative group">
+                                         <Badge variant="secondary" className="text-sm py-1 pr-8">
+                                            {item.name}
+                                        </Badge>
+                                        {isEditable && (
+                                            <div className="absolute -top-2 -right-2 flex opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleOpenForm('skills', item)}><Edit className="h-3 w-3" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDelete('skills', item.id)}><Trash2 className="h-3 w-3" /></Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {data.skills.length === 0 && !isEditable && (
+                                    <p className="text-sm text-muted-foreground">No skills listed.</p>
+                                )}
+                            </div>
+                             {isEditable && (
+                                <Button variant="outline" className="mt-4" onClick={() => handleOpenForm('skills')}>
+                                    <PlusCircle className="mr-2" /> Add Skill
+                                </Button>
+                             )}
+                        </AccordionContent>
+                    </Card>
+                </AccordionItem>
                 {/* Employment Section */}
                 <AccordionItem value="item-1">
                      <Card>

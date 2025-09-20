@@ -47,22 +47,28 @@ const languageSchema = z.object({
     proficiency: z.enum(['Beginner', 'Intermediate', 'Advanced', 'Native']),
 });
 
+const skillSchema = z.object({
+    name: z.string().min(1, "Skill name is required"),
+});
+
 const schemas = {
     education: educationSchema,
     employment: employmentSchema,
     projects: projectSchema,
     languages: languageSchema,
+    skills: skillSchema,
 };
 
 const defaultValues = {
     education: { institution: '', degree: '', fieldOfStudy: '', startDate: '', endDate: '', description: '' },
     employment: { company: '', title: '', employmentType: 'Full-time' as const, location: '', startDate: '', endDate: '', description: '', isCurrent: false },
     projects: { name: '', description: '', url: '', startDate: '', endDate: '' },
-    languages: { language: '', proficiency: 'Beginner' as const }
+    languages: { language: '', proficiency: 'Beginner' as const },
+    skills: { name: '' },
 };
 
-type FormData = z.infer<typeof educationSchema> | z.infer<typeof employmentSchema> | z.infer<typeof projectSchema> | z.infer<typeof languageSchema>;
-type Section = 'education' | 'employment' | 'projects' | 'languages';
+type FormData = z.infer<typeof educationSchema> | z.infer<typeof employmentSchema> | z.infer<typeof projectSchema> | z.infer<typeof languageSchema> | z.infer<typeof skillSchema>;
+type Section = 'education' | 'employment' | 'projects' | 'languages' | 'skills';
 
 interface ProfileSectionFormProps {
   currentSection: Section | null;
@@ -180,6 +186,11 @@ export const ProfileSectionForm = ({
                                 <FormMessage />
                             </FormItem>
                         )}/>
+                    </>
+                )}
+                {currentSection === 'skills' && (
+                    <>
+                        <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Skill Name</FormLabel> <FormControl><Input placeholder="e.g. React" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     </>
                 )}
                 <div className="flex justify-end gap-2 pt-4">

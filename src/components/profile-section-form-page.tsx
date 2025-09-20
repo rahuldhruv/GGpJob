@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useState, useEffect, useCallback } from 'react';
@@ -8,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProfileSectionForm } from './profile-section-form';
 
-type Section = 'education' | 'employment' | 'projects' | 'languages';
+type Section = 'education' | 'employment' | 'projects' | 'languages' | 'skills';
 
 interface ProfileSectionFormPageProps {
     section: Section;

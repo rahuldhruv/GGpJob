@@ -2,12 +2,13 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 
-type Section = 'education' | 'projects' | 'employment' | 'languages';
+type Section = 'education' | 'projects' | 'employment' | 'languages' | 'skills';
 const tableMap: Record<Section, string> = {
     education: 'user_education',
     projects: 'user_projects',
     employment: 'user_employment',
-    languages: 'user_languages'
+    languages: 'user_languages',
+    skills: 'user_skills'
 };
 
 const getTableName = (section: string | null): string | null => {
@@ -36,14 +37,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
         }
         
         // If no section, fetch all profile data
-        const [education, projects, employment, languages] = await Promise.all([
+        const [education, projects, employment, languages, skills] = await Promise.all([
             db.all('SELECT * FROM user_education WHERE userId = ? ORDER BY id DESC', id),
             db.all('SELECT * FROM user_projects WHERE userId = ? ORDER BY id DESC', id),
             db.all('SELECT * FROM user_employment WHERE userId = ? ORDER BY id DESC', id),
-            db.all('SELECT * FROM user_languages WHERE userId = ? ORDER BY language', id)
+            db.all('SELECT * FROM user_languages WHERE userId = ? ORDER BY language', id),
+            db.all('SELECT * FROM user_skills WHERE userId = ? ORDER BY name', id)
         ]);
 
-        return NextResponse.json({ education, projects, employment, languages });
+        return NextResponse.json({ education, projects, employment, languages, skills });
     } catch (e: any) {
         console.error(e);
         return NextResponse.json({ error: 'Failed to fetch profile data' }, { status: 500 });

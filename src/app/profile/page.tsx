@@ -48,7 +48,7 @@ export default function ProfilePage() {
                             <CardHeader>
                                 <CardTitle>My Resume</CardTitle>
                                 <CardDescription>
-                                    Manage your resume here.
+                                    Provide a link to your resume.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>

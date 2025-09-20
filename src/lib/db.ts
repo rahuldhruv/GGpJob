@@ -193,6 +193,7 @@ export async function getDb() {
   await db.exec('DROP TABLE IF EXISTS user_projects');
   await db.exec('DROP TABLE IF EXISTS user_employment');
   await db.exec('DROP TABLE IF EXISTS user_languages');
+  await db.exec('DROP TABLE IF EXISTS user_skills');
   await db.exec('DROP TABLE IF EXISTS users');
   await db.exec('DROP TABLE IF EXISTS domains');
   await db.exec('DROP TABLE IF EXISTS job_types');
@@ -338,6 +339,13 @@ export async function getDb() {
         proficiency TEXT NOT NULL,
         FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
     );
+    
+    CREATE TABLE IF NOT EXISTS user_skills (
+        id INTEGER PRIMARY KEY,
+        userId INTEGER,
+        name TEXT NOT NULL,
+        FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+    );
 
     CREATE TABLE IF NOT EXISTS portal_feedback (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -413,6 +421,11 @@ export async function getDb() {
       );
     }
     await userStmt.finalize();
+    
+    await db.run('INSERT INTO user_skills (userId, name) VALUES (?, ?)', 1, 'React');
+    await db.run('INSERT INTO user_skills (userId, name) VALUES (?, ?)', 1, 'TypeScript');
+    await db.run('INSERT INTO user_skills (userId, name) VALUES (?, ?)', 1, 'JavaScript');
+
 
     // Jobs
     const jobStmt = await db.prepare(

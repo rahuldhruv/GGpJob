@@ -136,6 +136,12 @@ export interface Language {
     proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Native';
 }
 
+export interface Skill {
+    id: number;
+    userId: number;
+    name: string;
+}
+
 export interface PortalFeedback {
     id: number;
     userId: number;
