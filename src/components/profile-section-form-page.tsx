@@ -100,14 +100,16 @@ export function ProfileSectionFormPage({ section, itemId }: ProfileSectionFormPa
     }
 
     return (
-        <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto py-4 md:py-12 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center">
                 <Card className="w-full max-w-2xl">
-                    <CardHeader>
-                        <CardTitle>{isEditing ? 'Edit' : 'Add'} {section.charAt(0).toUpperCase() + section.slice(1)}</CardTitle>
-                        <CardDescription>Fill in the details below and save your changes.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                    <div className="hidden md:block">
+                        <CardHeader>
+                            <CardTitle>{isEditing ? 'Edit' : 'Add'} {section.charAt(0).toUpperCase() + section.slice(1)}</CardTitle>
+                            <CardDescription>Fill in the details below and save your changes.</CardDescription>
+                        </CardHeader>
+                    </div>
+                    <CardContent className="pt-6 md:pt-0">
                          <ProfileSectionForm 
                             currentSection={section}
                             editingItem={editingItem}
