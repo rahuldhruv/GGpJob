@@ -21,6 +21,7 @@ const educationSchema = z.object({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     description: z.string().optional(),
+    isCurrent: z.boolean().default(false).optional(),
 });
 
 const employmentSchema = z.object({
@@ -40,6 +41,7 @@ const projectSchema = z.object({
     url: z.string().url("Must be a valid URL").optional().or(z.literal('')),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
+    isCurrent: z.boolean().default(false).optional(),
 });
 
 const languageSchema = z.object({
@@ -60,9 +62,9 @@ const schemas = {
 };
 
 const defaultValues = {
-    education: { institution: '', degree: '', fieldOfStudy: '', startDate: '', endDate: '', description: '' },
+    education: { institution: '', degree: '', fieldOfStudy: '', startDate: '', endDate: '', description: '', isCurrent: false },
     employment: { company: '', title: '', employmentType: 'Full-time' as const, location: '', startDate: '', endDate: '', description: '', isCurrent: false },
-    projects: { name: '', description: '', url: '', startDate: '', endDate: '' },
+    projects: { name: '', description: '', url: '', startDate: '', endDate: '', isCurrent: false },
     languages: { language: '', proficiency: 'Beginner' as const },
     skills: { name: '' },
 };
@@ -94,13 +96,13 @@ export const ProfileSectionForm = ({
 
     const { watch, setValue, formState: { isSubmitting } } = form;
 
-    const isCurrent = currentSection === 'employment' ? watch('isCurrent') : false;
+    const isCurrent = watch('isCurrent');
 
     useEffect(() => {
-        if (isCurrent) {
+        if (isCurrent && (currentSection === 'employment' || currentSection === 'education' || currentSection === 'projects')) {
             setValue('endDate', '');
         }
-    }, [isCurrent, setValue]);
+    }, [isCurrent, setValue, currentSection]);
 
     return (
         <Form {...form}>
@@ -112,8 +114,21 @@ export const ProfileSectionForm = ({
                        <FormField control={form.control} name="fieldOfStudy" render={({ field }) => ( <FormItem> <FormLabel>Field of Study</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                          <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                         <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                         <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} disabled={isCurrent} /></FormControl> <FormMessage /> </FormItem> )}/>
                        </div>
+                        <FormField control={form.control} name="isCurrent" render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel>This is ongoing</FormLabel>
+                                </div>
+                            </FormItem>
+                        )}/>
                        <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                     </>
                 )}
@@ -163,8 +178,21 @@ export const ProfileSectionForm = ({
                         <FormField control={form.control} name="url" render={({ field }) => ( <FormItem> <FormLabel>Project URL</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem> <FormLabel>Start Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                            <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                            <FormField control={form.control} name="endDate" render={({ field }) => ( <FormItem> <FormLabel>End Date</FormLabel> <FormControl><Input type="month" {...field} disabled={isCurrent} /></FormControl> <FormMessage /> </FormItem> )}/>
                         </div>
+                         <FormField control={form.control} name="isCurrent" render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel>This is ongoing</FormLabel>
+                                </div>
+                            </FormItem>
+                        )}/>
                         <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl><Textarea {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                      </>
                 )}

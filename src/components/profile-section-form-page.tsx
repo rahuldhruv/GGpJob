@@ -64,7 +64,7 @@ export function ProfileSectionFormPage({ section, itemId }: ProfileSectionFormPa
         const method = isEditing ? 'PUT' : 'POST';
 
         let bodyData = { ...values };
-        if (section === 'employment' && values.isCurrent) {
+        if (['employment', 'education', 'projects'].includes(section) && values.isCurrent) {
             bodyData.endDate = '';
         }
         delete bodyData.isCurrent;
