@@ -39,6 +39,7 @@ import { DomainForm } from "../domain-form";
 import { AdminCreationForm } from "../admin-creation-form";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/user-context";
+import { Skeleton } from "../ui/skeleton";
 
 export default function AdminDashboard() {
   const { user } = useUser();
@@ -224,7 +225,20 @@ export default function AdminDashboard() {
 
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full mb-4" />
+          <div className="border rounded-lg p-4">
+            <Skeleton className="h-40 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

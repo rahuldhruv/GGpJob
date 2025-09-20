@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import JobCard from "@/components/job-card";
 import { JobFilters } from "@/components/job-filters";
 import { useUser } from "@/contexts/user-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function JobSearchContent() {
     const searchParams = useSearchParams();
@@ -67,7 +68,26 @@ function JobSearchContent() {
 
     const renderJobCards = () => {
         if (loading) {
-            return <div className="text-center p-8">Loading...</div>
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <Card key={i}>
+                            <CardHeader>
+                                <Skeleton className="h-6 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-full" />
+                            </CardContent>
+                            <CardFooter className="flex justify-between">
+                                <Skeleton className="h-4 w-1/4" />
+                                <Skeleton className="h-8 w-1/3" />
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            )
         }
         if (jobs.length > 0) {
             return (

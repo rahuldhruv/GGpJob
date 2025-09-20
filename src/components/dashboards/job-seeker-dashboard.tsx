@@ -11,14 +11,17 @@ import { ArrowRight } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Link from "next/link";
+import { Skeleton } from "../ui/skeleton";
 
 export default function JobSeekerDashboard() {
   const { user } = useUser();
   const [recommendedJobs, setRecommendedJobs] = useState<Job[]>([]);
   const [userApplications, setUserApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const fetchData = useCallback(async () => {
     if (user) {
+        setLoading(true);
         try {
             const [jobsRes, appsRes] = await Promise.all([
                  user.domainId ? fetch(`/api/jobs?domain=${user.domainId}&limit=10`) : Promise.resolve(null),
@@ -45,7 +48,11 @@ export default function JobSeekerDashboard() {
 
         } catch(error) {
             console.error("Failed to fetch dashboard data", error);
+        } finally {
+            setLoading(false);
         }
+    } else {
+        setLoading(false);
     }
   }, [user]);
 
@@ -86,7 +93,22 @@ export default function JobSeekerDashboard() {
          </Card>
       )}
 
-      {recommendedJobs.length > 0 && (
+      {loading && user?.domainId && (
+        <Card>
+          <CardHeader>
+             <Skeleton className="h-8 w-1/3" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex space-x-4">
+                <Skeleton className="h-48 w-1/3" />
+                <Skeleton className="h-48 w-1/3" />
+                <Skeleton className="h-48 w-1/3" />
+              </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && recommendedJobs.length > 0 && (
          <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>

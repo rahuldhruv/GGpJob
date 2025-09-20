@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useUser } from '@/contexts/user-context';
@@ -9,6 +10,7 @@ import AdminDashboard from "@/components/dashboards/admin-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
   const { user, loading } = useUser();
@@ -16,8 +18,30 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-128px)]">
-        <div>Loading...</div>
+      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-8 w-1/2" />
+              <Skeleton className="h-4 w-3/4" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-10 w-32" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-8 w-1/3" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex space-x-4">
+                <Skeleton className="h-48 w-1/3" />
+                <Skeleton className="h-48 w-1/3" />
+                <Skeleton className="h-48 w-1/3" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
