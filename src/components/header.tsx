@@ -56,9 +56,11 @@ export default function Header() {
   const getProfileSectionTitle = () => {
     if (!isProfileSectionEditPage) return '';
     const parts = pathname.split('/');
-    const action = parts[parts.length - (parts.includes('edit') ? 2 : 1)];
-    const section = parts[2];
-    return `${action.toUpperCase()} ${section.slice(0, -1).toUpperCase()}`;
+    const action = parts.includes('edit') ? 'Edit' : 'Add';
+    const section = parts[2].charAt(0).toUpperCase() + parts[2].slice(1);
+    const sectionName = section.endsWith('s') ? section.slice(0,-1) : section;
+
+    return `${action} ${sectionName}`;
   }
 
 
@@ -249,7 +251,7 @@ export default function Header() {
             <BriefcaseBusiness className="h-6 w-6 text-primary" />
             <span className="text-lg">GGP Portal</span>
         </Link>
-        {isProfileSectionEditPage && (
+        {isClient && isProfileSectionEditPage && (
           <div className="md:hidden text-lg font-semibold">
             {getProfileSectionTitle()}
           </div>
