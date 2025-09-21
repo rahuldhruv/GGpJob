@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useUser } from "@/contexts/user-context";
@@ -10,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { ProfileSections } from "@/components/profile-sections";
 import { ResumeForm } from "@/components/resume-form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfilePage() {
     const { user, loading } = useUser();
@@ -23,7 +25,47 @@ export default function ProfilePage() {
 
 
     if (loading || !user) {
-        return <div className="container mx-auto p-4">Loading...</div>;
+        return (
+            <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                 <div className="max-w-3xl mx-auto space-y-8">
+                     <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-1/3 mb-1" />
+                            <Skeleton className="h-4 w-2/3" />
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <Skeleton className="h-10" />
+                                <Skeleton className="h-10" />
+                            </div>
+                             <Skeleton className="h-10" />
+                             <Skeleton className="h-10" />
+                             <Skeleton className="h-10" />
+                        </CardContent>
+                     </Card>
+                     <Separator />
+                     <Card>
+                        <CardHeader>
+                           <Skeleton className="h-8 w-1/3 mb-1" />
+                           <Skeleton className="h-4 w-2/3" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-10" />
+                        </CardContent>
+                    </Card>
+                     <Separator />
+                      <Card>
+                        <CardHeader>
+                           <Skeleton className="h-8 w-1/3 mb-1" />
+                           <Skeleton className="h-4 w-2/3" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-20" />
+                        </CardContent>
+                    </Card>
+                 </div>
+            </div>
+        );
     }
 
     return (

@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useUser } from "@/contexts/user-context";
@@ -10,7 +11,7 @@ import { ProfileSections } from "@/components/profile-sections";
 import type { User as UserType } from "@/lib/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AtSign, Phone, MapPin } from "lucide-react";
-import { getDb } from "@/lib/db";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 async function getUserData(id: string): Promise<UserType | null> {
@@ -59,7 +60,37 @@ export default function PublicProfilePage() {
     }, [id]);
     
     if (loading || currentUserLoading) {
-        return <div className="container mx-auto p-4">Loading...</div>;
+        return (
+            <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-3xl mx-auto space-y-8">
+                    <Card>
+                        <CardHeader className="flex flex-col items-center text-center">
+                            <Skeleton className="h-24 w-24 rounded-full mb-4" />
+                            <Skeleton className="h-8 w-48 mb-2" />
+                            <Skeleton className="h-6 w-64" />
+                        </CardHeader>
+                        <CardContent className="flex justify-center items-center gap-6 text-sm text-muted-foreground">
+                           <Skeleton className="h-5 w-24" />
+                           <Skeleton className="h-5 w-24" />
+                           <Skeleton className="h-5 w-24" />
+                        </CardContent>
+                    </Card>
+                    <Separator />
+                    <div className="space-y-6">
+                        {[...Array(3)].map((_, i) => (
+                           <Card key={i}>
+                                <CardHeader>
+                                    <Skeleton className="h-6 w-1/3" />
+                                </CardHeader>
+                                <CardContent>
+                                    <Skeleton className="h-16 w-full" />
+                                </CardContent>
+                           </Card>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )
     }
     
     if (!profileUser) {
