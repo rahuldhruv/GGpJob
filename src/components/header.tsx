@@ -50,8 +50,10 @@ export default function Header() {
   }, []);
 
   const isJobSearchPage = pathname === '/jobs';
-  const isJobDetailsPage = /^\/jobs\/[^/]+$/.test(pathname);
+  const isJobDetailsPage = /^\/jobs\/[^/]+$/.test(pathname) && !pathname.includes('/applications');
   const isProfileSectionEditPage = /^\/profile\/(education|employment|projects|languages|skills)\/(add|edit\/[^/]+)$/.test(pathname);
+  const isJobApplicationsPage = /^\/jobs\/[^/]+\/applications$/.test(pathname);
+  const isPublicProfilePage = /^\/profile\/[^/]+$/.test(pathname);
   
   const getProfileSectionTitle = () => {
     if (!isProfileSectionEditPage) return '';
@@ -89,7 +91,10 @@ export default function Header() {
   );
 
   const renderMobileLeftButton = () => {
-    const showBackButton = isJobDetailsPage && user?.role === 'Job Seeker' || isProfileSectionEditPage;
+    const isRecruiterOrEmployee = user?.role === 'Recruiter' || user?.role === 'Employee';
+    const showRecruiterBack = isRecruiterOrEmployee && (isJobApplicationsPage || isPublicProfilePage);
+
+    const showBackButton = (isJobDetailsPage && user?.role === 'Job Seeker') || isProfileSectionEditPage || showRecruiterBack;
 
     if (isClient && showBackButton) {
       return (
