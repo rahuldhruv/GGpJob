@@ -164,7 +164,7 @@ export default function Header() {
                                     </Link>
                                 </SheetClose>
                             )}
-                             {user.role === 'Job Seeker' && (
+                             {['Job Seeker', 'Recruiter', 'Employee'].includes(user.role) && (
                                 <SheetClose asChild>
                                     <Link href="/feedback" className="flex items-center gap-3 text-muted-foreground hover:text-foreground">
                                         <MessageSquareQuote className="h-5 w-5" />
@@ -328,7 +328,7 @@ export default function Header() {
                         </Link>
                     </DropdownMenuItem>
                     )}
-                    {user.role === 'Job Seeker' && (
+                    {['Job Seeker', 'Recruiter', 'Employee'].includes(user.role) && (
                         <DropdownMenuItem asChild>
                             <Link href="/feedback">
                                 <MessageSquareQuote className="mr-2 h-4 w-4" />
