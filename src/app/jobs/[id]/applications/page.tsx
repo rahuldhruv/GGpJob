@@ -117,30 +117,7 @@ export default function JobApplicationsPage() {
     
     const renderSkills = (skills: string | undefined | null) => {
         if (!skills) return <span className="text-muted-foreground">No skills</span>;
-
-        const skillList = skills.split(', ');
-        const displaySkills = skillList.slice(0, 2);
-        const remainingCount = skillList.length - displaySkills.length;
-
-        return (
-            <div className="flex flex-wrap gap-1 items-center">
-                {displaySkills.map((skill, index) => (
-                    <Badge key={index} variant="secondary">{skill}</Badge>
-                ))}
-                {remainingCount > 0 && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Badge variant="outline">+{remainingCount}</Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>{skillList.slice(2).join(', ')}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
-            </div>
-        )
+        return <span className="text-sm text-muted-foreground">{skills}</span>;
     };
 
     return (
