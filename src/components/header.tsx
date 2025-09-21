@@ -87,7 +87,7 @@ export default function Header() {
   const showSearchBar = isClient && !loading && user && (
     user.role === 'Job Seeker'
       ? (pathname === '/' || pathname === '/jobs' || (pathname.startsWith('/jobs') && searchParams.get('domain') != null))
-      : user.role !== 'Recruiter'
+      : (user.role !== 'Recruiter' && user.role !== 'Employee')
   );
 
   const renderMobileLeftButton = () => {
