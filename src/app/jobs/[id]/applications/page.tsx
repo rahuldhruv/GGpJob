@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 export default function JobApplicationsPage() {
@@ -113,6 +114,34 @@ export default function JobApplicationsPage() {
     if (!job) {
         return <div className="container mx-auto p-4">Job not found.</div>;
     }
+    
+    const renderSkills = (skills: string | undefined | null) => {
+        if (!skills) return <span className="text-muted-foreground">No skills</span>;
+
+        const skillList = skills.split(', ');
+        const displaySkills = skillList.slice(0, 2);
+        const remainingCount = skillList.length - displaySkills.length;
+
+        return (
+            <div className="flex flex-wrap gap-1 items-center">
+                {displaySkills.map((skill, index) => (
+                    <Badge key={index} variant="secondary">{skill}</Badge>
+                ))}
+                {remainingCount > 0 && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge variant="outline">+{remainingCount}</Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{skillList.slice(2).join(', ')}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
+            </div>
+        )
+    };
 
     return (
         <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -129,7 +158,7 @@ export default function JobApplicationsPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Applicant</TableHead>
-                                    <TableHead>Email</TableHead>
+                                    <TableHead>Skills</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -143,10 +172,10 @@ export default function JobApplicationsPage() {
                                              </Avatar>
                                              <div>
                                                 <div>{app.applicantName}</div>
-                                                <div className="text-xs text-muted-foreground">{app.applicantHeadline}</div>
+                                                <div className="text-xs text-muted-foreground">{app.applicantEmail}</div>
                                              </div>
                                         </TableCell>
-                                        <TableCell>{app.applicantEmail}</TableCell>
+                                        <TableCell>{renderSkills(app.applicantSkills)}</TableCell>
                                         <TableCell>{getStatusBadge(app.statusName)}</TableCell>
                                         <TableCell className="text-right space-x-2">
                                             <DropdownMenu>

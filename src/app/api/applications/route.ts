@@ -18,7 +18,12 @@ export async function GET(request: Request) {
             u.name as applicantName,
             u.email as applicantEmail,
             u.headline as applicantHeadline,
-            u.id as applicantId
+            u.id as applicantId,
+            (
+              SELECT GROUP_CONCAT(usk.name, ', ')
+              FROM user_skills usk
+              WHERE usk.userId = u.id
+            ) as applicantSkills
         FROM applications a
         LEFT JOIN application_statuses s ON a.statusId = s.id
         LEFT JOIN users u ON a.userId = u.id
