@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
 import { UserCog, Briefcase, PlusCircle, Edit, Trash2, MoreHorizontal, Layers, ShieldCheck, Star, Building } from "lucide-react";
 import { format } from "date-fns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
   DropdownMenu,
@@ -32,7 +31,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription
 } from "@/components/ui/dialog";
 import { DomainForm } from "../domain-form";
@@ -40,9 +38,13 @@ import { AdminCreationForm } from "../admin-creation-form";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/user-context";
 import { Skeleton } from "../ui/skeleton";
+import { cn } from "@/lib/utils";
+
+type ActiveView = 'users' | 'jobs' | 'domains' | 'portal-feedback';
 
 export default function AdminDashboard() {
   const { user } = useUser();
+  const [activeView, setActiveView] = useState<ActiveView>('users');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
@@ -225,6 +227,15 @@ export default function AdminDashboard() {
     );
   }
 
+  const navItems = [
+    { id: 'users', label: 'Manage Users', icon: UserCog },
+    { id: 'jobs', label: 'Manage Jobs', icon: Briefcase },
+    { id: 'domains', label: 'Manage Domains', icon: Layers },
+    ...(user?.role === 'Super Admin'
+      ? [{ id: 'portal-feedback', label: 'Platform Feedback', icon: Building }]
+      : []),
+  ];
+
   return (
     <>
       <Dialog open={isDomainFormOpen} onOpenChange={setIsDomainFormOpen}>
@@ -298,202 +309,199 @@ export default function AdminDashboard() {
           <CardDescription>Manage platform users, job postings, and domains.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="users">
-            <TabsList className="mb-4 grid w-full grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-auto">
-              <TabsTrigger value="users">
-                <UserCog className="mr-2 h-4 w-4" />
-                Manage Users
-              </TabsTrigger>
-              <TabsTrigger value="jobs">
-                <Briefcase className="mr-2 h-4 w-4" />
-                Manage Jobs
-              </TabsTrigger>
-              <TabsTrigger value="domains">
-                <Layers className="mr-2 h-4 w-4" />
-                Manage Domains
-              </TabsTrigger>
-              {user?.role === 'Super Admin' && (
-                <>
-                  <TabsTrigger value="portal-feedback">
-                    <Building className="mr-2 h-4 w-4" />
-                    Platform Feedback
-                  </TabsTrigger>
-                </>
-              )}
-            </TabsList>
-            <TabsContent value="users">
-              {user?.role === 'Super Admin' && (
-                <div className="flex justify-end mb-4">
-                  <Button onClick={() => setIsAdminFormOpen(true)}>
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                    Create Admin
-                  </Button>
+            <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
+                <nav className="flex flex-col space-y-2">
+                    {navItems.map((item) => (
+                        <Button
+                            key={item.id}
+                            variant={activeView === item.id ? "secondary" : "ghost"}
+                            className="w-full justify-start"
+                            onClick={() => setActiveView(item.id as ActiveView)}
+                        >
+                            <item.icon className="mr-2 h-4 w-4" />
+                            {item.label}
+                        </Button>
+                    ))}
+                </nav>
+                 <div className="overflow-x-auto">
+                    {activeView === 'users' && (
+                        <div>
+                            {user?.role === 'Super Admin' && (
+                                <div className="flex justify-end mb-4">
+                                <Button onClick={() => setIsAdminFormOpen(true)}>
+                                    <ShieldCheck className="mr-2 h-4 w-4" />
+                                    Create Admin
+                                </Button>
+                                </div>
+                            )}
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead>User</TableHead>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead>Role</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {displayedUsers.map((u) => (
+                                    <TableRow key={u.id}>
+                                    <TableCell className="font-medium flex items-center gap-3">
+                                        <Avatar className="h-8 w-8">
+                                        <AvatarFallback>{u.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        {u.name}
+                                    </TableCell>
+                                    <TableCell>{u.email}</TableCell>
+                                    <TableCell>{getRoleBadge(u.role)}</TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" disabled={u.id === user?.id}>
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setUserToDelete(u)} className="text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                    {activeView === 'jobs' && (
+                         <Table>
+                            <TableHeader>
+                            <TableRow>
+                                <TableHead>Job Title</TableHead>
+                                <TableHead>Company</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Date Posted</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {jobs.map((job) => (
+                                <TableRow key={job.id}>
+                                <TableCell className="font-medium">{job.title}</TableCell>
+                                <TableCell>{job.companyName}</TableCell>
+                                <TableCell>
+                                    <Badge variant={job.isReferral ? "outline" : "default"}>
+                                    {job.isReferral ? "Referral" : "Direct"}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>{format(new Date(job.postedAt), "PPP")}</TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setJobToDelete(job)} className="text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    )}
+                    {activeView === 'domains' && (
+                        <div>
+                            <div className="flex justify-end mb-4">
+                                <Button onClick={handleAddDomain}>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Add Domain
+                                </Button>
+                            </div>
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead>Domain Name</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {domains.map((domain) => (
+                                    <TableRow key={domain.id}>
+                                    <TableCell className="font-medium">{domain.name}</TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleEditDomain(domain)}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeleteDomain(String(domain.id))} className="text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                    {activeView === 'portal-feedback' && user?.role === 'Super Admin' && (
+                        <div>
+                             <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead>User</TableHead>
+                                    <TableHead>Submitted On</TableHead>
+                                    <TableHead>Rating</TableHead>
+                                    <TableHead>Feedback</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {portalFeedback.map((fb) => (
+                                    <TableRow key={fb.id}>
+                                    <TableCell className="font-medium">{fb.userName || 'Anonymous'}</TableCell>
+                                    <TableCell>{format(new Date(fb.submittedAt), "PPP")}</TableCell>
+                                    <TableCell>{renderStars(fb.rating)}</TableCell>
+                                    <TableCell>{fb.feedback || 'No comment provided.'}</TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                            {portalFeedback.length === 0 && (
+                                <p className="text-center text-muted-foreground py-8">No platform feedback has been submitted yet.</p>
+                            )}
+                        </div>
+                    )}
                 </div>
-              )}
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {displayedUsers.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>{u.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        {u.name}
-                      </TableCell>
-                      <TableCell>{u.email}</TableCell>
-                      <TableCell>{getRoleBadge(u.role)}</TableCell>
-                      <TableCell className="text-right">
-                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" disabled={u.id === user?.id}>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setUserToDelete(u)} className="text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            <TabsContent value="jobs">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Job Title</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Date Posted</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {jobs.map((job) => (
-                    <TableRow key={job.id}>
-                      <TableCell className="font-medium">{job.title}</TableCell>
-                      <TableCell>{job.companyName}</TableCell>
-                      <TableCell>
-                        <Badge variant={job.isReferral ? "outline" : "default"}>
-                          {job.isReferral ? "Referral" : "Direct"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{format(new Date(job.postedAt), "PPP")}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setJobToDelete(job)} className="text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            <TabsContent value="domains">
-               <div className="flex justify-end mb-4">
-                <Button onClick={handleAddDomain}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Domain
-                </Button>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Domain Name</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {domains.map((domain) => (
-                    <TableRow key={domain.id}>
-                      <TableCell className="font-medium">{domain.name}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditDomain(domain)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteDomain(String(domain.id))} className="text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            {user?.role === 'Super Admin' && (
-              <>
-                <TabsContent value="portal-feedback">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Submitted On</TableHead>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>Feedback</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {portalFeedback.map((fb) => (
-                        <TableRow key={fb.id}>
-                          <TableCell className="font-medium">{fb.userName || 'Anonymous'}</TableCell>
-                          <TableCell>{format(new Date(fb.submittedAt), "PPP")}</TableCell>
-                          <TableCell>{renderStars(fb.rating)}</TableCell>
-                          <TableCell>{fb.feedback || 'No comment provided.'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  {portalFeedback.length === 0 && (
-                      <p className="text-center text-muted-foreground py-8">No platform feedback has been submitted yet.</p>
-                  )}
-                </TabsContent>
-              </>
-            )}
-          </Tabs>
+            </div>
         </CardContent>
       </Card>
     </>
   );
 }
+
+    
