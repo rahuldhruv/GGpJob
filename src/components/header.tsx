@@ -17,7 +17,10 @@ import {
   SlidersHorizontal,
   MessageSquareQuote,
   ArrowLeft,
-  Share2
+  Share2,
+  Building,
+  Layers,
+  UserCog
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -89,6 +92,16 @@ export default function Header() {
     (pathname === '/' || pathname === '/jobs' || (pathname.startsWith('/jobs') && searchParams.get('domain') != null))
   );
 
+  const adminNavItems = [
+    { href: "/admin/users", label: "Manage Users", icon: UserCog },
+    { href: "/admin/jobs", label: "Manage Jobs", icon: BriefcaseBusiness },
+    { href: "/admin/domains", label: "Manage Domains", icon: Layers },
+  ];
+
+  if (user?.role === 'Super Admin') {
+    adminNavItems.push({ href: "/admin/feedback", label: "Platform Feedback", icon: Building });
+  }
+
   const renderMobileLeftButton = () => {
     const isRecruiterOrEmployee = user?.role === 'Recruiter' || user?.role === 'Employee';
     const showRecruiterBack = isRecruiterOrEmployee && (isJobApplicationsPage || isPublicProfilePage);
@@ -120,28 +133,42 @@ export default function Header() {
                         <BriefcaseBusiness className="h-6 w-6 text-primary" />
                         <span className="text-lg">GGP Portal</span>
                     </Link>
-                    {isClient && !loading && user && (
-                      <SheetClose asChild>
-                          <Link href="/" className="text-muted-foreground hover:text-foreground">
-                              Dashboard
-                          </Link>
-                      </SheetClose>
-                    )}
-                     {isClient && !loading && user?.role === 'Job Seeker' && (
+                    {isClient && !loading && user && (user.role === 'Admin' || user.role === 'Super Admin') ? (
                        <>
-                        <SheetClose asChild>
-                            <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
-                                Jobs
-                            </Link>
-                        </SheetClose>
-                        {user.domainId && (
-                            <SheetClose asChild>
-                               <Link href={`/jobs?domain=${user.domainId}`} className="text-muted-foreground hover:text-foreground">
-                                    Recommended Jobs
-                               </Link>
-                            </SheetClose>
-                        )}
+                        {adminNavItems.map(item => (
+                           <SheetClose asChild key={item.href}>
+                             <Link href={item.href} className="text-muted-foreground hover:text-foreground">
+                                {item.label}
+                              </Link>
+                           </SheetClose>
+                        ))}
                        </>
+                    ) : (
+                      <>
+                        {isClient && !loading && user && (
+                          <SheetClose asChild>
+                              <Link href="/" className="text-muted-foreground hover:text-foreground">
+                                  Dashboard
+                              </Link>
+                          </SheetClose>
+                        )}
+                         {isClient && !loading && user?.role === 'Job Seeker' && (
+                           <>
+                            <SheetClose asChild>
+                                <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
+                                    Jobs
+                                </Link>
+                            </SheetClose>
+                            {user.domainId && (
+                                <SheetClose asChild>
+                                   <Link href={`/jobs?domain=${user.domainId}`} className="text-muted-foreground hover:text-foreground">
+                                        Recommended Jobs
+                                   </Link>
+                                </SheetClose>
+                            )}
+                           </>
+                        )}
+                      </>
                     )}
                 </nav>
                 {isClient && !loading && user && (
@@ -264,22 +291,34 @@ export default function Header() {
 
 
       <nav className="ml-6 hidden md:flex items-center gap-6 text-sm font-medium">
-        {isClient && !loading && user && (
-          <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
-            Dashboard
-          </Link>
-        )}
-        {isClient && !loading && user?.role === 'Job Seeker' && (
-            <>
-                <Link href="/jobs" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                    Jobs
-                </Link>
-                {user.domainId && (
-                     <Link href={`/jobs?domain=${user.domainId}`} className="transition-colors hover:text-foreground/80 text-foreground/60">
-                        Recommended Jobs
+        {isClient && !loading && user && (user.role === 'Admin' || user.role === 'Super Admin') ? (
+          <>
+            {adminNavItems.map(item => (
+              <Link key={item.href} href={item.href} className={`transition-colors hover:text-foreground ${pathname === item.href ? "text-foreground" : "text-foreground/60"}`}>
+                {item.label}
+              </Link>
+            ))}
+          </>
+        ) : (
+          <>
+            {isClient && !loading && user && (
+              <Link href="/" className={`transition-colors hover:text-foreground ${pathname === "/" ? "text-foreground" : "text-foreground/60"}`}>
+                Dashboard
+              </Link>
+            )}
+            {isClient && !loading && user?.role === 'Job Seeker' && (
+                <>
+                    <Link href="/jobs" className={`transition-colors hover:text-foreground ${pathname === "/jobs" ? "text-foreground" : "text-foreground/60"}`}>
+                        Jobs
                     </Link>
-                )}
-            </>
+                    {user.domainId && (
+                         <Link href={`/jobs?domain=${user.domainId}`} className={`transition-colors hover:text-foreground ${pathname.startsWith("/jobs?domain") ? "text-foreground" : "text-foreground/60"}`}>
+                            Recommended Jobs
+                        </Link>
+                    )}
+                </>
+            )}
+          </>
         )}
       </nav>
 
