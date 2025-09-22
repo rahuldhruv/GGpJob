@@ -129,10 +129,6 @@ export default function ManageJobsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setJobToDelete(job)} className="text-destructive">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
