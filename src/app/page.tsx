@@ -6,15 +6,21 @@ import { useRouter } from 'next/navigation';
 import JobSeekerDashboard from "@/components/dashboards/job-seeker-dashboard";
 import RecruiterDashboard from "@/components/dashboards/recruiter-dashboard";
 import EmployeeDashboard from "@/components/dashboards/employee-dashboard";
-import AdminDashboard from "@/components/dashboards/admin-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect } from 'react';
 
 export default function Home() {
   const { user, loading } = useUser();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user && (user.role === 'Admin' || user.role === 'Super Admin')) {
+      router.push('/admin/users');
+    }
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -74,7 +80,12 @@ export default function Home() {
         return <EmployeeDashboard />;
       case "Admin":
       case "Super Admin":
-        return <AdminDashboard />;
+        // Redirect is handled by useEffect, show a loader or null
+        return (
+             <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                <p>Loading Admin Dashboard...</p>
+             </div>
+        )
       default:
          router.push('/login');
          return null;
