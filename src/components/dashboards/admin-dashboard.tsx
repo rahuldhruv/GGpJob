@@ -2,12 +2,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import type { Job, User, Domain, Application, PortalFeedback } from "@/lib/types";
+import type { Job, User, Domain, PortalFeedback } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
-import { UserCog, Briefcase, PlusCircle, Edit, Trash2, MoreHorizontal, Layers, ShieldCheck, MessageSquareQuote, Star, Building } from "lucide-react";
+import { UserCog, Briefcase, PlusCircle, Edit, Trash2, MoreHorizontal, Layers, ShieldCheck, Star, Building } from "lucide-react";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -46,7 +46,6 @@ export default function AdminDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
   const [portalFeedback, setPortalFeedback] = useState<PortalFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDomainFormOpen, setIsDomainFormOpen] = useState(false);
@@ -86,16 +85,6 @@ export default function AdminDashboard() {
       }
   }
 
-  const fetchApplications = async () => {
-    try {
-      const res = await fetch('/api/applications');
-      const data = await res.json();
-      setApplications(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Failed to fetch applications", error);
-    }
-  };
-  
   const fetchPortalFeedback = async () => {
     try {
       const res = await fetch('/api/feedback');
@@ -112,7 +101,6 @@ export default function AdminDashboard() {
       try {
         const fetchPromises = [fetchUsers(), fetchJobs(), fetchDomains()];
         if (user?.role === 'Super Admin') {
-          fetchPromises.push(fetchApplications());
           fetchPromises.push(fetchPortalFeedback());
         }
         await Promise.all(fetchPromises);
@@ -131,10 +119,6 @@ export default function AdminDashboard() {
     }
     return users;
   }, [users, user]);
-  
-  const feedbackApplications = useMemo(() => {
-    return applications.filter(app => app.rating || app.feedback);
-  }, [applications]);
 
   const getRoleBadge = (role: User['role']) => {
     switch (role) {
@@ -330,10 +314,6 @@ export default function AdminDashboard() {
               </TabsTrigger>
               {user?.role === 'Super Admin' && (
                 <>
-                  <TabsTrigger value="app-feedback">
-                    <MessageSquareQuote className="mr-2 h-4 w-4" />
-                    Application Feedback
-                  </TabsTrigger>
                   <TabsTrigger value="portal-feedback">
                     <Building className="mr-2 h-4 w-4" />
                     Platform Feedback
@@ -484,32 +464,6 @@ export default function AdminDashboard() {
             </TabsContent>
             {user?.role === 'Super Admin' && (
               <>
-                <TabsContent value="app-feedback">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Job Title</TableHead>
-                        <TableHead>Applicant</TableHead>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>Feedback</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {feedbackApplications.map((app) => (
-                        <TableRow key={app.id}>
-                          <TableCell className="font-medium">{app.jobTitle}</TableCell>
-                          <TableCell>{app.applicantName}</TableCell>
-                          <TableCell>{app.rating ? renderStars(app.rating) : 'N/A'}</TableCell>
-                          <TableCell>{app.feedback || 'No feedback provided.'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  {feedbackApplications.length === 0 && (
-                      <p className="text-center text-muted-foreground py-8">No application feedback has been submitted yet.</p>
-                  )}
-                </TabsContent>
-
                 <TabsContent value="portal-feedback">
                   <Table>
                     <TableHeader>
