@@ -60,6 +60,7 @@ export default function Header() {
   const isJobApplicationsPage = /^\/jobs\/[^/]+\/applications$/.test(pathname);
   const isPublicProfilePage = /^\/profile\/[^/]+$/.test(pathname);
   const isAdminAddPage = /^\/admin\/(users|domains)\/add$/.test(pathname);
+  const isAdminEditPage = /^\/admin\/domains\/edit\/[^/]+$/.test(pathname);
   
   const getProfileSectionTitle = () => {
     if (!isProfileSectionEditPage) return '';
@@ -111,6 +112,9 @@ export default function Header() {
       if (pathname.includes('/users')) return 'Create New Admin';
       if (pathname.includes('/domains')) return 'Add New Domain';
     }
+    if (isAdminEditPage) {
+        if(pathname.includes('/domains')) return 'Edit Domain';
+    }
     return '';
   }
 
@@ -118,7 +122,7 @@ export default function Header() {
     const isRecruiterOrEmployee = user?.role === 'Recruiter' || user?.role === 'Employee';
     const showRecruiterBack = isRecruiterOrEmployee && (isJobApplicationsPage || isPublicProfilePage);
 
-    const showBackButton = (isJobDetailsPage && user?.role === 'Job Seeker') || isProfileSectionEditPage || showRecruiterBack || (isMobile && isAdminAddPage);
+    const showBackButton = (isJobDetailsPage && user?.role === 'Job Seeker') || isProfileSectionEditPage || showRecruiterBack || (isMobile && (isAdminAddPage || isAdminEditPage));
 
     if (isClient && showBackButton) {
       return (
@@ -294,7 +298,7 @@ export default function Header() {
             <BriefcaseBusiness className="h-6 w-6 text-primary" />
             <span className="text-lg">GGP Portal</span>
         </Link>
-        {isClient && (isProfileSectionEditPage || (isMobile && isAdminAddPage)) && (
+        {isClient && (isProfileSectionEditPage || (isMobile && (isAdminAddPage || isAdminEditPage))) && (
           <div className="md:hidden text-lg font-semibold whitespace-nowrap">
             {getMobileHeaderTitle()}
           </div>

@@ -65,8 +65,12 @@ export default function ManageDomainsPage() {
   }, []);
 
   const handleEditDomain = (domain: Domain) => {
-    setSelectedDomain(domain);
-    setIsDomainFormOpen(true);
+    if (isMobile) {
+      router.push(`/admin/domains/edit/${domain.id}`);
+    } else {
+      setSelectedDomain(domain);
+      setIsDomainFormOpen(true);
+    }
   };
 
   const handleAddDomain = () => {
