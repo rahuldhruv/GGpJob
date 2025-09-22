@@ -166,10 +166,6 @@ export default function ManageUsersPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setUserToDelete(u)} className="text-destructive">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
