@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { Domain } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -33,14 +34,17 @@ import {
 import { DomainForm } from "@/components/domain-form";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function ManageDomainsPage() {
+  const router = useRouter();
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDomainFormOpen, setIsDomainFormOpen] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
   const [domainToDelete, setDomainToDelete] = useState<Domain | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const fetchDomains = async () => {
     setLoading(true);
@@ -66,8 +70,12 @@ export default function ManageDomainsPage() {
   };
 
   const handleAddDomain = () => {
-    setSelectedDomain(null);
-    setIsDomainFormOpen(true);
+    if (isMobile) {
+      router.push('/admin/domains/add');
+    } else {
+      setSelectedDomain(null);
+      setIsDomainFormOpen(true);
+    }
   };
   
   const handleDeleteDomain = async () => {

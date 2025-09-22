@@ -39,6 +39,7 @@ import { Separator } from "./ui/separator";
 import { JobFilters } from "./job-filters";
 import { useEffect, useState } from "react";
 import { ShareButton } from "./share-button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Header() {
   const { user, setUser } = useUser();
@@ -47,6 +48,7 @@ export default function Header() {
   const searchParams = useSearchParams();
   const [isClient, setIsClient] = useState(false);
   const { loading } = useUser();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setIsClient(true);
@@ -57,6 +59,7 @@ export default function Header() {
   const isProfileSectionEditPage = /^\/profile\/(education|employment|projects|languages|skills)\/(add|edit\/[^/]+)$/.test(pathname);
   const isJobApplicationsPage = /^\/jobs\/[^/]+\/applications$/.test(pathname);
   const isPublicProfilePage = /^\/profile\/[^/]+$/.test(pathname);
+  const isAdminAddPage = /^\/admin\/(users|domains)\/add$/.test(pathname);
   
   const getProfileSectionTitle = () => {
     if (!isProfileSectionEditPage) return '';
@@ -101,12 +104,21 @@ export default function Header() {
   if (user?.role === 'Super Admin') {
     adminNavItems.push({ href: "/admin/feedback", label: "Platform Feedback", icon: Building });
   }
+  
+  const getMobileHeaderTitle = () => {
+    if (isProfileSectionEditPage) return getProfileSectionTitle();
+    if (isAdminAddPage) {
+      if (pathname.includes('/users')) return 'Create New Admin';
+      if (pathname.includes('/domains')) return 'Add New Domain';
+    }
+    return '';
+  }
 
   const renderMobileLeftButton = () => {
     const isRecruiterOrEmployee = user?.role === 'Recruiter' || user?.role === 'Employee';
     const showRecruiterBack = isRecruiterOrEmployee && (isJobApplicationsPage || isPublicProfilePage);
 
-    const showBackButton = (isJobDetailsPage && user?.role === 'Job Seeker') || isProfileSectionEditPage || showRecruiterBack;
+    const showBackButton = (isJobDetailsPage && user?.role === 'Job Seeker') || isProfileSectionEditPage || showRecruiterBack || (isMobile && isAdminAddPage);
 
     if (isClient && showBackButton) {
       return (
@@ -282,9 +294,9 @@ export default function Header() {
             <BriefcaseBusiness className="h-6 w-6 text-primary" />
             <span className="text-lg">GGP Portal</span>
         </Link>
-        {isClient && isProfileSectionEditPage && (
+        {isClient && (isProfileSectionEditPage || (isMobile && isAdminAddPage)) && (
           <div className="md:hidden text-lg font-semibold whitespace-nowrap">
-            {getProfileSectionTitle()}
+            {getMobileHeaderTitle()}
           </div>
         )}
       </div>

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import type { User } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -36,14 +37,25 @@ import { AdminCreationForm } from "@/components/admin-creation-form";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/user-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function ManageUsersPage() {
   const { user } = useUser();
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdminFormOpen, setIsAdminFormOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+
+  const handleAddAdminClick = () => {
+    if (isMobile) {
+      router.push('/admin/users/add');
+    } else {
+      setIsAdminFormOpen(true);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -214,7 +226,7 @@ export default function ManageUsersPage() {
               <CardDescription>View, edit, and manage all users on the platform.</CardDescription>
             </div>
             {user?.role === 'Super Admin' && (
-              <Button onClick={() => setIsAdminFormOpen(true)}>
+              <Button onClick={handleAddAdminClick}>
                 <ShieldCheck className="mr-2 h-4 w-4" />
                 Create Admin
               </Button>
