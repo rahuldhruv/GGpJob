@@ -20,7 +20,8 @@ import {
   Share2,
   Building,
   Layers,
-  UserCog
+  UserCog,
+  BarChart3
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -103,6 +104,7 @@ export default function Header() {
   ];
 
   if (user?.role === 'Super Admin') {
+    adminNavItems.unshift({ href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 });
     adminNavItems.push({ href: "/admin/feedback", label: "Platform Feedback", icon: Building });
   }
   

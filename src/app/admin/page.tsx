@@ -2,5 +2,6 @@
 import { redirect } from 'next/navigation';
 
 export default function AdminPage() {
-    redirect('/admin/users');
+    // Default redirect for admin, can be customized based on role
+    redirect('/admin/dashboard');
 }
