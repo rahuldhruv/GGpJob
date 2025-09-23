@@ -9,28 +9,20 @@ export async function GET(request: Request) {
     const from = searchParams.get('from');
     const to = searchParams.get('to');
 
-    let dateCondition = '';
-    const params: string[] = [];
-
-    if (from && to) {
-      dateCondition = 'WHERE createdAt >= ? AND createdAt <= ?';
-      params.push(from, to);
-    }
-
     // Since users don't have a createdAt, we can't filter them by date yet.
     // This would require a schema change. We will filter jobs and applications.
     
     let jobDateCondition = '';
     const jobParams: string[] = [];
     if(from && to) {
-      jobDateCondition = 'WHERE postedAt >= ? AND postedAt <= ?';
+      jobDateCondition = 'WHERE j.postedAt >= ? AND j.postedAt <= ?';
       jobParams.push(from, to);
     }
     
     let appDateCondition = '';
     const appParams: string[] = [];
     if(from && to) {
-      appDateCondition = 'WHERE appliedAt >= ? AND appliedAt <= ?';
+      appDateCondition = 'WHERE a.appliedAt >= ? AND a.appliedAt <= ?';
       appParams.push(from, to);
     }
 
@@ -39,19 +31,39 @@ export async function GET(request: Request) {
       totalJobsResult,
       totalApplicationsResult,
       jobsByDomainResult,
+      usersByDomainResult,
+      applicationsByDomainResult,
     ] = await Promise.all([
-      db.get('SELECT COUNT(*) as count FROM users'), // Not filtered by date for now
-      db.get(`SELECT COUNT(*) as count FROM jobs ${jobDateCondition}`, ...jobParams),
-      db.get(`SELECT COUNT(*) as count FROM applications ${appDateCondition}`, ...appParams),
+      db.get('SELECT COUNT(*) as count FROM users'), // Not filtered by date
+      db.get(`SELECT COUNT(*) as count FROM jobs j ${jobDateCondition}`, ...jobParams),
+      db.get(`SELECT COUNT(*) as count FROM applications a ${appDateCondition}`, ...appParams),
       db.all(`
         SELECT d.name, COUNT(j.id) as value
         FROM domains d
-        JOIN jobs j ON d.id = j.domainId
+        LEFT JOIN jobs j ON d.id = j.domainId
         ${jobDateCondition}
         GROUP BY d.name
         HAVING value > 0
         ORDER BY value DESC
       `, ...jobParams),
+      db.all(`
+        SELECT d.name, COUNT(u.id) as value
+        FROM domains d
+        LEFT JOIN users u ON d.id = u.domainId
+        GROUP BY d.name
+        HAVING value > 0
+        ORDER BY value DESC
+      `), // Not filtered by date
+      db.all(`
+        SELECT d.name, COUNT(a.id) as value
+        FROM domains d
+        LEFT JOIN jobs j ON d.id = j.domainId
+        LEFT JOIN applications a ON j.id = a.jobId
+        ${appDateCondition.replace('a.appliedAt', 'a.appliedAt')}
+        GROUP BY d.name
+        HAVING value > 0
+        ORDER BY value DESC
+      `, ...appParams),
     ]);
 
     const analyticsData = {
@@ -59,6 +71,8 @@ export async function GET(request: Request) {
       totalJobs: totalJobsResult.count,
       totalApplications: totalApplicationsResult.count,
       jobsByDomain: jobsByDomainResult,
+      usersByDomain: usersByDomainResult,
+      applicationsByDomain: applicationsByDomainResult,
     };
     
     return NextResponse.json(analyticsData);

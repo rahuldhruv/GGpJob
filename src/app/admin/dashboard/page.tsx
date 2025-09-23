@@ -8,16 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, Users, FileSignature, BarChart3, Calendar as CalendarIcon } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
+  Tooltip,
+  ResponsiveContainer,
 } from 'recharts';
 import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
@@ -26,14 +21,58 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
+interface ChartData {
+  name: string;
+  value: number;
+}
+
 interface AnalyticsData {
   totalJobs: number;
   totalApplications: number;
   totalUsers: number;
-  jobsByDomain: { name: string; value: number }[];
+  jobsByDomain: ChartData[];
+  usersByDomain: ChartData[];
+  applicationsByDomain: ChartData[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col space-y-1">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              {payload[0].name}
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {payload[0].value}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  
+    if (percent < 0.05) return null; // Don't render label for small slices
+
+    return (
+      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+        {`${name} (${(percent * 100).toFixed(0)}%)`}
+      </text>
+    );
+};
+
 
 export default function AdminDashboardPage() {
   const { user } = useUser();
@@ -82,10 +121,20 @@ export default function AdminDashboardPage() {
           <Card><CardHeader><Skeleton className="h-6 w-24 mb-2" /><Skeleton className="h-8 w-16" /></CardHeader></Card>
           <Card><CardHeader><Skeleton className="h-6 w-24 mb-2" /><Skeleton className="h-8 w-16" /></CardHeader></Card>
         </div>
-        <Card>
-          <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
-          <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            <Card>
+                <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
+                <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
+            </Card>
+            <Card>
+                <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
+                <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
+            </Card>
+            <Card>
+                <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
+                <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
+            </Card>
+        </div>
       </div>
     );
   }
@@ -155,10 +204,20 @@ export default function AdminDashboardPage() {
                 <Card><CardHeader><Skeleton className="h-6 w-24 mb-2" /><Skeleton className="h-8 w-16" /></CardHeader></Card>
                 <Card><CardHeader><Skeleton className="h-6 w-24 mb-2" /><Skeleton className="h-8 w-16" /></CardHeader></Card>
             </div>
-            <Card>
-                <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
-                <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
-            </Card>
+             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                <Card>
+                    <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
+                    <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
+                    <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><Skeleton className="h-7 w-48" /></CardHeader>
+                    <CardContent><Skeleton className="h-[350px] w-full" /></CardContent>
+                </Card>
+            </div>
         </div>
       ) : !analytics ? (
         <Card>
@@ -197,33 +256,86 @@ export default function AdminDashboardPage() {
                 </Card>
             </div>
 
-            <Card>
-                <CardHeader>
-                <CardTitle>Jobs by Domain</CardTitle>
-                <CardDescription>Distribution of job postings across different domains.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                    <Pie
-                        data={analytics.jobsByDomain}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                    >
-                        {analytics.jobsByDomain.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name) => [value, name]} />
-                    </PieChart>
-                </ResponsiveContainer>
-                </CardContent>
-            </Card>
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Jobs by Domain</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                        <Pie
+                            data={analytics.jobsByDomain}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderLabel}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {analytics.jobsByDomain.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Users by Domain</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                        <Pie
+                            data={analytics.usersByDomain}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderLabel}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {analytics.usersByDomain.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Applications by Domain</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                        <Pie
+                            data={analytics.applicationsByDomain}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderLabel}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {analytics.applicationsByDomain.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
         </>
       )}
     </div>
