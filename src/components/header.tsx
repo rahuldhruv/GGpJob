@@ -98,13 +98,13 @@ export default function Header() {
   );
 
   const adminNavItems = [
+    { href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/admin/users", label: "Manage Users", icon: UserCog },
     { href: "/admin/jobs", label: "Manage Jobs", icon: BriefcaseBusiness },
     { href: "/admin/domains", label: "Manage Domains", icon: Layers },
   ];
 
   if (user?.role === 'Super Admin') {
-    adminNavItems.unshift({ href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 });
     adminNavItems.push({ href: "/admin/feedback", label: "Platform Feedback", icon: Building });
   }
   

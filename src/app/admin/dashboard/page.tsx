@@ -72,15 +72,17 @@ export default function AdminDashboardPage() {
     to: new Date(),
   });
 
+  const isAdminOrSuperAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
+
   useEffect(() => {
-    if (user && user.role !== 'Super Admin') {
-      router.push('/admin/users');
+    if (user && !isAdminOrSuperAdmin) {
+      router.push('/'); // Redirect non-admins
     }
-  }, [user, router]);
+  }, [user, router, isAdminOrSuperAdmin]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      if (user?.role !== 'Super Admin') return;
+      if (!isAdminOrSuperAdmin) return;
 
       setLoading(true);
       try {
@@ -99,7 +101,7 @@ export default function AdminDashboardPage() {
     };
     
     fetchAnalytics();
-  }, [user, date]);
+  }, [user, date, isAdminOrSuperAdmin]);
 
   if (loading && !analytics) {
     return (
@@ -127,7 +129,7 @@ export default function AdminDashboardPage() {
     );
   }
   
-  if (user?.role !== 'Super Admin') {
+  if (!isAdminOrSuperAdmin) {
       return (
         <Card>
             <CardHeader>

@@ -18,10 +18,8 @@ export default function Home() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (user.role === 'Super Admin') {
+      if (user.role === 'Super Admin' || user.role === 'Admin') {
         router.push('/admin/dashboard');
-      } else if (user.role === 'Admin') {
-        router.push('/admin/users');
       }
     }
   }, [user, loading, router]);
