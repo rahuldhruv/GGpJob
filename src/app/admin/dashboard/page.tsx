@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { AnimatedCounter } from "@/components/animated-counter";
 
 interface ChartData {
   name: string;
@@ -223,7 +224,7 @@ export default function AdminDashboardPage() {
                     <UserSearch className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{analytics.totalJobSeekers}</div>
+                    <AnimatedCounter value={analytics.totalJobSeekers} className="text-2xl font-bold" />
                 </CardContent>
                 </Card>
                 <Card>
@@ -232,7 +233,7 @@ export default function AdminDashboardPage() {
                     <UserCheck className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{analytics.totalRecruiters}</div>
+                    <AnimatedCounter value={analytics.totalRecruiters} className="text-2xl font-bold" />
                 </CardContent>
                 </Card>
                  <Card>
@@ -241,7 +242,7 @@ export default function AdminDashboardPage() {
                     <UserRound className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{analytics.totalEmployees}</div>
+                    <AnimatedCounter value={analytics.totalEmployees} className="text-2xl font-bold" />
                 </CardContent>
                 </Card>
                 <Card>
@@ -250,7 +251,7 @@ export default function AdminDashboardPage() {
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{analytics.totalJobs}</div>
+                    <AnimatedCounter value={analytics.totalJobs} className="text-2xl font-bold" />
                 </CardContent>
                 </Card>
                 <Card>
@@ -259,7 +260,7 @@ export default function AdminDashboardPage() {
                     <FileSignature className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{analytics.totalApplications}</div>
+                    <AnimatedCounter value={analytics.totalApplications} className="text-2xl font-bold" />
                 </CardContent>
                 </Card>
             </div>
