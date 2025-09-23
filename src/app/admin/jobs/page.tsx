@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Job } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, MoreHorizontal } from "lucide-react";
+import { Trash2, MoreHorizontal, Search } from "lucide-react";
 import { format } from "date-fns";
 import {
   DropdownMenu,
@@ -27,11 +27,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 
 export default function ManageJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
   const fetchJobs = async () => {
@@ -51,6 +53,13 @@ export default function ManageJobsPage() {
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  const filteredJobs = useMemo(() => {
+    return jobs.filter(job =>
+      job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [jobs, searchTerm]);
 
   const handleDeleteJob = async () => {
     if (!jobToDelete) return;
@@ -111,7 +120,7 @@ export default function ManageJobsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {jobs.map((job) => (
+          {filteredJobs.map((job) => (
             <TableRow key={job.id}>
               <TableCell className="font-medium">{job.title}</TableCell>
               <TableCell>{job.companyName}</TableCell>
@@ -162,8 +171,22 @@ export default function ManageJobsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Manage Job Postings</CardTitle>
-          <CardDescription>View, manage, and delete all job postings on the platform.</CardDescription>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle>Manage Job Postings</CardTitle>
+              <CardDescription>View, manage, and delete all job postings on the platform.</CardDescription>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by title or company..."
+                className="pl-8 sm:w-[300px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {renderContent()}
