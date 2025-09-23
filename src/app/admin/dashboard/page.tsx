@@ -13,6 +13,7 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
@@ -58,21 +59,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   }
 
   return null;
-};
-
-const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  
-    if (percent < 0.05) return null; // Don't render label for small slices
-
-    return (
-      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-        {`${name} (${(percent * 100).toFixed(0)}%)`}
-      </text>
-    );
 };
 
 
@@ -289,8 +275,7 @@ export default function AdminDashboardPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={renderLabel}
-                            outerRadius={120}
+                            outerRadius={100}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -299,6 +284,7 @@ export default function AdminDashboardPage() {
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
+                        <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
@@ -315,8 +301,7 @@ export default function AdminDashboardPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={renderLabel}
-                            outerRadius={120}
+                            outerRadius={100}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -325,6 +310,7 @@ export default function AdminDashboardPage() {
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
+                        <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
@@ -341,8 +327,7 @@ export default function AdminDashboardPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={renderLabel}
-                            outerRadius={120}
+                            outerRadius={100}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -351,6 +336,7 @@ export default function AdminDashboardPage() {
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
+                        <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
