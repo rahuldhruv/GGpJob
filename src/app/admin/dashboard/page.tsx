@@ -13,6 +13,7 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
@@ -73,6 +74,23 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
     <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize="12" fontWeight="bold">
       {value}
     </text>
+  );
+};
+
+const renderLegend = (props: any) => {
+  const { payload } = props;
+
+  return (
+    <ul className="grid grid-cols-2 gap-2 text-sm mt-4">
+      {
+        payload.map((entry: any, index: number) => (
+          <li key={`item-${index}`} className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span>{entry.value}</span>
+          </li>
+        ))
+      }
+    </ul>
   );
 };
 
@@ -296,12 +314,14 @@ export default function AdminDashboardPage() {
                             outerRadius={120}
                             fill="#8884d8"
                             dataKey="value"
+                            nameKey="name"
                         >
                             {analytics.jobsByDomain.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
+                        <Legend content={renderLegend} />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
@@ -322,12 +342,14 @@ export default function AdminDashboardPage() {
                             outerRadius={120}
                             fill="#8884d8"
                             dataKey="value"
+                            nameKey="name"
                         >
                             {analytics.usersByDomain.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
+                        <Legend content={renderLegend} />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
@@ -348,12 +370,14 @@ export default function AdminDashboardPage() {
                             outerRadius={120}
                             fill="#8884d8"
                             dataKey="value"
+                            nameKey="name"
                         >
                             {analytics.applicationsByDomain.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
+                        <Legend content={renderLegend} />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
