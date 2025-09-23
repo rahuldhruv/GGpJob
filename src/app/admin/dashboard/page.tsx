@@ -6,7 +6,7 @@ import { useUser } from "@/contexts/user-context";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Briefcase, Users, FileSignature, BarChart3, Calendar as CalendarIcon, UserSearch, UserRound, UserCheck } from "lucide-react";
+import { Briefcase, Users, FileSignature, BarChart3, Calendar as CalendarIcon, UserSearch, UserRound, UserCheck, ThumbsUp } from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -32,9 +32,11 @@ interface AnalyticsData {
   totalJobSeekers: number;
   totalRecruiters: number;
   totalEmployees: number;
-  totalJobs: number;
+  totalDirectJobs: number;
+  totalReferralJobs: number;
   totalApplications: number;
-  jobsByDomain: ChartData[];
+  directJobsByDomain: ChartData[];
+  referralJobsByDomain: ChartData[];
   usersByDomain: ChartData[];
   applicationsByDomain: ChartData[];
 }
@@ -279,15 +281,6 @@ export default function AdminDashboardPage() {
                 </Card>
                 <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Jobs Posted</CardTitle>
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <AnimatedCounter value={analytics.totalJobs} className="text-2xl font-bold" />
-                </CardContent>
-                </Card>
-                <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
                     <FileSignature className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -296,17 +289,37 @@ export default function AdminDashboardPage() {
                 </CardContent>
                 </Card>
             </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Direct Jobs</CardTitle>
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <AnimatedCounter value={analytics.totalDirectJobs} className="text-2xl font-bold" />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Referral Jobs</CardTitle>
+                        <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <AnimatedCounter value={analytics.totalReferralJobs} className="text-2xl font-bold" />
+                    </CardContent>
+                </Card>
+            </div>
 
-            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Jobs by Domain</CardTitle>
+                        <CardTitle>Direct Jobs by Domain</CardTitle>
                     </CardHeader>
                     <CardContent>
                     <ResponsiveContainer width="100%" height={350}>
                         <PieChart>
                         <Pie
-                            data={analytics.jobsByDomain}
+                            data={analytics.directJobsByDomain}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
@@ -316,7 +329,35 @@ export default function AdminDashboardPage() {
                             dataKey="value"
                             nameKey="name"
                         >
-                            {analytics.jobsByDomain.map((entry, index) => (
+                            {analytics.directJobsByDomain.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend content={renderLegend} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Referral Jobs by Domain</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                        <Pie
+                            data={analytics.referralJobsByDomain}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                            nameKey="name"
+                        >
+                            {analytics.referralJobsByDomain.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>

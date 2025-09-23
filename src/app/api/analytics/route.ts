@@ -30,22 +30,34 @@ export async function GET(request: Request) {
       totalJobSeekersResult,
       totalRecruitersResult,
       totalEmployeesResult,
-      totalJobsResult,
+      totalDirectJobsResult,
+      totalReferralJobsResult,
       totalApplicationsResult,
-      jobsByDomainResult,
+      directJobsByDomainResult,
+      referralJobsByDomainResult,
       usersByDomainResult,
       applicationsByDomainResult,
     ] = await Promise.all([
       db.get("SELECT COUNT(*) as count FROM users WHERE role = 'Job Seeker'"),
       db.get("SELECT COUNT(*) as count FROM users WHERE role = 'Recruiter'"),
       db.get("SELECT COUNT(*) as count FROM users WHERE role = 'Employee'"),
-      db.get(`SELECT COUNT(*) as count FROM jobs j ${jobDateCondition}`, ...jobParams),
+      db.get(`SELECT COUNT(*) as count FROM jobs j ${jobDateCondition ? `${jobDateCondition} AND` : 'WHERE'} j.isReferral = 0`, ...jobParams),
+      db.get(`SELECT COUNT(*) as count FROM jobs j ${jobDateCondition ? `${jobDateCondition} AND` : 'WHERE'} j.isReferral = 1`, ...jobParams),
       db.get(`SELECT COUNT(*) as count FROM applications a ${appDateCondition}`, ...appParams),
       db.all(`
         SELECT d.name, COUNT(j.id) as value
         FROM domains d
         LEFT JOIN jobs j ON d.id = j.domainId
-        ${jobDateCondition}
+        ${jobDateCondition ? `${jobDateCondition} AND` : 'WHERE'} j.isReferral = 0
+        GROUP BY d.name
+        HAVING value > 0
+        ORDER BY value DESC
+      `, ...jobParams),
+      db.all(`
+        SELECT d.name, COUNT(j.id) as value
+        FROM domains d
+        LEFT JOIN jobs j ON d.id = j.domainId
+        ${jobDateCondition ? `${jobDateCondition} AND` : 'WHERE'} j.isReferral = 1
         GROUP BY d.name
         HAVING value > 0
         ORDER BY value DESC
@@ -74,9 +86,11 @@ export async function GET(request: Request) {
       totalJobSeekers: totalJobSeekersResult.count,
       totalRecruiters: totalRecruitersResult.count,
       totalEmployees: totalEmployeesResult.count,
-      totalJobs: totalJobsResult.count,
+      totalDirectJobs: totalDirectJobsResult.count,
+      totalReferralJobs: totalReferralJobsResult.count,
       totalApplications: totalApplicationsResult.count,
-      jobsByDomain: jobsByDomainResult,
+      directJobsByDomain: directJobsByDomainResult,
+      referralJobsByDomain: referralJobsByDomainResult,
       usersByDomain: usersByDomainResult,
       applicationsByDomain: applicationsByDomainResult,
     };
