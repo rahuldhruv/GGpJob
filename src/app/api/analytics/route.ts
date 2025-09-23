@@ -27,14 +27,18 @@ export async function GET(request: Request) {
     }
 
     const [
-      totalUsersResult,
+      totalJobSeekersResult,
+      totalRecruitersResult,
+      totalEmployeesResult,
       totalJobsResult,
       totalApplicationsResult,
       jobsByDomainResult,
       usersByDomainResult,
       applicationsByDomainResult,
     ] = await Promise.all([
-      db.get('SELECT COUNT(*) as count FROM users'), // Not filtered by date
+      db.get("SELECT COUNT(*) as count FROM users WHERE role = 'Job Seeker'"),
+      db.get("SELECT COUNT(*) as count FROM users WHERE role = 'Recruiter'"),
+      db.get("SELECT COUNT(*) as count FROM users WHERE role = 'Employee'"),
       db.get(`SELECT COUNT(*) as count FROM jobs j ${jobDateCondition}`, ...jobParams),
       db.get(`SELECT COUNT(*) as count FROM applications a ${appDateCondition}`, ...appParams),
       db.all(`
@@ -67,7 +71,9 @@ export async function GET(request: Request) {
     ]);
 
     const analyticsData = {
-      totalUsers: totalUsersResult.count,
+      totalJobSeekers: totalJobSeekersResult.count,
+      totalRecruiters: totalRecruitersResult.count,
+      totalEmployees: totalEmployeesResult.count,
       totalJobs: totalJobsResult.count,
       totalApplications: totalApplicationsResult.count,
       jobsByDomain: jobsByDomainResult,
