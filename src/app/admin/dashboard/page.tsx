@@ -13,7 +13,6 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
@@ -60,6 +59,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   }
 
   return null;
+};
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name, value }: any) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="12">
+      {`${name} (${value})`}
+    </text>
+  );
 };
 
 
@@ -278,7 +290,8 @@ export default function AdminDashboardPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            outerRadius={100}
+                            label={renderCustomizedLabel}
+                            outerRadius={120}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -287,7 +300,6 @@ export default function AdminDashboardPage() {
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
-                        <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
@@ -304,7 +316,8 @@ export default function AdminDashboardPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            outerRadius={100}
+                            label={renderCustomizedLabel}
+                            outerRadius={120}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -313,7 +326,6 @@ export default function AdminDashboardPage() {
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
-                        <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
@@ -330,7 +342,8 @@ export default function AdminDashboardPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            outerRadius={100}
+                            label={renderCustomizedLabel}
+                            outerRadius={120}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -339,7 +352,6 @@ export default function AdminDashboardPage() {
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
-                        <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                     </CardContent>
