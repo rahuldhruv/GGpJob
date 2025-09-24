@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Domain } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit, Trash2, MoreHorizontal } from "lucide-react";
+import { PlusCircle, Edit, Trash2, MoreHorizontal, Search } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,7 @@ import { DomainForm } from "@/components/domain-form";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Input } from "@/components/ui/input";
 
 export default function ManageDomainsPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function ManageDomainsPage() {
   const [isDomainFormOpen, setIsDomainFormOpen] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
   const [domainToDelete, setDomainToDelete] = useState<Domain | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -63,6 +65,12 @@ export default function ManageDomainsPage() {
   useEffect(() => {
     fetchDomains();
   }, []);
+
+  const filteredDomains = useMemo(() => {
+    return domains.filter(domain =>
+      domain.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [domains, searchTerm]);
 
   const handleEditDomain = (domain: Domain) => {
     if (isMobile) {
@@ -132,7 +140,7 @@ export default function ManageDomainsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {domains.map((domain) => (
+          {filteredDomains.map((domain) => (
             <TableRow key={domain.id}>
               <TableCell className="font-medium">{domain.name}</TableCell>
               <TableCell className="text-right">
@@ -198,15 +206,27 @@ export default function ManageDomainsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Manage Domains</CardTitle>
               <CardDescription>Add, edit, or remove job domains from the platform.</CardDescription>
             </div>
-            <Button onClick={handleAddDomain}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Domain
-            </Button>
+            <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search domains..."
+                    className="pl-8 sm:w-[200px] lg:w-[250px]"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleAddDomain} className="whitespace-nowrap">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Domain
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

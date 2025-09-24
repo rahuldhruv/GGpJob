@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, ShieldCheck } from "lucide-react";
+import { Trash2, ShieldCheck, Search } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   AlertDialog,
@@ -32,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/user-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Input } from "@/components/ui/input";
 
 export default function ManageUsersPage() {
   const { user } = useUser();
@@ -40,6 +41,7 @@ export default function ManageUsersPage() {
   const [loading, setLoading] = useState(true);
   const [isAdminFormOpen, setIsAdminFormOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -70,11 +72,20 @@ export default function ManageUsersPage() {
   }, []);
 
   const displayedUsers = useMemo(() => {
+    let filteredUsers = users;
     if (user?.role === 'Admin') {
-      return users.filter(u => u.role !== 'Super Admin' && u.role !== 'Admin');
+      filteredUsers = users.filter(u => u.role !== 'Super Admin' && u.role !== 'Admin');
     }
-    return users;
-  }, [users, user]);
+    
+    if (searchTerm) {
+        filteredUsers = filteredUsers.filter(u => 
+            u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+
+    return filteredUsers;
+  }, [users, user, searchTerm]);
 
   const getRoleBadge = (role: User['role']) => {
     switch (role) {
@@ -206,17 +217,29 @@ export default function ManageUsersPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>Manage Users</CardTitle>
               <CardDescription>View, edit, and manage all users on the platform.</CardDescription>
             </div>
-            {user?.role === 'Super Admin' && (
-              <Button onClick={handleAddAdminClick}>
-                <ShieldCheck className="mr-2 h-4 w-4" />
-                Create Admin
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search by name or email..."
+                        className="pl-8 sm:w-[200px] lg:w-[250px]"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                {user?.role === 'Super Admin' && (
+                  <Button onClick={handleAddAdminClick} className="whitespace-nowrap">
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Create Admin
+                  </Button>
+                )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
