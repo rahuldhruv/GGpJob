@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import { useUser } from "@/contexts/user-context";
@@ -66,6 +65,10 @@ export default function ProfilePage() {
                  </div>
             </div>
         );
+    }
+    
+    if (!user) {
+        return null;
     }
 
     return (
