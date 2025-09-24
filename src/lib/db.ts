@@ -185,23 +185,6 @@ export async function getDb() {
 
   await db.exec('PRAGMA journal_mode = WAL;');
   await db.exec('PRAGMA foreign_keys = ON;');
-  
-  await db.exec('DROP TABLE IF EXISTS portal_feedback');
-  await db.exec('DROP TABLE IF EXISTS applications');
-  await db.exec('DROP TABLE IF EXISTS jobs');
-  await db.exec('DROP TABLE IF EXISTS user_education');
-  await db.exec('DROP TABLE IF EXISTS user_projects');
-  await db.exec('DROP TABLE IF EXISTS user_employment');
-  await db.exec('DROP TABLE IF EXISTS user_languages');
-  await db.exec('DROP TABLE IF EXISTS user_skills');
-  await db.exec('DROP TABLE IF EXISTS users');
-  await db.exec('DROP TABLE IF EXISTS domains');
-  await db.exec('DROP TABLE IF EXISTS job_types');
-  await db.exec('DROP TABLE IF EXISTS workplace_types');
-  await db.exec('DROP TABLE IF EXISTS experience_levels');
-  await db.exec('DROP TABLE IF EXISTS locations');
-  await db.exec('DROP TABLE IF EXISTS application_statuses');
-
 
   // Create tables if not exist
   await db.exec(`
