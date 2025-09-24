@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -25,6 +26,7 @@ import { LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/user-context";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -36,7 +38,14 @@ type LoginFormValues = z.infer<typeof formSchema>;
 export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const { setUser } = useUser();
+  const { user, loading, setUser } = useUser();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
@@ -78,6 +87,10 @@ export default function LoginPage() {
       });
     }
   };
+
+  if (loading || user) {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-128px)] bg-gray-50">

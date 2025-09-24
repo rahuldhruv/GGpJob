@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -32,6 +33,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/user-context";
+import { useEffect } from "react";
 
 const formSchema = z
   .object({
@@ -53,7 +55,14 @@ type SignupFormValues = z.infer<typeof formSchema>;
 export default function SignupPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const { setUser } = useUser();
+  const { user, loading, setUser } = useUser();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -81,8 +90,8 @@ export default function SignupPage() {
         throw new Error(errorData.error || "Failed to sign up");
       }
 
-      const user = await response.json();
-      setUser(user);
+      const newUser = await response.json();
+      setUser(newUser);
 
       toast({
         title: "Account Created!",
@@ -98,6 +107,10 @@ export default function SignupPage() {
       });
     }
   };
+
+  if (loading || user) {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-128px)] bg-gray-50 py-12">
