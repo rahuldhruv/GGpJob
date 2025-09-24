@@ -35,7 +35,7 @@ const formSchema = z.object({
   domainId: z.coerce.number().min(1, "Please select a domain."),
   vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
   contactEmail: z.string().email("Please enter a valid email address."),
-  contactPhone: z.string().min(10, "Please enter a valid phone number."),
+  contactPhone: z.string().length(10, "Please enter a valid 10-digit phone number."),
   salary: z.string().optional(),
 });
 
