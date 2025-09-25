@@ -22,7 +22,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = useCallback(async (uid: string) => {
     try {
-      const res = await fetch(`/api/users/${uid}`);
+      const res = await fetch(`/api/users?uid=${uid}`);
       if (res.ok) {
         const userProfile = await res.json();
         setUserState(userProfile);
@@ -39,15 +39,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
 
   useEffect(() => {
+    // Check for Firebase config before initializing auth
+    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+        console.error("Firebase config not found. Make sure .env.local is set up correctly.");
+        setLoading(false);
+        return;
+    }
+      
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/firebase.User
         const storedUser = localStorage.getItem('ggp-user');
         if (storedUser) {
           try {
-            setUserState(JSON.parse(storedUser));
+            const parsedUser = JSON.parse(storedUser);
+            // Verify that the stored user matches the authenticated user
+            if (parsedUser.id === firebaseUser.uid) {
+              setUserState(parsedUser);
+            } else {
+              await fetchUserProfile(firebaseUser.uid);
+            }
           } catch {
              await fetchUserProfile(firebaseUser.uid);
           }

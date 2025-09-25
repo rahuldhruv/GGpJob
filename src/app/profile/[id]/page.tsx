@@ -13,17 +13,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AtSign, Phone, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-
-async function getUserData(id: string): Promise<UserType | null> {
-    if (!id) return null;
-    const res = await fetch(`/api/users/${id}`);
-    if (!res.ok) {
-        return null;
-    }
-    const data = await res.json();
-    return data;
-}
-
 export default function PublicProfilePage() {
     const { user: currentUser, loading: currentUserLoading } = useUser();
     const router = useRouter();
@@ -33,7 +22,7 @@ export default function PublicProfilePage() {
     const [profileUser, setProfileUser] = useState<UserType | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const isOwnProfile = currentUser?.id === Number(id);
+    const isOwnProfile = currentUser?.id === id;
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -142,4 +131,3 @@ export default function PublicProfilePage() {
         </div>
     );
 }
-

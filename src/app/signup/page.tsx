@@ -36,6 +36,7 @@ import { useUser } from "@/contexts/user-context";
 import { useEffect } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { firebaseApp } from "@/firebase/config";
+import type { User } from "@/lib/types";
 
 const formSchema = z
   .object({
@@ -87,8 +88,7 @@ export default function SignupPage() {
       const firebaseUser = userCredential.user;
 
       // Create user profile in our database (Firestore)
-      const profileData = {
-        uid: firebaseUser.uid,
+      const profileData: Omit<User, 'id'> = {
         firstName: data.firstName,
         lastName: data.lastName,
         name: `${data.firstName} ${data.lastName}`,
@@ -101,7 +101,7 @@ export default function SignupPage() {
       const response = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileData),
+        body: JSON.stringify({ id: firebaseUser.uid, ...profileData }),
       });
 
       if (!response.ok) {
