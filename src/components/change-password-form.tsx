@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -15,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
+import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 
 const formSchema = z
   .object({
@@ -29,11 +31,7 @@ const formSchema = z
 
 type ChangePasswordFormValues = z.infer<typeof formSchema>;
 
-interface ChangePasswordFormProps {
-  userId: number;
-}
-
-export function ChangePasswordForm({ userId }: ChangePasswordFormProps) {
+export function ChangePasswordForm() {
   const { toast } = useToast();
   const form = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(formSchema),
@@ -47,17 +45,19 @@ export function ChangePasswordForm({ userId }: ChangePasswordFormProps) {
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (data: ChangePasswordFormValues) => {
-    try {
-      const response = await fetch(`/api/users/${userId}/change-password`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ oldPassword: data.oldPassword, newPassword: data.newPassword }),
-      });
+    const auth = getAuth();
+    const user = auth.currentUser;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to change password");
-      }
+    if (!user || !user.email) {
+      toast({ title: "Error", description: "You must be logged in to change your password.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, data.oldPassword);
+      await reauthenticateWithCredential(user, credential);
+      
+      await updatePassword(user, data.newPassword);
       
       toast({
         title: "Password Updated!",
@@ -65,9 +65,23 @@ export function ChangePasswordForm({ userId }: ChangePasswordFormProps) {
       });
       form.reset();
     } catch (error: any) {
+       let errorMessage = "An unexpected error occurred.";
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            errorMessage = 'The old password you entered is incorrect.';
+            break;
+           case 'auth/weak-password':
+            errorMessage = 'The new password is too weak.';
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      }
       toast({
         title: "Error",
-        description: error.message || "An unexpected error occurred.",
+        description: errorMessage,
         variant: "destructive",
       });
     }

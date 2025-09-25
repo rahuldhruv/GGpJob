@@ -1,16 +1,14 @@
 
-
 export type Role = "Job Seeker" | "Recruiter" | "Employee" | "Admin" | "Super Admin";
 
 export interface User {
-  id: number;
+  id: string; // Changed to string for Firestore UID
   firstName: string;
   lastName: string;
   name: string;
   email: string;
   phone: string;
   role: Role;
-  password?: string;
   headline?: string;
   locationId?: number;
   domainId?: number;
@@ -53,8 +51,8 @@ export interface Job {
   domainId?: number;
   role?: string;
   isReferral?: boolean;
-  recruiterId?: number;
-  employeeId?: number;
+  recruiterId?: string; // Changed to string for Firestore UID
+  employeeId?: string; // Changed to string for Firestore UID
   employeeLinkedIn?: string;
   vacancies?: number;
   contactEmail?: string;
@@ -78,7 +76,7 @@ export interface Application {
   jobId: string;
   jobTitle: string;
   companyName: string;
-  userId: number;
+  userId: string; // Changed to string for Firestore UID
   statusId: number;
   appliedAt: Date | string;
   rating?: number;
@@ -88,18 +86,18 @@ export interface Application {
   applicantName?: string;
   applicantEmail?: string;
   applicantHeadline?: string;
-  applicantId?: number;
+  applicantId?: string; // Changed to string for Firestore UID
   applicantSkills?: string;
 }
 
 export interface Domain {
-  id: number;
+  id: string; // Changed to string for Firestore ID
   name: string;
 }
 
 export interface Education {
-    id: number;
-    userId: number;
+    id: string; // Changed to string for Firestore ID
+    userId: string; // Changed to string for Firestore UID
     institution: string;
     degree: string;
     fieldOfStudy?: string;
@@ -109,8 +107,8 @@ export interface Education {
 }
 
 export interface Project {
-    id: number;
-    userId: number;
+    id: string; // Changed to string for Firestore ID
+    userId: string; // Changed to string for Firestore UID
     name: string;
     description?: string;
     url?: string;
@@ -119,8 +117,8 @@ export interface Project {
 }
 
 export interface Employment {
-    id: number;
-    userId: number;
+    id: string; // Changed to string for Firestore ID
+    userId: string; // Changed to string for Firestore UID
     company: string;
     title: string;
     employmentType?: 'Full-time' | 'Part-time' | 'Contract' | 'Internship';
@@ -131,21 +129,21 @@ export interface Employment {
 }
 
 export interface Language {
-    id: number;
-    userId: number;
+    id: string; // Changed to string for Firestore ID
+    userId: string; // Changed to string for Firestore UID
     language: string;
     proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Native';
 }
 
 export interface Skill {
-    id: number;
-    userId: number;
+    id: string; // Changed to string for Firestore ID
+    userId: string; // Changed to string for Firestore UID
     name: string;
 }
 
 export interface PortalFeedback {
-    id: number;
-    userId: number;
+    id: string; // Changed to string for Firestore ID
+    userId: string; // Changed to string for Firestore UID
     rating: number;
     feedback?: string;
     submittedAt: string;

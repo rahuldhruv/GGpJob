@@ -66,10 +66,6 @@ export default function ProfilePage() {
             </div>
         );
     }
-    
-    if (!user) {
-        return null;
-    }
 
     return (
         <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
@@ -114,7 +110,7 @@ export default function ProfilePage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ChangePasswordForm userId={user.id} />
+                        <ChangePasswordForm />
                     </CardContent>
                 </Card>
             </div>

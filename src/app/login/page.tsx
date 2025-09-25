@@ -27,6 +27,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/user-context";
 import { useEffect } from "react";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { firebaseApp } from "@/firebase/config";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -38,7 +40,7 @@ type LoginFormValues = z.infer<typeof formSchema>;
 export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const { user, loading, setUser } = useUser();
+  const { user, loading, login } = useUser();
 
   useEffect(() => {
     if (!loading && user) {
@@ -59,19 +61,13 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to login");
-      }
+      const auth = getAuth(firebaseApp);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
       
-      const { user } = await response.json();
-      setUser(user);
+      // The user object from Firebase Auth doesn't contain custom fields like 'role'.
+      // We need to fetch our custom user profile from our API (or Firestore).
+      // The `login` function in `useUser` context will handle this.
+      await login(userCredential.user);
 
       toast({
         title: "Login Successful!",
@@ -80,9 +76,21 @@ export default function LoginPage() {
 
       router.push("/");
     } catch (error: any) {
+      let errorMessage = "An unexpected error occurred.";
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            errorMessage = 'Invalid email or password.';
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      }
       toast({
         title: "Login Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: errorMessage,
         variant: "destructive",
       });
     }

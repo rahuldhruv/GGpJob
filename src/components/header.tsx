@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import Link from "next/link";
@@ -43,7 +42,7 @@ import { ShareButton } from "./share-button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Header() {
-  const { user, setUser } = useUser();
+  const { user, logout } = useUser();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -74,8 +73,8 @@ export default function Header() {
   }
 
 
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
   
@@ -406,7 +405,7 @@ export default function Header() {
             </div>
           ) : (
              isClient && !loading && (
-                <>
+                <div className="hidden md:flex items-center gap-2">
                 <Button asChild variant="ghost">
                     <Link href="/login">
                     <LogIn className="mr-2 h-4 w-4" />
@@ -419,7 +418,7 @@ export default function Header() {
                     Sign Up
                     </Link>
                 </Button>
-                </>
+                </div>
              )
           )}
         </div>

@@ -34,6 +34,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/user-context";
 import { useEffect } from "react";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { firebaseApp } from "@/firebase/config";
 
 const formSchema = z
   .object({
@@ -55,7 +57,7 @@ type SignupFormValues = z.infer<typeof formSchema>;
 export default function SignupPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const { user, loading, setUser } = useUser();
+  const { user, loading, login } = useUser();
 
   useEffect(() => {
     if (!loading && user) {
@@ -79,19 +81,38 @@ export default function SignupPage() {
 
   const onSubmit = async (data: SignupFormValues) => {
     try {
-      const response = await fetch("/api/auth/signup", {
+      const auth = getAuth(firebaseApp);
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      
+      const firebaseUser = userCredential.user;
+
+      // Create user profile in our database (Firestore)
+      const profileData = {
+        uid: firebaseUser.uid,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phone: data.phone,
+        role: data.role,
+        headline: '',
+      };
+
+      const response = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(profileData),
       });
 
       if (!response.ok) {
+        // If profile creation fails, we should ideally delete the Firebase user
+        // to avoid orphaned auth accounts. This is a more advanced pattern.
+        // For now, we'll just throw the error.
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to sign up");
+        throw new Error(errorData.error || "Failed to create user profile.");
       }
 
-      const newUser = await response.json();
-      setUser(newUser);
+      await login(firebaseUser);
 
       toast({
         title: "Account Created!",
@@ -100,9 +121,24 @@ export default function SignupPage() {
 
       router.push("/");
     } catch (error: any) {
+       let errorMessage = "An unexpected error occurred.";
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'This email address is already in use.';
+            break;
+           case 'auth/weak-password':
+            errorMessage = 'The password is too weak.';
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      } else {
+        errorMessage = error.message;
+      }
       toast({
         title: "Signup Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -176,7 +212,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="(123) 456-7890" {...field} />
+                      <Input placeholder="1234567890" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
