@@ -19,14 +19,16 @@ export async function GET(request: Request) {
             return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
         } else {
             // If user exists in Auth but not in Firestore, create a default profile.
-            // This can happen if profile creation failed during signup.
-            // We'll create a basic "Job Seeker" profile.
+            // This can happen if profile creation failed during signup or due to race conditions.
             console.warn(`User with UID ${uid} not found in Firestore. Creating default profile.`);
+            
+            // Note: We don't have the user's real email or name here,
+            // the client-side profile form should prompt them to fill it out.
             const defaultProfile: Omit<User, 'id'> = {
                 firstName: 'New',
                 lastName: 'User',
                 name: 'New User',
-                email: 'user@example.com', // This should be updated by the client
+                email: 'user@example.com', 
                 phone: '0000000000',
                 role: 'Job Seeker' as Role,
                 headline: '',
@@ -34,10 +36,12 @@ export async function GET(request: Request) {
             
             await setDoc(doc(db, "users", uid), defaultProfile);
             
+            // Return the newly created profile
             return NextResponse.json({ id: uid, ...defaultProfile });
         }
     }
 
+    // This part of the function gets all users and is typically for admin purposes.
     const usersCol = collection(db, 'users');
     const userSnapshot = await getDocs(usersCol);
     const users = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
