@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { collection, getDocs, doc, setDoc, query, where, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
-import type { User } from '@/lib/types';
+import type { User, Role } from '@/lib/types';
 
 
 // GET all users OR a specific user by UID
@@ -14,10 +14,27 @@ export async function GET(request: Request) {
     if (uid) {
         const docRef = doc(db, 'users', uid);
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
             return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
         } else {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+            // If user exists in Auth but not in Firestore, create a default profile.
+            // This can happen if profile creation failed during signup.
+            // We'll create a basic "Job Seeker" profile.
+            console.warn(`User with UID ${uid} not found in Firestore. Creating default profile.`);
+            const defaultProfile: Omit<User, 'id'> = {
+                firstName: 'New',
+                lastName: 'User',
+                name: 'New User',
+                email: 'user@example.com', // This should be updated by the client
+                phone: '0000000000',
+                role: 'Job Seeker' as Role,
+                headline: '',
+            };
+            
+            await setDoc(doc(db, "users", uid), defaultProfile);
+            
+            return NextResponse.json({ id: uid, ...defaultProfile });
         }
     }
 
