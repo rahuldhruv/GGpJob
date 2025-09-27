@@ -26,17 +26,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const userProfile = await res.json();
         setUserState(userProfile);
-        localStorage.setItem('ggp-user', JSON.stringify(userProfile));
       } else {
+        // This error will be caught by the catch block
         throw new Error('Failed to fetch user profile');
       }
     } catch (error) {
       console.error(error);
+      // If fetching fails, ensure the user is logged out of the app state
       setUserState(null);
-      localStorage.removeItem('ggp-user');
+      getAuth(firebaseApp).signOut();
     }
   }, []);
-
 
   useEffect(() => {
     // Check for Firebase config before initializing auth
@@ -48,12 +48,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
       
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
         await fetchUserProfile(firebaseUser.uid);
       } else {
         // User is signed out
         setUserState(null);
-        localStorage.removeItem('ggp-user');
       }
       setLoading(false);
     });
@@ -63,11 +63,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const setUser = (user: User | null) => {
     setUserState(user);
-    if (user) {
-      localStorage.setItem('ggp-user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('ggp-user');
-    }
   };
 
   const login = async (firebaseUser: FirebaseUser) => {
@@ -80,7 +75,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const auth = getAuth(firebaseApp);
     await auth.signOut();
     setUserState(null);
-    localStorage.removeItem('ggp-user');
   }
   
   return (
