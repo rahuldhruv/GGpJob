@@ -49,22 +49,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const storedUser = localStorage.getItem('ggp-user');
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            // Verify that the stored user matches the authenticated user
-            if (parsedUser.id === firebaseUser.uid) {
-              setUserState(parsedUser);
-            } else {
-              await fetchUserProfile(firebaseUser.uid);
-            }
-          } catch {
-             await fetchUserProfile(firebaseUser.uid);
-          }
-        } else {
-            await fetchUserProfile(firebaseUser.uid);
-        }
+        await fetchUserProfile(firebaseUser.uid);
       } else {
         // User is signed out
         setUserState(null);
