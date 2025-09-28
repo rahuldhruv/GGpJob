@@ -16,13 +16,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, FileText, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { LoaderCircle, FileText, Link as LinkIcon, ExternalLink, UploadCloud } from "lucide-react";
 import { User } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import Link from "next/link";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage } from "@/firebase/config";
+import { Progress } from "./ui/progress";
 
 const formSchema = z.object({
-  resumeUrl: z.string().url("Please enter a valid URL.").or(z.literal('')),
+  resumeFile: z.instanceof(File).optional(),
 });
 
 type ResumeFormValues = z.infer<typeof formSchema>;
@@ -34,51 +37,64 @@ interface ResumeFormProps {
 export function ResumeForm({ user: initialUser }: ResumeFormProps) {
   const { toast } = useToast();
   const { user, setUser } = useUser();
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const form = useForm<ResumeFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-        resumeUrl: user?.resumeUrl || "",
-    },
   });
 
   const { formState: { isSubmitting }, reset } = form;
   
   useEffect(() => {
-    reset({ resumeUrl: user?.resumeUrl || "" });
+    reset();
   }, [user, reset]);
 
 
   const onSubmit = async (data: ResumeFormValues) => {
     if (!user) return;
-    
-    try {
-      const response = await fetch(`/api/users/${user.id}/resume`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeUrl: data.resumeUrl }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update resume");
-      }
-      
-      const updatedData = await response.json();
-      setUser({ ...user, resumeUrl: updatedData.resumeUrl });
-
-      toast({
-        title: "Resume Updated!",
-        description: "Your new resume link has been successfully saved.",
-      });
-      
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
+    if (!data.resumeFile) {
+        toast({ title: "No file selected", description: "Please select a resume file to upload.", variant: "destructive" });
+        return;
     }
+
+    const file = data.resumeFile;
+    const storageRef = ref(storage, `resumes/${user.id}/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on('state_changed',
+        (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+        },
+        (error) => {
+            console.error("Upload failed:", error);
+            toast({ title: "Upload Failed", description: "Your resume could not be uploaded. Please try again.", variant: "destructive" });
+            setUploadProgress(null);
+        },
+        async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            
+            try {
+                const response = await fetch(`/api/users/${user.id}/resume`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ resumeUrl: downloadURL }),
+                });
+
+                if (!response.ok) throw new Error("Failed to save resume URL.");
+                
+                const updatedData = await response.json();
+                setUser({ ...user, resumeUrl: updatedData.resumeUrl });
+
+                toast({ title: "Resume Uploaded!", description: "Your new resume has been successfully saved." });
+            } catch (error) {
+                toast({ title: "Error", description: "Failed to save your new resume. Please try again.", variant: "destructive" });
+            } finally {
+                setUploadProgress(null);
+                reset();
+            }
+        }
+    );
   };
   
   const currentResumeUrl = user?.resumeUrl;
@@ -89,10 +105,10 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
              <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
                 <div className="flex items-center gap-2 text-sm">
                     <FileText className="h-4 w-4" />
-                    <span className="font-medium">Current Resume Link</span>
+                    <span className="font-medium">Current Resume</span>
                 </div>
                 <Button asChild variant="ghost" size="sm">
-                    <Link href={currentResumeUrl} target="_blank">
+                    <Link href={currentResumeUrl} target="_blank" download>
                         View Resume <ExternalLink className="ml-2 h-4 w-4" />
                     </Link>
                 </Button>
@@ -102,17 +118,19 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
             control={form.control}
-            name="resumeUrl"
-            render={({ field }) => (
+            name="resumeFile"
+            render={({ field: { onChange, ...fieldProps } }) => (
                 <FormItem>
-                <FormLabel>Resume Link</FormLabel>
+                <FormLabel>Upload New Resume</FormLabel>
                 <FormControl>
                     <div className="relative">
-                       <LinkIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                       <UploadCloud className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input 
-                            placeholder="https://example.com/my-resume.pdf"
+                            type="file"
+                            accept=".pdf,.doc,.docx"
                             className="pl-8"
-                            {...field}
+                            onChange={(e) => onChange(e.target.files ? e.target.files[0] : null)}
+                            {...fieldProps}
                         />
                     </div>
                 </FormControl>
@@ -120,10 +138,18 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
                 </FormItem>
             )}
             />
+
+            {uploadProgress !== null && (
+                <div className="space-y-1">
+                    <Progress value={uploadProgress} className="h-2" />
+                    <p className="text-xs text-muted-foreground text-center">Uploading... {Math.round(uploadProgress)}%</p>
+                </div>
+            )}
+
             <div className="flex justify-end pt-2">
-            <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
+            <Button type="submit" disabled={isSubmitting || uploadProgress !== null}>
+                {(isSubmitting || uploadProgress !== null) && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                Upload and Save
             </Button>
             </div>
         </form>
