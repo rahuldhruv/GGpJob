@@ -28,7 +28,7 @@ export async function GET(request: Request) {
                 firstName: 'New',
                 lastName: 'User',
                 name: 'New User',
-                email: 'user@example.com', 
+                email: 'user@example.com',
                 phone: '0000000000',
                 role: 'Job Seeker' as Role,
                 headline: '',
@@ -61,12 +61,23 @@ export async function POST(request: Request) {
     if (!id) {
         return NextResponse.json({ error: 'Firebase UID (id) is required' }, { status: 400 });
     }
+    
+    const dataToSave: Omit<User, 'id'> = {
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        name: `${profileData.firstName} ${profileData.lastName}`,
+        email: profileData.email,
+        phone: profileData.phone,
+        role: profileData.role,
+        headline: profileData.headline || '',
+    };
 
-    await setDoc(doc(db, "users", id), profileData);
+    await setDoc(doc(db, "users", id), dataToSave);
 
-    return NextResponse.json({ id, ...profileData }, { status: 201 });
+    return NextResponse.json({ id, ...dataToSave }, { status: 201 });
   } catch (e: any) {
     console.error("Error adding document: ", e);
     return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
   }
 }
+
