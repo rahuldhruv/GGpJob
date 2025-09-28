@@ -18,24 +18,7 @@ export async function GET(request: Request) {
         if (docSnap.exists()) {
             return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
         } else {
-            // If user exists in Auth but not in Firestore, create a default profile.
-            // This can happen if profile creation failed during signup or due to race conditions.
-            console.warn(`User with UID ${uid} not found in Firestore. Creating default profile.`);
-            
-            const defaultProfile: Omit<User, 'id'> = {
-                firstName: 'New',
-                lastName: 'User',
-                name: 'New User',
-                email: 'user@example.com',
-                phone: '0000000000',
-                role: 'Job Seeker' as Role,
-                headline: '',
-            };
-            
-            await setDoc(doc(db, "users", uid), defaultProfile);
-            
-            // Return the newly created profile
-            return NextResponse.json({ id: uid, ...defaultProfile });
+            return NextResponse.json({ error: 'User not found in Firestore' }, { status: 404 });
         }
     }
 
