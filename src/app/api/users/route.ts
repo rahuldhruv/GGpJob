@@ -22,8 +22,6 @@ export async function GET(request: Request) {
             // This can happen if profile creation failed during signup or due to race conditions.
             console.warn(`User with UID ${uid} not found in Firestore. Creating default profile.`);
             
-            // Note: We don't have the user's real email or name here,
-            // the client-side profile form should prompt them to fill it out.
             const defaultProfile: Omit<User, 'id'> = {
                 firstName: 'New',
                 lastName: 'User',
@@ -55,8 +53,8 @@ export async function GET(request: Request) {
 // POST a new user (create profile after signup)
 export async function POST(request: Request) {
   try {
-    const userData: User = await request.json();
-    const { id, ...profileData } = userData;
+    const body = await request.json();
+    const { id, ...profileData } = body;
 
     if (!id) {
         return NextResponse.json({ error: 'Firebase UID (id) is required' }, { status: 400 });
@@ -70,6 +68,10 @@ export async function POST(request: Request) {
         phone: profileData.phone,
         role: profileData.role,
         headline: profileData.headline || '',
+        // Initialize other optional fields if needed
+        resumeUrl: '',
+        domainId: null,
+        locationId: null,
     };
 
     await setDoc(doc(db, "users", id), dataToSave);
@@ -80,4 +82,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
   }
 }
-
