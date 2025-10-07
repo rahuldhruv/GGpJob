@@ -43,7 +43,6 @@ const formSchema = z
     firstName: z.string().min(2, "First name must be at least 2 characters."),
     lastName: z.string().min(2, "Last name must be at least 2 characters."),
     email: z.string().email("Please enter a valid email address."),
-    phone: z.string().length(10, "Please enter a valid 10-digit phone number."),
     role: z.enum(["Job Seeker", "Recruiter", "Employee"]),
     password: z.string().min(8, "Password must be at least 8 characters."),
     confirmPassword: z.string(),
@@ -72,7 +71,6 @@ export default function SignupPage() {
       firstName: "",
       lastName: "",
       email: "",
-      phone: "",
       password: "",
       confirmPassword: "",
     },
@@ -88,20 +86,18 @@ export default function SignupPage() {
       const firebaseUser = userCredential.user;
 
       // Create user profile in our database (Firestore)
-      const profileData: Omit<User, 'id'> = {
+      const profileData = {
+        id: firebaseUser.uid,
         firstName: data.firstName,
         lastName: data.lastName,
-        name: `${data.firstName} ${data.lastName}`,
         email: data.email,
-        phone: data.phone,
         role: data.role,
-        headline: '',
       };
 
       const response = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: firebaseUser.uid, ...profileData }),
+        body: JSON.stringify(profileData),
       });
 
       if (!response.ok) {
@@ -200,19 +196,6 @@ export default function SignupPage() {
                         placeholder="your.email@example.com"
                         {...field}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="1234567890" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

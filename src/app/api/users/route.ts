@@ -1,8 +1,8 @@
 
 import { NextResponse } from 'next/server';
-import { collection, getDocs, doc, setDoc, query, where, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
-import type { User, Role } from '@/lib/types';
+import type { User } from '@/lib/types';
 
 
 // GET all users OR a specific user by UID
@@ -18,9 +18,6 @@ export async function GET(request: Request) {
         if (docSnap.exists()) {
             return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
         } else {
-             // User exists in Auth but not in Firestore.
-             // This can happen if profile creation fails after signup.
-             // We will return a specific error that the client can handle.
             return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
         }
     }
@@ -46,7 +43,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Missing required fields for profile creation' }, { status: 400 });
     }
     
-    const dataToSave: Partial<User> = {
+    const dataToSave: Omit<User, 'id'> = {
         firstName: firstName,
         lastName: lastName,
         name: `${firstName} ${lastName}`,
