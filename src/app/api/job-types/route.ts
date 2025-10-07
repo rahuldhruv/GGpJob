@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '@/firebase/config';
 
 export async function GET() {
   try {
-    const db = await getDb();
-    const jobTypes = await db.all('SELECT * FROM job_types ORDER BY id');
+    const typesCol = collection(db, 'job_types');
+    const q = query(typesCol, orderBy('id'));
+    const typeSnapshot = await getDocs(q);
+    const jobTypes = typeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json(jobTypes);
   } catch (e) {
     console.error(e);

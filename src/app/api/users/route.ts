@@ -18,7 +18,10 @@ export async function GET(request: Request) {
         if (docSnap.exists()) {
             return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
         } else {
-            return NextResponse.json({ error: 'User not found in Firestore' }, { status: 404 });
+             // User exists in Auth but not in Firestore.
+             // This can happen if profile creation fails after signup.
+             // We will return a specific error that the client can handle.
+            return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
         }
     }
 
@@ -37,21 +40,21 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { id, ...profileData } = body;
+    const { id, firstName, lastName, email, role } = body;
 
-    if (!id) {
-        return NextResponse.json({ error: 'Firebase UID (id) is required' }, { status: 400 });
+    if (!id || !firstName || !lastName || !email || !role) {
+        return NextResponse.json({ error: 'Missing required fields for profile creation' }, { status: 400 });
     }
     
-    const dataToSave: Omit<User, 'id'> = {
-        firstName: profileData.firstName,
-        lastName: profileData.lastName,
-        name: `${profileData.firstName} ${profileData.lastName}`,
-        email: profileData.email,
-        phone: profileData.phone,
-        role: profileData.role,
-        headline: profileData.headline || '',
-        // Initialize other optional fields if needed
+    const dataToSave: Partial<User> = {
+        firstName: firstName,
+        lastName: lastName,
+        name: `${firstName} ${lastName}`,
+        email: email,
+        role: role,
+        // Initialize other optional fields to ensure document structure is consistent
+        phone: '',
+        headline: '',
         resumeUrl: '',
         domainId: null,
         locationId: null,
@@ -62,6 +65,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ id, ...dataToSave }, { status: 201 });
   } catch (e: any) {
     console.error("Error adding document: ", e);
-    return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create user profile in Firestore' }, { status: 500 });
   }
 }

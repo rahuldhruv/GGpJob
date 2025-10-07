@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase/config';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -9,20 +10,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Domain name is required' }, { status: 400 });
     }
 
-    const db = await getDb();
-    const result = await db.run('UPDATE domains SET name = ? WHERE id = ?', name, Number(id));
+    const domainDocRef = doc(db, 'domains', id);
+    await updateDoc(domainDocRef, { name });
 
-    if (result.changes === 0) {
-        return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
-    }
-    
-    const updatedDomain = await db.get('SELECT * FROM domains WHERE id = ?', Number(id));
+    const updatedDoc = await getDoc(domainDocRef);
 
-    return NextResponse.json(updatedDomain, { status: 200 });
+    return NextResponse.json({ id: updatedDoc.id, ...updatedDoc.data() }, { status: 200 });
   } catch (e) {
-     if (e.message.includes('UNIQUE constraint failed')) {
-        return NextResponse.json({ error: 'Domain name already exists' }, { status: 409 });
-    }
     console.error(e);
     return NextResponse.json({ error: 'Failed to update domain' }, { status: 500 });
   }
@@ -31,14 +25,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const db = await getDb();
-        
-        const result = await db.run('DELETE FROM domains WHERE id = ?', Number(id));
-        
-        if (result.changes === 0) {
-            return NextResponse.json({ error: 'Domain not found' }, { status: 404 });
-        }
-
+        await deleteDoc(doc(db, 'domains', id));
         return NextResponse.json({ message: 'Domain deleted successfully' }, { status: 200 });
     } catch (e) {
         console.error(e);

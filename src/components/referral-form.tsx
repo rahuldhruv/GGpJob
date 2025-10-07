@@ -21,17 +21,18 @@ import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, ThumbsUp, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Domain, JobType, WorkplaceType, ExperienceLevel, Job, Location } from "@/lib/types";
+import { useUser } from "@/contexts/user-context";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
-  locationId: z.coerce.number().min(1, "Job location is required."),
+  locationId: z.string().min(1, "Job location is required."),
   role: z.string().min(2, "Role must be at least 2 characters long."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
-  experienceLevelId: z.coerce.number().min(1, "Please select an experience level."),
-  jobTypeId: z.coerce.number().min(1, "Please select a job type."),
-  workplaceTypeId: z.coerce.number().min(1, "Please select a workplace type."),
-  domainId: z.coerce.number().min(1, "Please select a domain."),
+  experienceLevelId: z.string().min(1, "Please select an experience level."),
+  jobTypeId: z.string().min(1, "Please select a job type."),
+  workplaceTypeId: z.string().min(1, "Please select a workplace type."),
+  domainId: z.string().min(1, "Please select a domain."),
   vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
   email: z.string().email("Please enter a valid email address."),
   phoneNumber: z.string().length(10, "Please enter a valid 10-digit phone number."),
@@ -46,6 +47,7 @@ interface ReferralFormProps {
 }
 
 export function ReferralForm({ job }: ReferralFormProps) {
+  const { user } = useUser();
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,6 +127,10 @@ export function ReferralForm({ job }: ReferralFormProps) {
   }, [job, form]);
 
   const onSubmit = async (data: ReferralFormValues) => {
+    if (!user) {
+        toast({ title: 'Not authorized', description: 'You must be logged in.' });
+        return;
+    }
     setIsSubmitting(true);
     try {
       const url = job ? `/api/jobs/${job.id}` : '/api/jobs';
@@ -146,7 +152,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
         employeeLinkedIn: data.employeeLinkedIn,
         salary: data.salary,
         isReferral: true,
-        employeeId: 3, // Hardcoded for now
+        employeeId: user.id,
         postedAt: job?.postedAt || new Date().toISOString(),
       };
 

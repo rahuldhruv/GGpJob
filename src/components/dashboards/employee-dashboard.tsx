@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -28,18 +27,21 @@ import {
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
+import { useUser } from "@/contexts/user-context";
 
 
 export default function EmployeeDashboard() {
+  const { user } = useUser();
   const [referralJobs, setReferralJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
   const { toast } = useToast();
 
   const fetchJobs = async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/jobs?isReferral=true&employeeId=3');
+      const res = await fetch(`/api/jobs?isReferral=true&employeeId=${user.id}`);
       const data = await res.json();
       setReferralJobs(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -50,8 +52,10 @@ export default function EmployeeDashboard() {
   };
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (user) {
+        fetchJobs();
+    }
+  }, [user]);
 
   const handleDeleteJob = async () => {
     if (!jobToDelete) return;
