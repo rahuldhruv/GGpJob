@@ -35,11 +35,14 @@ export async function GET(request: Request) {
 
 // POST a new user (create profile after signup)
 export async function POST(request: Request) {
+  console.log("'/api/users' POST endpoint hit.");
   try {
     const body = await request.json();
+    console.log("Request body:", body);
     const { id, firstName, lastName, email, role } = body;
 
     if (!id || !firstName || !lastName || !email || !role) {
+        console.error("Missing required fields for profile creation");
         return NextResponse.json({ error: 'Missing required fields for profile creation' }, { status: 400 });
     }
     
@@ -56,12 +59,16 @@ export async function POST(request: Request) {
         domainId: null,
         locationId: null,
     };
+    
+    console.log("Attempting to save this data to Firestore:", dataToSave);
 
     await setDoc(doc(db, "users", id), dataToSave);
 
+    console.log(`Successfully created user profile in Firestore for UID: ${id}`);
+    
     return NextResponse.json({ id, ...dataToSave }, { status: 201 });
   } catch (e: any) {
-    console.error("Error adding document: ", e);
-    return NextResponse.json({ error: 'Failed to create user profile in Firestore' }, { status: 500 });
+    console.error("Error in '/api/users' POST handler:", e);
+    return NextResponse.json({ error: 'Failed to create user profile in Firestore', details: e.message }, { status: 500 });
   }
 }
