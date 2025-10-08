@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { collection, getDocs, doc, setDoc, getDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/admin-config'; // Use the admin config
 import type { User } from '@/lib/types';
 
@@ -18,6 +18,8 @@ export async function GET(request: Request) {
         if (docSnap.exists()) {
             return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
         } else {
+             // This is a valid case where a user is authenticated but their profile hasn't been created yet.
+             // We should return a 404, not a 500 error. The client will handle this.
              return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
         }
     }
