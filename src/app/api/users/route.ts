@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { collection, getDocs, doc, setDoc, getDoc, query, where } from 'firebase/firestore';
+import { db } from '@/firebase/admin-config'; // Use the admin config
 import type { User } from '@/lib/types';
 
 
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
         if (docSnap.exists()) {
             return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
         } else {
-            return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
+             return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
         }
     }
 
@@ -27,19 +27,16 @@ export async function GET(request: Request) {
     const userSnapshot = await getDocs(usersCol);
     const users = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json(users);
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+  } catch (e: any) {
+    console.error("Error in GET /api/users: ", e.message);
+    return NextResponse.json({ error: 'Failed to fetch users', details: e.message }, { status: 500 });
   }
 }
 
 // POST a new user (create profile after signup)
 export async function POST(request: Request) {
-  console.log("'/api/users' POST endpoint hit.");
   try {
-    const body = await request.json();
-    console.log("Request body:", body);
-    const { id, firstName, lastName, email, role } = body;
+    const { id, firstName, lastName, email, role } = await request.json();
 
     if (!id || !firstName || !lastName || !email || !role) {
         console.error("Missing required fields for profile creation");
@@ -47,12 +44,11 @@ export async function POST(request: Request) {
     }
     
     const dataToSave: Omit<User, 'id'> = {
-        firstName: firstName,
-        lastName: lastName,
+        firstName,
+        lastName,
         name: `${firstName} ${lastName}`,
-        email: email,
-        role: role,
-        // Initialize other optional fields to ensure document structure is consistent
+        email,
+        role,
         phone: '',
         headline: '',
         resumeUrl: '',
@@ -60,15 +56,11 @@ export async function POST(request: Request) {
         locationId: null,
     };
     
-    console.log("Attempting to save this data to Firestore:", dataToSave);
-
     await setDoc(doc(db, "users", id), dataToSave);
-
-    console.log(`Successfully created user profile in Firestore for UID: ${id}`);
     
     return NextResponse.json({ id, ...dataToSave }, { status: 201 });
   } catch (e: any) {
-    console.error("Error in '/api/users' POST handler:", e);
+    console.error("Error in POST /api/users: ", e.message);
     return NextResponse.json({ error: 'Failed to create user profile in Firestore', details: e.message }, { status: 500 });
   }
 }
