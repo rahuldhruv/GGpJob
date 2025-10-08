@@ -1,4 +1,5 @@
 
+
 export type Role = "Job Seeker" | "Recruiter" | "Employee" | "Admin" | "Super Admin";
 
 export interface User {
@@ -74,8 +75,8 @@ export interface ApplicationStatus {
 export interface Application {
   id: string;
   jobId: string;
-  jobTitle: string;
-  companyName: string;
+  jobTitle?: string;
+  companyName?: string;
   userId: string; // Changed to string for Firestore UID
   statusId: number;
   appliedAt: Date | string;
