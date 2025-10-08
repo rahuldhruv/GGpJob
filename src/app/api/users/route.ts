@@ -1,9 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/admin-config'; // Use the admin config
+import { db } from '@/firebase/admin-config';
 import type { User } from '@/lib/types';
-
 
 // GET all users OR a specific user by UID
 export async function GET(request: Request) {
@@ -12,11 +10,10 @@ export async function GET(request: Request) {
     const uid = searchParams.get('uid');
 
     if (uid) {
-        const docRef = doc(db, 'users', uid);
-        const docSnap = await getDoc(docRef);
+        const userDoc = await db.collection('users').doc(uid).get();
 
-        if (docSnap.exists()) {
-            return NextResponse.json({ id: docSnap.id, ...docSnap.data() });
+        if (userDoc.exists) {
+            return NextResponse.json({ id: userDoc.id, ...userDoc.data() });
         } else {
              // This is a valid case where a user is authenticated but their profile hasn't been created yet.
              // We should return a 404, not a 500 error. The client will handle this.
@@ -25,9 +22,8 @@ export async function GET(request: Request) {
     }
 
     // This part of the function gets all users and is typically for admin purposes.
-    const usersCol = collection(db, 'users');
-    const userSnapshot = await getDocs(usersCol);
-    const users = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const usersSnapshot = await db.collection('users').get();
+    const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json(users);
   } catch (e: any) {
     console.error("Error in GET /api/users: ", e.message);
@@ -58,7 +54,8 @@ export async function POST(request: Request) {
         locationId: null,
     };
     
-    await setDoc(doc(db, "users", id), dataToSave);
+    // Use the correct admin SDK syntax to set the document
+    await db.collection("users").doc(id).set(dataToSave);
     
     return NextResponse.json({ id, ...dataToSave }, { status: 201 });
   } catch (e: any) {
