@@ -1,19 +1,19 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { db } from '@/firebase/admin-config';
 
 type Section = 'education' | 'projects' | 'employment' | 'languages' | 'skills';
-const tableMap: Record<Section, string> = {
-    education: 'user_education',
-    projects: 'user_projects',
-    employment: 'user_employment',
-    languages: 'user_languages',
-    skills: 'user_skills'
+const subcollectionMap: Record<Section, string> = {
+    education: 'education',
+    projects: 'projects',
+    employment: 'employment',
+    languages: 'languages',
+    skills: 'skills'
 };
 
-const getTableName = (section: string | null): string | null => {
-    if (section && Object.keys(tableMap).includes(section)) {
-        return tableMap[section as Section];
+const getSubcollectionName = (section: string | null): string | null => {
+    if (section && Object.keys(subcollectionMap).includes(section)) {
+        return subcollectionMap[section as Section];
     }
     return null;
 }
@@ -21,33 +21,45 @@ const getTableName = (section: string | null): string | null => {
 // GET handler
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     try {
-        const { id } = params;
+        const { id: userId } = params;
         const { searchParams } = new URL(request.url);
         const section = searchParams.get('section');
         
-        const db = await getDb();
-        
         if (section) {
-             const tableName = getTableName(section);
-             if (!tableName) {
+             const subcollectionName = getSubcollectionName(section);
+             if (!subcollectionName) {
                 return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
             }
-            const data = await db.all(`SELECT * FROM ${tableName} WHERE userId = ? ORDER BY id DESC`, id);
+            const sectionSnapshot = await db.collection('users').doc(userId).collection(subcollectionName).get();
+            const data = sectionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Add sorting if needed, e.g. for skills/languages
+            if (subcollectionName === 'skills' || subcollectionName === 'languages') {
+                const key = subcollectionName === 'skills' ? 'name' : 'language';
+                data.sort((a, b) => a[key].localeCompare(b[key]));
+            }
+
             return NextResponse.json(data);
         }
         
         // If no section, fetch all profile data
-        const [education, projects, employment, languages, skills] = await Promise.all([
-            db.all('SELECT * FROM user_education WHERE userId = ? ORDER BY id DESC', id),
-            db.all('SELECT * FROM user_projects WHERE userId = ? ORDER BY id DESC', id),
-            db.all('SELECT * FROM user_employment WHERE userId = ? ORDER BY id DESC', id),
-            db.all('SELECT * FROM user_languages WHERE userId = ? ORDER BY language', id),
-            db.all('SELECT * FROM user_skills WHERE userId = ? ORDER BY name', id)
+        const [educationSnap, projectsSnap, employmentSnap, languagesSnap, skillsSnap] = await Promise.all([
+            db.collection('users').doc(userId).collection('education').get(),
+            db.collection('users').doc(userId).collection('projects').get(),
+            db.collection('users').doc(userId).collection('employment').get(),
+            db.collection('users').doc(userId).collection('languages').get(),
+            db.collection('users').doc(userId).collection('skills').get()
         ]);
+
+        const education = educationSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const projects = projectsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const employment = employmentSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const languages = languagesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.language.localeCompare(b.language));
+        const skills = skillsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.name.localeCompare(b.name));
 
         return NextResponse.json({ education, projects, employment, languages, skills });
     } catch (e: any) {
-        console.error(e);
+        console.error("Profile GET Error:", e);
         return NextResponse.json({ error: 'Failed to fetch profile data' }, { status: 500 });
     }
 }
@@ -60,26 +72,20 @@ export async function POST(request: Request, { params }: { params: { id: string 
         const section = searchParams.get('section');
         const body = await request.json();
 
-        const tableName = getTableName(section);
-        if (!tableName) {
+        const subcollectionName = getSubcollectionName(section);
+        if (!subcollectionName) {
             return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
         }
 
-        const db = await getDb();
-        const columns = Object.keys(body).join(', ');
-        const placeholders = Object.keys(body).map(() => '?').join(', ');
-        const values = Object.values(body);
+        const userRef = db.collection('users').doc(userId);
+        const subcollectionRef = userRef.collection(subcollectionName);
         
-        const result = await db.run(
-            `INSERT INTO ${tableName} (userId, ${columns}) VALUES (?, ${placeholders})`,
-            userId, ...values
-        );
-        
-        const newItem = await db.get(`SELECT * FROM ${tableName} WHERE id = ?`, result.lastID);
+        const docRef = await subcollectionRef.add(body);
+        const newItem = { id: docRef.id, ...body };
 
         return NextResponse.json(newItem, { status: 201 });
     } catch (e: any) {
-        console.error(e);
+        console.error("Profile POST Error:", e);
         return NextResponse.json({ error: `Failed to create item in ${section}` }, { status: 500 });
     }
 }
@@ -94,29 +100,30 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         const body = await request.json();
         const { id, ...dataToUpdate } = body;
 
-        const tableName = getTableName(section);
-        if (!tableName) {
+        const subcollectionName = getSubcollectionName(section);
+        if (!subcollectionName) {
             return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
         }
-
-        const db = await getDb();
-        const setClause = Object.keys(dataToUpdate).map(key => `${key} = ?`).join(', ');
-        const values = Object.values(dataToUpdate);
-
-        const result = await db.run(
-            `UPDATE ${tableName} SET ${setClause} WHERE id = ? AND userId = ?`,
-            ...values, id, userId
-        );
         
-        if (result.changes === 0) {
+        if (!id) {
+            return NextResponse.json({ error: 'Item ID is required for update' }, { status: 400 });
+        }
+        
+        const itemRef = db.collection('users').doc(userId).collection(subcollectionName).doc(id);
+        
+        // Verify document exists before updating
+        const docSnap = await itemRef.get();
+        if (!docSnap.exists) {
             return NextResponse.json({ error: 'Item not found or user unauthorized' }, { status: 404 });
         }
         
-        const updatedItem = await db.get(`SELECT * FROM ${tableName} WHERE id = ?`, id);
+        await itemRef.update(dataToUpdate);
+        
+        const updatedItem = { id, ...dataToUpdate };
 
         return NextResponse.json(updatedItem, { status: 200 });
     } catch (e: any) {
-        console.error(e);
+        console.error("Profile PUT Error:", e);
         return NextResponse.json({ error: `Failed to update item in ${section}` }, { status: 500 });
     }
 }
@@ -130,24 +137,28 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         const section = searchParams.get('section');
         const { id } = await request.json();
 
-        const tableName = getTableName(section);
-        if (!tableName) {
+        const subcollectionName = getSubcollectionName(section);
+        if (!subcollectionName) {
             return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
         }
 
-        const db = await getDb();
-        const result = await db.run(
-            `DELETE FROM ${tableName} WHERE id = ? AND userId = ?`,
-            id, userId
-        );
+        if (!id) {
+            return NextResponse.json({ error: 'Item ID is required for deletion' }, { status: 400 });
+        }
+        
+        const itemRef = db.collection('users').doc(userId).collection(subcollectionName).doc(id);
 
-        if (result.changes === 0) {
+        // Verify document exists before deleting
+        const docSnap = await itemRef.get();
+        if (!docSnap.exists) {
             return NextResponse.json({ error: 'Item not found or user unauthorized' }, { status: 404 });
         }
+        
+        await itemRef.delete();
 
         return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
     } catch (e: any) {
-        console.error(e);
+        console.error("Profile DELETE Error:", e);
         return NextResponse.json({ error: `Failed to delete item from ${section}` }, { status: 500 });
     }
 }
