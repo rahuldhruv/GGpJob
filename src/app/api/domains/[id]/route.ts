@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { db } from '@/firebase/admin-config'; // Use admin config for server-side operations
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -10,10 +9,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Domain name is required' }, { status: 400 });
     }
 
-    const domainDocRef = doc(db, 'domains', id);
-    await updateDoc(domainDocRef, { name });
+    const domainDocRef = db.collection('domains').doc(id);
+    await domainDocRef.update({ name });
 
-    const updatedDoc = await getDoc(domainDocRef);
+    const updatedDoc = await domainDocRef.get();
 
     return NextResponse.json({ id: updatedDoc.id, ...updatedDoc.data() }, { status: 200 });
   } catch (e) {
@@ -25,7 +24,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        await deleteDoc(doc(db, 'domains', id));
+        await db.collection('domains').doc(id).delete();
         return NextResponse.json({ message: 'Domain deleted successfully' }, { status: 200 });
     } catch (e) {
         console.error(e);

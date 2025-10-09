@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { db } from '@/firebase/admin-config'; // Use admin config for server-side operations
 
 export async function GET() {
   try {
-    const domainsCol = collection(db, 'domains');
-    const domainSnapshot = await getDocs(domainsCol);
+    const domainsCol = db.collection('domains');
+    const domainSnapshot = await domainsCol.get();
     const domains = domainSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     // Sort alphabetically by name
     domains.sort((a, b) => a.name.localeCompare(b.name));
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     // A more robust solution might involve a separate lookup document or Cloud Functions.
     // For now, we'll proceed assuming duplicates are handled by the client or are acceptable.
     
-    const docRef = await addDoc(collection(db, "domains"), { name });
+    const docRef = await db.collection("domains").add({ name });
     
     return NextResponse.json({ id: docRef.id, name }, { status: 201 });
   } catch (e) {
