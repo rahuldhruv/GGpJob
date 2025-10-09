@@ -28,18 +28,21 @@ import {
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
+import { useUser } from "@/contexts/user-context";
 
 
 export default function RecruiterDashboard() {
+  const { user } = useUser();
   const [postedJobs, setPostedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
   const { toast } = useToast();
 
   const fetchJobs = async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/jobs?recruiterId=2&isReferral=false');
+      const res = await fetch(`/api/jobs?recruiterId=${user.id}&isReferral=false`);
       const data = await res.json();
       setPostedJobs(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -50,8 +53,10 @@ export default function RecruiterDashboard() {
   };
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (user) {
+        fetchJobs();
+    }
+  }, [user]);
   
   const handleDeleteJob = async () => {
     if (!jobToDelete) return;
