@@ -1,147 +1,105 @@
+
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { db } from '@/firebase/admin-config';
 import type { Job } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
+import type { firestore as adminFirestore } from 'firebase-admin';
 
 export async function GET(request: Request) {
   try {
-    const db = await getDb();
     const { searchParams } = new URL(request.url);
+    const jobsRef = db.collection('jobs');
+    let query: adminFirestore.Query = jobsRef;
 
-    const limit = searchParams.get('limit');
-    const isReferral = searchParams.get('isReferral');
-    const recruiterId = searchParams.get('recruiterId');
-    const employeeId = searchParams.get('employeeId');
-    const search = searchParams.get('search');
-    const posted = searchParams.get('posted');
-    const locations = searchParams.getAll('location');
-    const experience = searchParams.get('experience');
-    const domains = searchParams.getAll('domain');
-    const jobTypes = searchParams.getAll('jobType');
+    // String-based filters
+    if (searchParams.get('isReferral') !== null) {
+      query = query.where('isReferral', '==', searchParams.get('isReferral') === 'true');
+    }
+    if (searchParams.get('recruiterId')) {
+      query = query.where('recruiterId', '==', searchParams.get('recruiterId'));
+    }
+    if (searchParams.get('employeeId')) {
+      query = query.where('employeeId', '==', searchParams.get('employeeId'));
+    }
+    // Note: Firestore does not support full-text search on its own.
+    // This basic prefix search works for simple cases.
+    // A production app would use a dedicated search service like Algolia or Typesense.
+    if (searchParams.get('search')) {
+        const search = searchParams.get('search') as string;
+        query = query.orderBy('title').startAt(search).endAt(search + '\uf8ff');
+    }
+    if (searchParams.get('experience')) {
+        query = query.where('experienceLevel', '==', searchParams.get('experience'));
+    }
 
-    let query = `
-      SELECT 
-        j.*,
-        jt.name as type,
-        wt.name as workplaceType,
-        el.name as experienceLevel,
-        d.name as domain,
-        l.name as location,
-        (SELECT COUNT(*) FROM applications WHERE applications.jobId = j.id) as applicantCount
-      FROM jobs j
-      LEFT JOIN job_types jt ON j.jobTypeId = jt.id
-      LEFT JOIN workplace_types wt ON j.workplaceTypeId = wt.id
-      LEFT JOIN experience_levels el ON j.experienceLevelId = el.id
-      LEFT JOIN domains d ON j.domainId = d.id
-      LEFT JOIN locations l ON j.locationId = l.id
-    `;
-    const conditions = [];
-    const params: (string | number | boolean)[] = [];
-
-    if (isReferral !== null) {
-      conditions.push('j.isReferral = ?');
-      params.push(isReferral === 'true' ? 1 : 0);
-    }
-    if (recruiterId) {
-      conditions.push('j.recruiterId = ?');
-      params.push(Number(recruiterId));
-    }
-    if (employeeId) {
-      conditions.push('j.employeeId = ?');
-      params.push(Number(employeeId));
-    }
-    if (search) {
-      const searchCondition = '(j.title LIKE ? OR j.companyName LIKE ? OR j.description LIKE ?)';
-      conditions.push(searchCondition);
-      const searchTerm = `%${search}%`;
-      params.push(searchTerm, searchTerm, searchTerm);
-    }
-    if (posted) {
-        const days = parseInt(posted, 10);
+    // Date filter
+    if (searchParams.get('posted')) {
+        const days = parseInt(searchParams.get('posted') as string, 10);
         if (!isNaN(days)) {
             const date = new Date();
             date.setDate(date.getDate() - days);
-            conditions.push('j.postedAt >= ?');
-            params.push(date.toISOString());
+            query = query.where('postedAt', '>=', date.toISOString());
         }
     }
-    if (locations.length > 0 && !locations.includes('all')) {
-        conditions.push(`l.id IN (${locations.map(() => '?').join(',')})`);
-        params.push(...locations);
-    }
-    if (experience && experience !== 'all') {
-        conditions.push('el.name = ?');
-        params.push(experience);
-    }
-    if (domains.length > 0 && !domains.includes('all')) {
-        conditions.push(`d.id IN (${domains.map(() => '?').join(',')})`);
-        params.push(...domains);
-    }
-    if (jobTypes.length > 0 && !jobTypes.includes('all')) {
-        conditions.push(`j.jobTypeId IN (${jobTypes.map(() => '?').join(',')})`);
-        params.push(...jobTypes);
+
+    // Array-based filters ('in' queries) - Firestore is limited to one 'in' query per request.
+    // This example will prioritize locations if multiple are present. A real app might need to fetch
+    // IDs client-side and do multiple queries, or restructure data.
+    const locations = searchParams.getAll('location').filter(l => l && l !== 'all');
+    if (locations.length > 0) {
+        query = query.where('locationId', 'in', locations);
     }
 
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+    const domains = searchParams.getAll('domain').filter(d => d && d !== 'all');
+    if (domains.length > 0 && locations.length === 0) { // Only apply if no location filter
+        query = query.where('domainId', 'in', domains);
+    }
+
+    const jobTypes = searchParams.getAll('jobType').filter(jt => jt && jt !== 'all');
+    if (jobTypes.length > 0 && locations.length === 0 && domains.length === 0) { // Only apply if no other 'in' filter
+        query = query.where('jobTypeId', 'in', jobTypes);
+    }
+
+    // Order and limit
+    if (!searchParams.get('search')) {
+        // Cannot have inequality filters on multiple fields, and orderBy must be on the same field
+        // as an inequality filter if one exists.
+        if (searchParams.get('posted')) {
+             query = query.orderBy('postedAt', 'desc');
+        } else {
+             // Default sort if no search or date filter
+             query = query.orderBy('postedAt', 'desc');
+        }
     }
     
-    query += ' ORDER BY j.postedAt DESC';
-
-    if (limit) {
-      query += ' LIMIT ?';
-      params.push(parseInt(limit, 10));
+    if (searchParams.get('limit')) {
+        query = query.limit(parseInt(searchParams.get('limit') as string, 10));
     }
 
-    const jobs = await db.all(query, ...params);
-    
+    const snapshot = await query.get();
+    const jobs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     return NextResponse.json(jobs);
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
+  } catch (e: any) {
+    console.error('[API_JOBS_GET] Error:', e);
+    return NextResponse.json({ error: 'Failed to fetch jobs', details: e.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const newJobData = await request.json();
-    const db = await getDb();
 
-    const newJob: Job = {
-      id: uuidv4(),
-      ...newJobData,
+    const jobToCreate: Partial<Job> = {
+        ...newJobData,
+        postedAt: newJobData.postedAt || new Date().toISOString(),
     };
     
-    const stmt = await db.prepare(
-      'INSERT INTO jobs (id, title, companyName, locationId, description, vacancies, contactEmail, contactPhone, salary, isReferral, employeeId, recruiterId, postedAt, jobTypeId, workplaceTypeId, experienceLevelId, domainId, employeeLinkedIn, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    );
-
-    await stmt.run(
-        newJob.id,
-        newJob.title,
-        newJob.companyName,
-        newJob.locationId,
-        newJob.description,
-        newJob.vacancies,
-        newJob.contactEmail,
-        newJob.contactPhone,
-        newJob.salary,
-        newJob.isReferral ? 1 : 0,
-        newJob.employeeId,
-        newJob.recruiterId,
-        newJob.postedAt,
-        newJob.jobTypeId,
-        newJob.workplaceTypeId,
-        newJob.experienceLevelId,
-        newJob.domainId,
-        newJob.employeeLinkedIn,
-        newJob.role
-    );
-    await stmt.finalize();
+    const docRef = await db.collection('jobs').add(jobToCreate);
+    const newJob = { id: docRef.id, ...jobToCreate };
 
     return NextResponse.json(newJob, { status: 201 });
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
+  } catch (e: any) {
+    console.error('[API_JOBS_POST] Error:', e);
+    return NextResponse.json({ error: 'Failed to create job', details: e.message }, { status: 500 });
   }
 }
