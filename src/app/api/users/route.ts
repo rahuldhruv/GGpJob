@@ -15,8 +15,6 @@ export async function GET(request: Request) {
         if (userDoc.exists) {
             return NextResponse.json({ id: userDoc.id, ...userDoc.data() });
         } else {
-             // This is a valid case where a user is authenticated but their profile hasn't been created yet.
-             // We should return a 404, not a 500 error. The client will handle this.
              return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
         }
     }
@@ -26,7 +24,7 @@ export async function GET(request: Request) {
     const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json(users);
   } catch (e: any) {
-    console.error("Error in GET /api/users: ", e.message);
+    console.error("[API_USERS_GET] Error:", e.message);
     return NextResponse.json({ error: 'Failed to fetch users', details: e.message }, { status: 500 });
   }
 }
@@ -53,12 +51,11 @@ export async function POST(request: Request) {
         locationId: null,
     };
     
-    // Use the correct admin SDK syntax to set the document
     await db.collection("users").doc(id).set(dataToSave);
     
     return NextResponse.json({ id, ...dataToSave }, { status: 201 });
   } catch (e: any) {
-    console.error("Error in POST /api/users: ", e.message);
+    console.error("[API_USERS_POST] Error:", e);
     return NextResponse.json({ error: 'Failed to create user profile in Firestore', details: e.message }, { status: 500 });
   }
 }
