@@ -26,13 +26,13 @@ import { useUser } from "@/contexts/user-context";
 const formSchema = z.object({
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
-  locationId: z.coerce.number().min(1, "Job location is required."),
+  locationId: z.string().min(1, "Job location is required."),
   role: z.string().min(2, "Role must be at least 2 characters long."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
-  experienceLevelId: z.coerce.number().min(1, "Please select an experience level."),
-  jobTypeId: z.coerce.number().min(1, "Please select a job type."),
-  workplaceTypeId: z.coerce.number().min(1, "Please select a workplace type."),
-  domainId: z.coerce.number().min(1, "Please select a domain."),
+  experienceLevelId: z.string().min(1, "Please select an experience level."),
+  jobTypeId: z.string().min(1, "Please select a job type."),
+  workplaceTypeId: z.string().min(1, "Please select a workplace type."),
+  domainId: z.string().min(1, "Please select a domain."),
   vacancies: z.coerce.number().min(1, "There must be at least one vacancy."),
   contactEmail: z.string().email("Please enter a valid email address."),
   contactPhone: z.string().length(10, "Please enter a valid 10-digit phone number."),
@@ -89,17 +89,17 @@ export function JobForm({ job }: JobFormProps) {
     defaultValues: {
       jobTitle: job?.title || "",
       companyName: job?.companyName || "",
-      locationId: job?.locationId,
+      locationId: String(job?.locationId || ''),
       role: job?.role || "",
       jobDescription: job?.description || "",
       vacancies: job?.vacancies || 1,
       contactEmail: job?.contactEmail || "",
       contactPhone: job?.contactPhone || "",
       salary: job?.salary || "",
-      jobTypeId: job?.jobTypeId,
-      workplaceTypeId: job?.workplaceTypeId,
-      experienceLevelId: job?.experienceLevelId,
-      domainId: job?.domainId,
+      jobTypeId: String(job?.jobTypeId || ''),
+      workplaceTypeId: String(job?.workplaceTypeId || ''),
+      experienceLevelId: String(job?.experienceLevelId || ''),
+      domainId: String(job?.domainId || ''),
     },
   });
 
@@ -108,17 +108,17 @@ export function JobForm({ job }: JobFormProps) {
       form.reset({
         jobTitle: job.title || "",
         companyName: job.companyName || "",
-        locationId: job.locationId,
+        locationId: String(job.locationId || ''),
         role: job.role || "",
         jobDescription: job.description || "",
         vacancies: job.vacancies || 1,
         contactEmail: job.contactEmail || "",
         contactPhone: job.contactPhone || "",
         salary: job.salary || "",
-        jobTypeId: job.jobTypeId,
-        workplaceTypeId: job.workplaceTypeId,
-        experienceLevelId: job.experienceLevelId,
-        domainId: job.domainId,
+        jobTypeId: String(job.jobTypeId || ''),
+        workplaceTypeId: String(job.workplaceTypeId || ''),
+        experienceLevelId: String(job.experienceLevelId || ''),
+        domainId: String(job.domainId || ''),
       });
     }
   }, [job, form]);
@@ -206,14 +206,14 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Job Location</FormLabel>
-                <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select job location" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
+                    {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -253,7 +253,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Employment Type</FormLabel>
-                <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select employment type" />
@@ -273,7 +273,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Workplace Type</FormLabel>
-                <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select workplace type" />
@@ -295,7 +295,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Experience Level</FormLabel>
-                <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select experience level" />
@@ -315,14 +315,14 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Domain</FormLabel>
-                <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a domain" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Array.isArray(domains) && domains.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
+                    {Array.isArray(domains) && domains.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -396,3 +396,5 @@ export function JobForm({ job }: JobFormProps) {
     </Form>
   );
 }
+
+    
