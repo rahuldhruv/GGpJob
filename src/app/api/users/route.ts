@@ -37,7 +37,6 @@ export async function POST(request: Request) {
     const { id, firstName, lastName, email, role } = await request.json();
 
     if (!id || !firstName || !lastName || !email || !role) {
-        console.error("Missing required fields for profile creation");
         return NextResponse.json({ error: 'Missing required fields for profile creation' }, { status: 400 });
     }
     
