@@ -22,7 +22,8 @@ import {
   UserCog,
   BarChart3,
   Award,
-  Network
+  Network,
+  MapPin
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,8 +62,8 @@ export default function Header() {
   const isProfileSectionEditPage = /^\/profile\/(education|employment|projects|languages|skills)\/(add|edit\/[^/]+)$/.test(pathname);
   const isJobApplicationsPage = /^\/jobs\/[^/]+\/applications$/.test(pathname);
   const isPublicProfilePage = /^\/profile\/[^/]+$/.test(pathname);
-  const isAdminAddPage = /^\/admin\/(users|domains)\/add$/.test(pathname);
-  const isAdminEditPage = /^\/admin\/domains\/edit\/[^/]+$/.test(pathname);
+  const isAdminAddPage = /^\/admin\/(users|domains|locations)\/add$/.test(pathname);
+  const isAdminEditPage = /^\/admin\/(domains|locations)\/edit\/[^/]+$/.test(pathname);
   
   const getProfileSectionTitle = () => {
     if (!isProfileSectionEditPage) return '';
@@ -103,6 +104,7 @@ export default function Header() {
     { href: "/admin/users", label: "Manage Users", icon: UserCog },
     { href: "/admin/jobs", label: "Manage Jobs", icon: BriefcaseBusiness },
     { href: "/admin/domains", label: "Manage Domains", icon: Layers },
+    { href: "/admin/locations", label: "Manage Locations", icon: MapPin },
     { href: "/admin/employment-types", label: "Employment Types", icon: Network },
     { href: "/admin/workplace-types", label: "Workplace Types", icon: Building },
     { href: "/admin/experience-levels", label: "Experience Levels", icon: Award },
@@ -117,9 +119,11 @@ export default function Header() {
     if (isAdminAddPage) {
       if (pathname.includes('/users')) return 'Create New Admin';
       if (pathname.includes('/domains')) return 'Add New Domain';
+      if (pathname.includes('/locations')) return 'Add New Location';
     }
     if (isAdminEditPage) {
         if(pathname.includes('/domains')) return 'Edit Domain';
+        if(pathname.includes('/locations')) return 'Edit Location';
     }
     return '';
   }
