@@ -20,7 +20,9 @@ import {
   Building,
   Layers,
   UserCog,
-  BarChart3
+  BarChart3,
+  Award,
+  Network
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -101,10 +103,13 @@ export default function Header() {
     { href: "/admin/users", label: "Manage Users", icon: UserCog },
     { href: "/admin/jobs", label: "Manage Jobs", icon: BriefcaseBusiness },
     { href: "/admin/domains", label: "Manage Domains", icon: Layers },
+    { href: "/admin/employment-types", label: "Employment Types", icon: Network },
+    { href: "/admin/workplace-types", label: "Workplace Types", icon: Building },
+    { href: "/admin/experience-levels", label: "Experience Levels", icon: Award },
   ];
 
   if (user?.role === 'Super Admin') {
-    adminNavItems.push({ href: "/admin/feedback", label: "Platform Feedback", icon: Building });
+    adminNavItems.push({ href: "/admin/feedback", label: "Platform Feedback", icon: MessageSquareQuote });
   }
   
   const getMobileHeaderTitle = () => {
