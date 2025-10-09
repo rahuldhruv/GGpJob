@@ -55,7 +55,7 @@ export function AdminCreationForm({ onSuccess }: AdminCreationFormProps) {
 
   const onSubmit = async (data: AdminFormValues) => {
     try {
-      const response = await fetch("/api/admins", {
+      const response = await fetch("/api/create-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -135,7 +135,7 @@ export function AdminCreationForm({ onSuccess }: AdminCreationFormProps) {
                 <FormItem>
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                    <Input placeholder="(123) 456-7890" {...field} />
+                    <Input placeholder="1234567890" {...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
