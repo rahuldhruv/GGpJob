@@ -28,7 +28,9 @@ export async function POST(request: Request) {
       newId = snapshot.docs[0].data().id + 1;
     }
     
-    const docRef = await db.collection("experience_levels").add({ id: newId, name });
+    // Firestore generates the document ID, but we store our own numeric `id` field.
+    const docRef = db.collection("experience_levels").doc();
+    await docRef.set({ id: newId, name });
     
     return NextResponse.json({ id: docRef.id, name, newId }, { status: 201 });
   } catch (e: any) {

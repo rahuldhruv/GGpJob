@@ -28,7 +28,8 @@ export async function POST(request: Request) {
       newId = snapshot.docs[0].data().id + 1;
     }
     
-    const docRef = await db.collection("workplace_types").add({ id: newId, name });
+    const docRef = db.collection("workplace_types").doc();
+    await docRef.set({ id: newId, name });
     
     return NextResponse.json({ id: docRef.id, name, newId }, { status: 201 });
   } catch (e: any) {
