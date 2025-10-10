@@ -43,10 +43,17 @@ export default function RecruiterDashboard() {
     setLoading(true);
     try {
       const res = await fetch(`/api/jobs?recruiterId=${user.id}&isReferral=false`);
-      const data = await res.json();
-      setPostedJobs(Array.isArray(data) ? data : []);
+      let data = await res.json();
+      if(Array.isArray(data)) {
+        // Sort by date descending on the client-side
+        data.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+        setPostedJobs(data);
+      } else {
+        setPostedJobs([]);
+      }
     } catch (error) {
       console.error("Failed to fetch posted jobs", error);
+      setPostedJobs([]);
     } finally {
       setLoading(false);
     }

@@ -14,11 +14,13 @@ export async function GET(request: Request) {
     if (searchParams.get('isReferral') !== null) {
       query = query.where('isReferral', '==', searchParams.get('isReferral') === 'true');
     }
-    if (searchParams.get('recruiterId')) {
-      query = query.where('recruiterId', '==', searchParams.get('recruiterId'));
+    const recruiterId = searchParams.get('recruiterId');
+    if (recruiterId) {
+      query = query.where('recruiterId', '==', recruiterId);
     }
-    if (searchParams.get('employeeId')) {
-      query = query.where('employeeId', '==', searchParams.get('employeeId'));
+    const employeeId = searchParams.get('employeeId');
+    if (employeeId) {
+      query = query.where('employeeId', '==', employeeId);
     }
     // Note: Firestore does not support full-text search on its own.
     // This basic prefix search works for simple cases.
@@ -59,14 +61,11 @@ export async function GET(request: Request) {
         query = query.where('jobTypeId', 'in', jobTypes);
     }
 
-    // Order and limit
-    if (!searchParams.get('search')) {
-        // Cannot have inequality filters on multiple fields, and orderBy must be on the same field
-        // as an inequality filter if one exists.
+    // Order and limit - only apply default sort if not filtering by recruiter or employee
+    if (!searchParams.get('search') && !recruiterId && !employeeId) {
         if (searchParams.get('posted')) {
              query = query.orderBy('postedAt', 'desc');
         } else {
-             // Default sort if no search or date filter
              query = query.orderBy('postedAt', 'desc');
         }
     }
