@@ -1,37 +1,44 @@
+
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { db } from '@/firebase/admin-config';
 import type { Job } from '@/lib/types';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
-    const db = await getDb();
-    
-    const job = await db.get(`
-      SELECT 
-        j.*,
-        jt.name as type,
-        wt.name as workplaceType,
-        el.name as experienceLevel,
-        d.name as domain,
-        l.name as location
-      FROM jobs j
-      LEFT JOIN job_types jt ON j.jobTypeId = jt.id
-      LEFT JOIN workplace_types wt ON j.workplaceTypeId = wt.id
-      LEFT JOIN experience_levels el ON j.experienceLevelId = el.id
-      LEFT JOIN domains d ON j.domainId = d.id
-      LEFT JOIN locations l ON j.locationId = l.id
-      WHERE j.id = ?
-    `, id);
-    
-    if (!job) {
+    const jobDocRef = db.collection('jobs').doc(id);
+    const jobDoc = await jobDocRef.get();
+
+    if (!jobDoc.exists) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
+    const jobData = jobDoc.data() as Job;
+
+    // Firestore doesn't support joins. We fetch related data manually.
+    // This is not super efficient, and in a production app, this data might be denormalized.
+    const [type, workplaceType, experienceLevel, domain, location] = await Promise.all([
+        jobData.jobTypeId ? db.collection('job_types').doc(String(jobData.jobTypeId)).get() : Promise.resolve(null),
+        jobData.workplaceTypeId ? db.collection('workplace_types').doc(String(jobData.workplaceTypeId)).get() : Promise.resolve(null),
+        jobData.experienceLevelId ? db.collection('experience_levels').doc(String(jobData.experienceLevelId)).get() : Promise.resolve(null),
+        jobData.domainId ? db.collection('domains').doc(String(jobData.domainId)).get() : Promise.resolve(null),
+        jobData.locationId ? db.collection('locations').doc(String(jobData.locationId)).get() : Promise.resolve(null),
+    ]);
+
+    const job: Job = {
+        id: jobDoc.id,
+        ...jobData,
+        type: type?.data()?.name || '',
+        workplaceType: workplaceType?.data()?.name || '',
+        experienceLevel: experienceLevel?.data()?.name || '',
+        domain: domain?.data()?.name || '',
+        location: location?.data()?.name || '',
+    };
+
     return NextResponse.json(job);
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Failed to fetch job' }, { status: 500 });
+  } catch (e: any) {
+    console.error('[API_JOB_ID_GET] Error:', e);
+    return NextResponse.json({ error: 'Failed to fetch job', details: e.message }, { status: 500 });
   }
 }
 
@@ -39,38 +46,21 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     try {
         const { id } = params;
         const updatedJobData = await request.json();
-        const db = await getDb();
-        
-        const stmt = await db.prepare(
-            'UPDATE jobs SET title = ?, companyName = ?, locationId = ?, description = ?, vacancies = ?, contactEmail = ?, contactPhone = ?, salary = ?, jobTypeId = ?, workplaceTypeId = ?, experienceLevelId = ?, domainId = ?, employeeLinkedIn = ?, role = ? WHERE id = ?'
-        );
+        const jobDocRef = db.collection('jobs').doc(id);
 
-        await stmt.run(
-            updatedJobData.title,
-            updatedJobData.companyName,
-            updatedJobData.locationId,
-            updatedJobData.description,
-            updatedJobData.vacancies,
-            updatedJobData.contactEmail,
-            updatedJobData.contactPhone,
-            updatedJobData.salary,
-            updatedJobData.jobTypeId,
-            updatedJobData.workplaceTypeId,
-            updatedJobData.experienceLevelId,
-            updatedJobData.domainId,
-            updatedJobData.employeeLinkedIn,
-            updatedJobData.role,
-            id
-        );
-        await stmt.finalize();
+        // Ensure we don't try to overwrite the id
+        delete updatedJobData.id;
 
-        const updatedJob = await db.get('SELECT * FROM jobs WHERE id = ?', id);
+        await jobDocRef.update(updatedJobData);
+
+        const updatedDoc = await jobDocRef.get();
+        const updatedJob = { id: updatedDoc.id, ...updatedDoc.data() };
         
         return NextResponse.json(updatedJob, { status: 200 });
 
-    } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Failed to update job' }, { status: 500 });
+    } catch (e: any) {
+        console.error('[API_JOB_ID_PUT] Error:', e);
+        return NextResponse.json({ error: 'Failed to update job', details: e.message }, { status: 500 });
     }
 }
 
@@ -78,17 +68,21 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const db = await getDb();
         
-        const result = await db.run('DELETE FROM jobs WHERE id = ?', id);
-        
-        if (result.changes === 0) {
-            return NextResponse.json({ error: 'Job not found' }, { status: 404 });
-        }
+        // Before deleting the job, we might need to delete related applications.
+        // For simplicity now, we just delete the job. A production app would handle this more robustly.
+        const applicationsSnapshot = await db.collection('applications').where('jobId', '==', id).get();
+        const batch = db.batch();
+        applicationsSnapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
 
-        return NextResponse.json({ message: 'Job deleted successfully' }, { status: 200 });
-    } catch (e) {
-        console.error(e);
-        return NextResponse.json({ error: 'Failed to delete job' }, { status: 500 });
+        await db.collection('jobs').doc(id).delete();
+
+        return NextResponse.json({ message: 'Job and related applications deleted successfully' }, { status: 200 });
+    } catch (e: any) {
+        console.error('[API_JOB_ID_DELETE] Error:', e);
+        return NextResponse.json({ error: 'Failed to delete job', details: e.message }, { status: 500 });
     }
 }
