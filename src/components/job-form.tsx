@@ -138,7 +138,7 @@ export function JobForm({ job }: JobFormProps) {
         title: data.jobTitle,
         description: data.jobDescription,
         isReferral: false,
-        recruiterId: user.id,
+        recruiterId: user.id, // Ensure recruiterId is set
         postedAt: job?.postedAt || new Date().toISOString(),
       };
 
@@ -396,5 +396,3 @@ export function JobForm({ job }: JobFormProps) {
     </Form>
   );
 }
-
-    
