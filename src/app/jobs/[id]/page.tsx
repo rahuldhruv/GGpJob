@@ -8,11 +8,11 @@ import { format } from 'date-fns';
 import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
 import { headers } from 'next/headers';
-import { getDb } from '@/lib/db';
-import { getServerSession } from '@/lib/auth'; // A helper to get user session on server
 import { ShareButton } from '@/components/share-button';
+import { getAuth } from 'firebase-admin/auth';
+import { db } from '@/firebase/admin-config';
 
-async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[], userApplications: Application[], user: User | null }> {
+async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[] }> {
     const headersList = headers();
     const protocol = headersList.get('x-forwarded-proto') || 'http';
     const host = headersList.get('host') || 'localhost:3000';
@@ -20,37 +20,43 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
 
     const jobRes = await fetch(`${baseUrl}/api/jobs/${id}`, { cache: 'no-store' });
     if (!jobRes.ok) {
-        if (jobRes.status === 404) return { job: null, relatedJobs: [], userApplications: [], user: null };
+        if (jobRes.status === 404) return { job: null, relatedJobs: [] };
         throw new Error('Failed to fetch job data');
     }
     const job: Job = await jobRes.json();
-
-    
-    // This part is a placeholder for getting the logged-in user's data.
-    // In a real app with auth, you would get this from the session.
-    // For now, we'll assume a way to get the user and their applications.
-    const session = await getServerSession();
-    let userApplications: Application[] = [];
-    if (session?.user?.id) {
-       const db = await getDb();
-       userApplications = await db.all('SELECT * FROM applications WHERE userId = ?', session.user.id);
-    }
 
     const relatedJobsRes = await fetch(`${baseUrl}/api/jobs?domain=${job.domainId}&limit=10`, { cache: 'no-store' });
     let relatedJobs: Job[] = [];
     if (relatedJobsRes.ok) {
         const allRelated = await relatedJobsRes.json();
-        const appliedJobIds = new Set(userApplications.map(app => app.jobId));
         relatedJobs = allRelated
-            .filter((j: Job) => j.id !== job.id && !appliedJobIds.has(j.id))
+            .filter((j: Job) => j.id !== job.id)
             .slice(0, 3);
     }
     
-    return { job, relatedJobs, userApplications, user: session?.user || null };
+    return { job, relatedJobs };
 }
 
+// Placeholder for fetching user applications - this will be handled client-side now
+async function getUserApplications(userId: string | undefined): Promise<Application[]> {
+    if (!userId) return [];
+     try {
+        const applicationsSnapshot = await db.collection('applications').where('userId', '==', userId).get();
+        if (applicationsSnapshot.empty) {
+            return [];
+        }
+        return applicationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Application[];
+    } catch (error) {
+        console.error("Failed to fetch user applications on server:", error);
+        return [];
+    }
+}
+
+
 export default async function JobDetailsPage({ params }: { params: { id: string } }) {
-    const { job, relatedJobs, userApplications, user } = await getJobData(params.id);
+    // For now, we pass an empty array for applications as this is handled client-side
+    const { job, relatedJobs } = await getJobData(params.id);
+    const userApplications: Application[] = []; 
 
     if (!job) {
         notFound();
@@ -126,7 +132,7 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
                            <p className="text-sm text-muted-foreground">
                             Contact for more info: <span className="font-semibold text-foreground">{job.contactEmail}</span>
                            </p>
-                            {user?.role !== 'Job Seeker' && job.contactPhone && (
+                            {job.contactPhone && (
                                 <p className="text-sm text-muted-foreground">
                                     Phone: <span className="font-semibold text-foreground">{job.contactPhone}</span>
                                 </p>
