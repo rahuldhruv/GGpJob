@@ -206,7 +206,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Job Location</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={String(field.value || '')}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select job location" />
@@ -253,7 +253,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Employment Type</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={String(field.value || '')}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select employment type" />
@@ -273,7 +273,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Workplace Type</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={String(field.value || '')}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select workplace type" />
@@ -295,7 +295,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Experience Level</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={String(field.value || '')}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select experience level" />
@@ -315,7 +315,7 @@ export function JobForm({ job }: JobFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Domain</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={String(field.value || '')}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a domain" />

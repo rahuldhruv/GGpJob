@@ -90,7 +90,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
     defaultValues: {
       companyName: job?.companyName || "",
       jobTitle: job?.title || "",
-      locationId: job?.locationId,
+      locationId: String(job?.locationId || ''),
       role: job?.role || "",
       jobDescription: job?.description || "",
       vacancies: job?.vacancies || 1,
@@ -98,10 +98,10 @@ export function ReferralForm({ job }: ReferralFormProps) {
       phoneNumber: job?.contactPhone || "",
       employeeLinkedIn: job?.employeeLinkedIn || "",
       salary: job?.salary || "",
-      jobTypeId: job?.jobTypeId,
-      workplaceTypeId: job?.workplaceTypeId,
-      experienceLevelId: job?.experienceLevelId,
-      domainId: job?.domainId,
+      jobTypeId: String(job?.jobTypeId || ''),
+      workplaceTypeId: String(job?.workplaceTypeId || ''),
+      experienceLevelId: String(job?.experienceLevelId || ''),
+      domainId: String(job?.domainId || ''),
     },
   });
 
@@ -110,7 +110,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
       form.reset({
         companyName: job.companyName || "",
         jobTitle: job.title || "",
-        locationId: job.locationId,
+        locationId: String(job.locationId || ''),
         role: job.role || "",
         jobDescription: job.description || "",
         vacancies: job.vacancies || 1,
@@ -118,10 +118,10 @@ export function ReferralForm({ job }: ReferralFormProps) {
         phoneNumber: job.contactPhone || "",
         employeeLinkedIn: job.employeeLinkedIn || "",
         salary: job.salary || "",
-        jobTypeId: job.jobTypeId,
-        workplaceTypeId: job.workplaceTypeId,
-        experienceLevelId: job.experienceLevelId,
-        domainId: job.domainId,
+        jobTypeId: String(job.jobTypeId || ''),
+        workplaceTypeId: String(job.workplaceTypeId || ''),
+        experienceLevelId: String(job.experienceLevelId || ''),
+        domainId: String(job.domainId || ''),
       });
     }
   }, [job, form]);
