@@ -1,4 +1,3 @@
-
 "use client";
 
 import { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
@@ -22,7 +21,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = useCallback(async (uid: string) => {
     try {
-      console.log("UID:",uid)
       const res = await fetch(`/api/users?uid=${uid}`);
       if (res.ok) {
         const userProfile = await res.json();
