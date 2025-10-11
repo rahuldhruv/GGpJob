@@ -34,12 +34,13 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     return { job, relatedJobs };
 }
 
-export default function JobDetailsPage({ params }: { params: { id: string } }) {
+export default function JobDetailsPage() {
     const { user } = useUser();
     const [job, setJob] = useState<Job | null>(null);
     const [relatedJobs, setRelatedJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
-    const { id } = params;
+    const params = useParams();
+    const id = params.id as string;
 
     useEffect(() => {
         const loadData = async () => {
@@ -54,7 +55,9 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
                 setLoading(false);
             }
         };
-        loadData();
+        if (id) {
+            loadData();
+        }
     }, [id]);
 
     if (loading) {
