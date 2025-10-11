@@ -85,6 +85,9 @@ function JobDetailsContent() {
 
     const appliedJobIds = new Set<string>();
 
+    const shouldShowCompanyDetails = (user && (user.role === 'Recruiter' || user.role === 'Employee')) || isAdminView;
+
+
     return (
        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -135,7 +138,7 @@ function JobDetailsContent() {
                     </Card>
                 </div>
                 <div className="lg:col-span-1 space-y-6">
-                     {user && user.role !== 'Job Seeker' && !isAdminView && (
+                     {shouldShowCompanyDetails && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>About {job.companyName}</CardTitle>
