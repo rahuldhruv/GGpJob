@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, FileText, Link as LinkIcon, ExternalLink, UploadCloud } from "lucide-react";
+import { LoaderCircle, FileText, Link as LinkIcon, ExternalLink, UploadCloud, Paperclip } from "lucide-react";
 import { User } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import Link from "next/link";
@@ -43,7 +43,8 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
     resolver: zodResolver(formSchema),
   });
 
-  const { formState: { isSubmitting }, reset } = form;
+  const { formState: { isSubmitting }, reset, watch } = form;
+  const selectedFile = watch("resumeFile");
   
   useEffect(() => {
     reset();
@@ -138,6 +139,14 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
                 </FormItem>
             )}
             />
+            
+            {selectedFile && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 border rounded-md">
+                    <Paperclip className="h-4 w-4" />
+                    <span>{selectedFile.name}</span>
+                </div>
+            )}
+
 
             {uploadProgress !== null && (
                 <div className="space-y-1">
