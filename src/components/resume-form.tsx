@@ -119,7 +119,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
             <FormField
             control={form.control}
             name="resumeFile"
-            render={({ field: { onChange, ...fieldProps } }) => (
+            render={({ field: { onChange } }) => (
                 <FormItem>
                 <FormLabel>Upload New Resume</FormLabel>
                 <FormControl>
@@ -130,7 +130,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
                             accept=".pdf,.doc,.docx"
                             className="pl-8"
                             onChange={(e) => onChange(e.target.files ? e.target.files[0] : null)}
-                            {...fieldProps}
+                            value=""
                         />
                     </div>
                 </FormControl>
