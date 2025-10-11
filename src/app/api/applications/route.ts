@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, DocumentData } from 'firebase/firestore';
 import { db } from '@/firebase/admin-config';
+import { FieldValue } from 'firebase-admin/firestore';
 import type { Application, User, Job } from '@/lib/types';
 
 
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
             jobId,
             userId,
             statusId: appliedStatus ? appliedStatus.data().id : 1, // Default to 1 'Applied'
-            appliedAt: admin.firestore.FieldValue.serverTimestamp(),
+            appliedAt: FieldValue.serverTimestamp(),
         };
 
         const docRef = await db.collection('applications').add(newApplication);
@@ -116,4 +117,3 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to submit application' }, { status: 500 });
     }
 }
-
