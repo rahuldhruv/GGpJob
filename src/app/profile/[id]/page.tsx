@@ -24,29 +24,29 @@ export default function PublicProfilePage() {
 
     const isOwnProfile = currentUser?.id === id;
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            if (id) {
-                setLoading(true);
-                try {
-                    const res = await fetch(`/api/users/${id}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        setProfileUser(data);
-                    } else {
-                       setProfileUser(null);
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch user data", error);
-                    setProfileUser(null);
-                } finally {
-                    setLoading(false);
+    const fetchUser = useCallback(async () => {
+        if (id) {
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/users/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProfileUser(data);
+                } else {
+                   setProfileUser(null);
                 }
+            } catch (error) {
+                console.error("Failed to fetch user data", error);
+                setProfileUser(null);
+            } finally {
+                setLoading(false);
             }
-        };
-
-        fetchUser();
+        }
     }, [id]);
+
+    useEffect(() => {
+        fetchUser();
+    }, [fetchUser]);
     
     if (loading || currentUserLoading) {
         return (
