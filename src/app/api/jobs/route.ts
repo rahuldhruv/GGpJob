@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/firebase/admin-config';
-import type { Job, Location, Application, Domain } from '@/lib/types';
+import type { Job, Location, Application, Domain, JobType, WorkplaceType, ExperienceLevel } from '@/lib/types';
 import type { firestore as adminFirestore } from 'firebase-admin';
 
 // Helper function to create a map from an array of documents
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
 
     const locationsParams = searchParams.getAll('location').filter(l => l && l !== 'all');
     if (locationsParams.length > 0) {
-        query = query.where('locationId', 'in', locationsParams);
+        query = query.where('locationId', 'in', locationsParams.map(l => parseInt(l)));
     }
 
     const domainsParams = searchParams.getAll('domain').filter(d => d && d !== 'all');
@@ -81,20 +81,33 @@ export async function GET(request: Request) {
         jobsSnapshot, 
         applicationsSnapshot,
         locationsSnapshot,
-        domainsSnapshot
+        domainsSnapshot,
+        jobTypesSnapshot,
+        workplaceTypesSnapshot,
+        experienceLevelsSnapshot,
     ] = await Promise.all([
         query.get(),
         db.collection('applications').get(),
         db.collection('locations').get(),
         db.collection('domains').get(),
+        db.collection('job_types').get(),
+        db.collection('workplace_types').get(),
+        db.collection('experience_levels').get(),
     ]);
 
     const applications = applicationsSnapshot.docs.map(doc => doc.data() as Application);
     const locations = locationsSnapshot.docs.map(doc => doc.data() as Location);
     const domains = domainsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Domain);
+    const jobTypes = jobTypesSnapshot.docs.map(doc => doc.data() as JobType);
+    const workplaceTypes = workplaceTypesSnapshot.docs.map(doc => doc.data() as WorkplaceType);
+    const experienceLevels = experienceLevelsSnapshot.docs.map(doc => doc.data() as ExperienceLevel);
     
     const locationMap = createMap(locations, 'id');
     const domainMap = createMap(domains);
+    const jobTypeMap = createMap(jobTypes);
+    const workplaceTypeMap = createMap(workplaceTypes);
+    const experienceLevelMap = createMap(experienceLevels);
+
 
     const applicationCounts = applications.reduce((acc, app) => {
         acc[app.jobId] = (acc[app.jobId] || 0) + 1;
@@ -106,11 +119,18 @@ export async function GET(request: Request) {
       const jobData = doc.data() as Job;
       const location = locationMap.get(parseInt(jobData.locationId));
       const domain = domainMap.get(String(jobData.domainId));
+      const jobType = jobTypeMap.get(parseInt(jobData.jobTypeId));
+      const workplaceType = jobData.workplaceTypeId ? workplaceTypeMap.get(parseInt(jobData.workplaceTypeId)) : null;
+      const experienceLevel = jobData.experienceLevelId ? experienceLevelMap.get(parseInt(jobData.experienceLevelId)) : null;
+
       return {
           id: doc.id,
           ...jobData,
           location: location ? `${location.name}, ${location.country}` : 'N/A',
           domain: domain?.name || 'N/A',
+          type: jobType?.name || 'N/A',
+          workplaceType: workplaceType?.name || 'N/A',
+          experienceLevel: experienceLevel?.name || 'N/A',
           applicantCount: applicationCounts[doc.id] || 0,
       }
     });
