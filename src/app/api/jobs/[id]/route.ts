@@ -44,7 +44,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         workplaceType: workplaceType?.name || '',
         experienceLevel: experienceLevel?.name || '',
         domain: domain?.data()?.name || '',
-        location: location?.name || '',
+        location: location ? `${location.name}, ${location.country}` : '',
     };
 
     return NextResponse.json(job);

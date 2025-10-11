@@ -93,7 +93,7 @@ export async function GET(request: Request) {
     const locations = locationsSnapshot.docs.map(doc => doc.data() as Location);
     const domains = domainsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Domain);
     
-    const locationMap = createMap(locations);
+    const locationMap = createMap(locations, 'id');
     const domainMap = createMap(domains);
 
     const applicationCounts = applications.reduce((acc, app) => {
@@ -109,7 +109,7 @@ export async function GET(request: Request) {
       return {
           id: doc.id,
           ...jobData,
-          location: location?.name || 'N/A',
+          location: location ? `${location.name}, ${location.country}` : 'N/A',
           domain: domain?.name || 'N/A',
           applicantCount: applicationCounts[doc.id] || 0,
       }

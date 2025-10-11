@@ -19,9 +19,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
         // Fetch location if locationId exists
         if (user.locationId) {
             try {
-                const locationDoc = await db.collection('locations').doc(String(user.locationId)).get();
-                if (locationDoc.exists) {
-                    user.location = locationDoc.data()?.name;
+                const locationsSnap = await db.collection('locations').where('id', '==', parseInt(user.locationId)).limit(1).get();
+                if (!locationsSnap.empty) {
+                    const locationDoc = locationsSnap.docs[0].data();
+                    user.location = `${locationDoc.name}, ${locationDoc.country}`;
                 }
             } catch(e) {
                 console.error("Could not fetch location for user", e);
