@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Job } from "@/lib/types";
-import { MapPin, Briefcase, Clock, Star, CheckCircle } from 'lucide-react';
+import { MapPin, Briefcase, Clock, Star, CheckCircle, BadgeDollarSign } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface JobCardProps {
@@ -41,6 +41,7 @@ export default function JobCard({ job, isApplied = false }: JobCardProps) {
           </div>
           {job.salary && (
              <div className="flex items-center gap-2">
+                <BadgeDollarSign className="h-4 w-4" />
                 <span className="font-semibold text-primary/80">{job.salary}</span>
              </div>
           )}
