@@ -87,14 +87,15 @@ export default function JobApplicationsPage() {
             if (!response.ok) {
                 throw new Error('Failed to update status');
             }
+            const updatedApplication = await response.json();
             setApplications(prev => 
                 prev.map(app => 
-                    app.id === applicationId ? { ...app, statusId, statusName } : app
+                    app.id === applicationId ? updatedApplication : app
                 )
             );
             toast({
                 title: "Status Updated",
-                description: `Applicant marked as ${statusName}.`,
+                description: `Applicant marked as ${updatedApplication.statusName}.`,
             });
         } catch (error) {
              toast({
