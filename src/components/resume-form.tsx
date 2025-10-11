@@ -43,7 +43,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
     resolver: zodResolver(formSchema),
   });
 
-  const { formState: { isSubmitting }, reset, watch } = form;
+  const { formState: { isSubmitting }, reset, watch, setValue } = form;
   const selectedFile = watch("resumeFile");
   
   useEffect(() => {
@@ -120,7 +120,7 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
             <FormField
             control={form.control}
             name="resumeFile"
-            render={({ field: { onChange } }) => (
+            render={({ field }) => (
                 <FormItem>
                 <FormLabel>Upload New Resume</FormLabel>
                 <FormControl>
@@ -130,8 +130,12 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
                             type="file"
                             accept=".pdf,.doc,.docx"
                             className="pl-8"
-                            onChange={(e) => onChange(e.target.files ? e.target.files[0] : null)}
-                            value=""
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    setValue("resumeFile", file);
+                                }
+                            }}
                         />
                     </div>
                 </FormControl>
