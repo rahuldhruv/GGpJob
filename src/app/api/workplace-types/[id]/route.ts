@@ -10,7 +10,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const docRef = db.collection('workplace_types').doc(id);
+    const snapshot = await db.collection('workplace_types').where('id', '==', parseInt(id)).limit(1).get();
+
+    if (snapshot.empty) {
+      return NextResponse.json({ error: 'Workplace type not found' }, { status: 404 });
+    }
+    
+    const docRef = snapshot.docs[0].ref;
     await docRef.update({ name });
 
     const updatedDoc = await docRef.get();
@@ -25,7 +31,15 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        await db.collection('workplace_types').doc(id).delete();
+        const snapshot = await db.collection('workplace_types').where('id', '==', parseInt(id)).limit(1).get();
+
+        if (snapshot.empty) {
+          return NextResponse.json({ error: 'Workplace type not found' }, { status: 404 });
+        }
+        
+        const docRef = snapshot.docs[0].ref;
+        await docRef.delete();
+        
         return NextResponse.json({ message: 'Workplace type deleted successfully' }, { status: 200 });
     } catch (e: any) {
         console.error(e);
