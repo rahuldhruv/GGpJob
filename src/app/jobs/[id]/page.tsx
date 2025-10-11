@@ -1,7 +1,7 @@
 
 "use client";
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import type { Job, Application } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,12 +39,13 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
     const [job, setJob] = useState<Job | null>(null);
     const [relatedJobs, setRelatedJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
+    const { id } = params;
 
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
             try {
-                const { job: jobData, relatedJobs: relatedJobsData } = await getJobData(params.id);
+                const { job: jobData, relatedJobs: relatedJobsData } = await getJobData(id);
                 setJob(jobData);
                 setRelatedJobs(relatedJobsData);
             } catch (error) {
@@ -54,7 +55,7 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
             }
         };
         loadData();
-    }, [params.id]);
+    }, [id]);
 
     if (loading) {
         return <JobDetailsLoading />;
