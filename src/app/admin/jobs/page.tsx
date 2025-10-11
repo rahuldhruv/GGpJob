@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, MoreHorizontal, Eye } from "lucide-react";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -19,9 +19,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export default function ManageJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -125,14 +132,25 @@ export default function ManageJobsPage() {
               </TableCell>
               <TableCell>{format(new Date(job.postedAt), "PPP")}</TableCell>
               <TableCell className="text-right">
-                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => setJobToDelete(job)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                </Button>
+                 <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                     <DropdownMenuItem asChild>
+                       <Link href={`/jobs/${job.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setJobToDelete(job)} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

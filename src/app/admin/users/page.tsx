@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, ShieldCheck, Search } from "lucide-react";
+import { Trash2, ShieldCheck, Search, MoreHorizontal, User as UserIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   AlertDialog,
@@ -27,12 +27,19 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AdminCreationForm } from "@/components/admin-creation-form";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/user-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export default function ManageUsersPage() {
   const { user } = useUser();
@@ -164,15 +171,25 @@ export default function ManageUsersPage() {
               <TableCell>{u.email}</TableCell>
               <TableCell>{getRoleBadge(u.role)}</TableCell>
               <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => setUserToDelete(u)}
-                  disabled={u.id === user?.id}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" disabled={u.id === user?.id}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                       <Link href={`/profile/${u.id}`}>
+                          <UserIcon className="mr-2 h-4 w-4" />
+                          View Profile
+                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setUserToDelete(u)} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
