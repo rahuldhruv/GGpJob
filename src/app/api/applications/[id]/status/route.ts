@@ -22,8 +22,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const currentApp = docSnap.data();
 
     // If status is being viewed for the first time, update it to 'Profile Viewed'
-    if (currentApp?.statusId === 1 && statusId !== 1) { // If status was 'Applied'
+    // Assuming statusId 1 is 'Applied' and we want to move it to 2 'Profile Viewed'
+    if (currentApp?.statusId === 1 && statusId !== 1) { 
          await applicationRef.update({ statusId: 2 }); // Mark as 'Profile Viewed'
+         // Then, if a final status is being set (e.g. Selected/Not Suitable), update it again.
+         if (statusId !== 2) {
+            await applicationRef.update({ statusId });
+         }
     } else {
         await applicationRef.update({ statusId });
     }
@@ -34,7 +39,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     let statusName = 'N/A';
     if (updatedData?.statusId) {
-        // Assuming you have an 'application_statuses' collection where docs have an 'id' field
+        // This assumes you have an 'application_statuses' collection where docs have a numeric `id` field
         const statusQuery = await db.collection('application_statuses').where('id', '==', updatedData.statusId).limit(1).get();
         if (!statusQuery.empty) {
             statusName = statusQuery.docs[0].data().name;
