@@ -46,7 +46,9 @@ export default function RecruiterDashboard() {
       if (res.ok) {
         const data = await res.json();
         if(Array.isArray(data)) {
-          setPostedJobs(data);
+          // Sort by date on the client side
+          const sortedJobs = data.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+          setPostedJobs(sortedJobs);
         } else {
           setPostedJobs([]);
         }

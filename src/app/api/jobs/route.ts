@@ -67,7 +67,8 @@ export async function GET(request: Request) {
     }
     
     // Default sort order if not searching by title
-    if (!searchParams.get('search')) {
+    // Avoid complex sorting for recruiter/employee specific queries to prevent index errors
+    if (!searchParams.get('search') && !recruiterId && !employeeId) {
         query = query.orderBy('postedAt', 'desc');
     }
     
