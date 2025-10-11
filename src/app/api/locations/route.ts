@@ -30,7 +30,8 @@ export async function POST(request: Request) {
         newId = (snapshot.docs[0].data().id || 0) + 1;
     }
 
-    const docRef = await db.collection("locations").add({ id: newId, name, country });
+    const docRef = db.collection("locations").doc();
+    await docRef.set({ id: newId, name, country });
     
     return NextResponse.json({ id: newId, docId: docRef.id, name, country }, { status: 201 });
   } catch (e: any) {

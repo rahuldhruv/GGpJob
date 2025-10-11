@@ -16,18 +16,18 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const jobData = jobDoc.data() as Job;
 
-    const locationQuery = jobData.locationId ? db.collection('locations').where('id', '==', jobData.locationId).limit(1).get() : Promise.resolve(null);
-    const typeQuery = jobData.jobTypeId ? db.collection('job_types').where('id', '==', jobData.jobTypeId).limit(1).get() : Promise.resolve(null);
-    const workplaceTypeQuery = jobData.workplaceTypeId ? db.collection('workplace_types').where('id', '==', jobData.workplaceTypeId).limit(1).get() : Promise.resolve(null);
-    const experienceLevelQuery = jobData.experienceLevelId ? db.collection('experience_levels').where('id', '==', jobData.experienceLevelId).limit(1).get() : Promise.resolve(null);
+    const locationQuery = jobData.locationId ? db.collection('locations').where('id', '==', parseInt(jobData.locationId)).limit(1).get() : Promise.resolve(null);
+    const typeQuery = jobData.jobTypeId ? db.collection('job_types').where('id', '==', parseInt(jobData.jobTypeId)).limit(1).get() : Promise.resolve(null);
+    const workplaceTypeQuery = jobData.workplaceTypeId ? db.collection('workplace_types').where('id', '==', parseInt(jobData.workplaceTypeId)).limit(1).get() : Promise.resolve(null);
+    const experienceLevelQuery = jobData.experienceLevelId ? db.collection('experience_levels').where('id', '==', parseInt(jobData.experienceLevelId)).limit(1).get() : Promise.resolve(null);
 
     // Firestore doesn't support joins. We fetch related data manually.
     // This is not super efficient, and in a production app, this data might be denormalized.
     const [locationSnap, typeSnap, workplaceTypeSnap, experienceLevelSnap, domain] = await Promise.all([
         locationQuery,
         typeQuery,
-        workplaceTypeSnap,
-        experienceLevelSnap,
+        workplaceTypeQuery,
+        experienceLevelQuery,
         jobData.domainId ? db.collection('domains').doc(String(jobData.domainId)).get() : Promise.resolve(null),
     ]);
 

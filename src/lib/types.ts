@@ -11,8 +11,8 @@ export interface User {
   phone?: string;
   role: Role;
   headline?: string;
-  locationId?: number;
-  domainId?: number | string;
+  locationId?: string;
+  domainId?: string;
   resumeUrl?: string;
   // Joined fields
   location?: string;
@@ -43,14 +43,14 @@ export interface Job {
   id:string;
   title: string;
   companyName: string;
-  locationId: number;
-  jobTypeId: number | string;
-  workplaceTypeId?: number | string;
+  locationId: string;
+  jobTypeId: string;
+  workplaceTypeId?: string;
   salary?: string;
   description: string;
   postedAt: Date | string;
-  experienceLevelId?: number | string;
-  domainId?: number | string;
+  experienceLevelId?: string;
+  domainId?: string;
   role?: string;
   isReferral?: boolean;
   recruiterId?: string; // Changed to string for Firestore UID

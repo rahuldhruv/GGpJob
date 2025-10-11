@@ -28,7 +28,7 @@ const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   phone: z.string().length(10, "Please enter a valid 10-digit phone number."),
   headline: z.string().optional(),
-  locationId: z.coerce.number().optional(),
+  locationId: z.string().optional(),
   domainId: z.string().optional(),
 });
 
@@ -68,7 +68,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
-      locationId: user.locationId,
+      locationId: String(user.locationId || ''),
       domainId: String(user.domainId || ''),
     },
   });
@@ -84,7 +84,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
-      locationId: user.locationId,
+      locationId: String(user.locationId || ''),
       domainId: String(user.domainId || ''),
     });
   }, [user, reset]);
@@ -197,7 +197,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           render={({ field }) => (
             <FormItem>
                 <FormLabel>Location</FormLabel>
-                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={String(field.value || '')}>
+                <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select your location" />
@@ -219,14 +219,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Preferred Domain</FormLabel>
-                        <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select your preferred domain" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {Array.isArray(domains) && domains.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
+                                {Array.isArray(domains) && domains.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                         <FormMessage />
