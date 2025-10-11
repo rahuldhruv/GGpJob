@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/firebase/admin-config';
-import { serverTimestamp } from 'firebase/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function GET(request: Request) {
     try {
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       userId,
       rating,
       feedback: feedback || '',
-      submittedAt: serverTimestamp(),
+      submittedAt: FieldValue.serverTimestamp(),
     };
     
     const docRef = await db.collection('portal_feedback').add(newFeedback);
