@@ -10,7 +10,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const docRef = db.collection('job_types').doc(id);
+    const jobTypesRef = db.collection('job_types');
+    const snapshot = await jobTypesRef.where('id', '==', parseInt(id)).limit(1).get();
+
+    if (snapshot.empty) {
+        return NextResponse.json({ error: 'Job type not found' }, { status: 404 });
+    }
+    const docRef = snapshot.docs[0].ref;
     await docRef.update({ name });
 
     const updatedDoc = await docRef.get();
@@ -25,7 +31,17 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        await db.collection('job_types').doc(id).delete();
+        
+        const jobTypesRef = db.collection('job_types');
+        const snapshot = await jobTypesRef.where('id', '==', parseInt(id)).limit(1).get();
+
+        if (snapshot.empty) {
+            return NextResponse.json({ error: 'Job type not found' }, { status: 404 });
+        }
+        
+        const docRef = snapshot.docs[0].ref;
+        await docRef.delete();
+
         return NextResponse.json({ message: 'Job type deleted successfully' }, { status: 200 });
     } catch (e: any) {
         console.error(e);
