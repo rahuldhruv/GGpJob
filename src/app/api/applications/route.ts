@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, DocumentData } from 'firebase/firestore';
 import { db } from '@/firebase/admin-config';
 import { FieldValue } from 'firebase-admin/firestore';
-import type { Application, User, Job } from '@/lib/types';
+import type { Application, User, Job, Skill } from '@/lib/types';
 
 
 const statusMap: { [key: number]: string } = {
@@ -37,10 +37,17 @@ export async function GET(request: Request) {
 
         // Fetch user data
         let applicant: User | null = null;
+        let skills = '';
         if (appData.userId) {
           const userDoc = await db.collection('users').doc(appData.userId).get();
           if (userDoc.exists) {
             applicant = { id: userDoc.id, ...userDoc.data() } as User;
+            // Fetch skills subcollection
+            const skillsSnapshot = await db.collection('users').doc(appData.userId).collection('skills').get();
+            if (!skillsSnapshot.empty) {
+                const skillNames = skillsSnapshot.docs.map(skillDoc => (skillDoc.data() as Skill).name);
+                skills = skillNames.join(', ');
+            }
           }
         }
         
@@ -56,9 +63,6 @@ export async function GET(request: Request) {
         // Use the map to get the status name
         const statusName = statusMap[appData.statusId] || 'Applied';
         
-        const skills = applicant?.headline ?? '';
-
-
         return {
           id: doc.id,
           ...appData,
