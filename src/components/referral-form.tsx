@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -26,7 +27,7 @@ import { useUser } from "@/contexts/user-context";
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters long."),
   jobTitle: z.string().min(5, "Job title must be at least 5 characters long."),
-  locationId: z.string().min(1, "Job location is required."),
+  locationId: z.coerce.number().min(1, "Job location is required."),
   role: z.string().min(2, "Role must be at least 2 characters long."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters long."),
   experienceLevelId: z.string().min(1, "Please select an experience level."),
@@ -90,7 +91,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
     defaultValues: {
       companyName: job?.companyName || "",
       jobTitle: job?.title || "",
-      locationId: String(job?.locationId || ''),
+      locationId: job?.locationId,
       role: job?.role || "",
       jobDescription: job?.description || "",
       vacancies: job?.vacancies || 1,
@@ -110,7 +111,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
       form.reset({
         companyName: job.companyName || "",
         jobTitle: job.title || "",
-        locationId: String(job.locationId || ''),
+        locationId: job.locationId,
         role: job.role || "",
         jobDescription: job.description || "",
         vacancies: job.vacancies || 1,
@@ -223,7 +224,7 @@ export function ReferralForm({ job }: ReferralFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Job Location</FormLabel>
-                  <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                  <Select onValueChange={(value) => field.onChange(parseInt(value))} value={String(field.value || '')}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select job location" />

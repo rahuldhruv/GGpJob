@@ -1,4 +1,5 @@
 
+
 import { NextResponse } from 'next/server';
 import { db } from '@/firebase/admin-config';
 import type { Job } from '@/lib/types';
@@ -15,24 +16,35 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const jobData = jobDoc.data() as Job;
 
+    const locationQuery = jobData.locationId ? db.collection('locations').where('id', '==', jobData.locationId).limit(1).get() : Promise.resolve(null);
+    const typeQuery = jobData.jobTypeId ? db.collection('job_types').where('id', '==', jobData.jobTypeId).limit(1).get() : Promise.resolve(null);
+    const workplaceTypeQuery = jobData.workplaceTypeId ? db.collection('workplace_types').where('id', '==', jobData.workplaceTypeId).limit(1).get() : Promise.resolve(null);
+    const experienceLevelQuery = jobData.experienceLevelId ? db.collection('experience_levels').where('id', '==', jobData.experienceLevelId).limit(1).get() : Promise.resolve(null);
+
     // Firestore doesn't support joins. We fetch related data manually.
     // This is not super efficient, and in a production app, this data might be denormalized.
-    const [type, workplaceType, experienceLevel, domain, location] = await Promise.all([
-        jobData.jobTypeId ? db.collection('job_types').doc(String(jobData.jobTypeId)).get() : Promise.resolve(null),
-        jobData.workplaceTypeId ? db.collection('workplace_types').doc(String(jobData.workplaceTypeId)).get() : Promise.resolve(null),
-        jobData.experienceLevelId ? db.collection('experience_levels').doc(String(jobData.experienceLevelId)).get() : Promise.resolve(null),
+    const [locationSnap, typeSnap, workplaceTypeSnap, experienceLevelSnap, domain] = await Promise.all([
+        locationQuery,
+        typeQuery,
+        workplaceTypeSnap,
+        experienceLevelSnap,
         jobData.domainId ? db.collection('domains').doc(String(jobData.domainId)).get() : Promise.resolve(null),
-        jobData.locationId ? db.collection('locations').doc(String(jobData.locationId)).get() : Promise.resolve(null),
     ]);
+
+    const location = locationSnap && !locationSnap.empty ? locationSnap.docs[0].data() : null;
+    const type = typeSnap && !typeSnap.empty ? typeSnap.docs[0].data() : null;
+    const workplaceType = workplaceTypeSnap && !workplaceTypeSnap.empty ? workplaceTypeSnap.docs[0].data() : null;
+    const experienceLevel = experienceLevelSnap && !experienceLevelSnap.empty ? experienceLevelSnap.docs[0].data() : null;
+
 
     const job: Job = {
         id: jobDoc.id,
         ...jobData,
-        type: type?.data()?.name || '',
-        workplaceType: workplaceType?.data()?.name || '',
-        experienceLevel: experienceLevel?.data()?.name || '',
+        type: type?.name || '',
+        workplaceType: workplaceType?.name || '',
+        experienceLevel: experienceLevel?.name || '',
         domain: domain?.data()?.name || '',
-        location: location?.data()?.name || '',
+        location: location?.name || '',
     };
 
     return NextResponse.json(job);

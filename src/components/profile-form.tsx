@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -27,7 +28,7 @@ const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   phone: z.string().length(10, "Please enter a valid 10-digit phone number."),
   headline: z.string().optional(),
-  locationId: z.string().optional(),
+  locationId: z.coerce.number().optional(),
   domainId: z.string().optional(),
 });
 
@@ -67,7 +68,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
-      locationId: String(user.locationId || ''),
+      locationId: user.locationId,
       domainId: String(user.domainId || ''),
     },
   });
@@ -83,7 +84,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
-      locationId: String(user.locationId || ''),
+      locationId: user.locationId,
       domainId: String(user.domainId || ''),
     });
   }, [user, reset]);
@@ -196,14 +197,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
           render={({ field }) => (
             <FormItem>
                 <FormLabel>Location</FormLabel>
-                <Select onValueChange={field.onChange} value={String(field.value || '')}>
+                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={String(field.value || '')}>
                     <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select your location" />
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                        {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>)}
+                        {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
                 <FormMessage />

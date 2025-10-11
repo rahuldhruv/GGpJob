@@ -1,4 +1,5 @@
 
+
 import { NextResponse } from 'next/server';
 import { db } from '@/firebase/admin-config';
 import type { Job, Location, Application, Domain } from '@/lib/types';
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
         }
     }
 
-    const locationsParams = searchParams.getAll('location').filter(l => l && l !== 'all');
+    const locationsParams = searchParams.getAll('location').filter(l => l && l !== 'all').map(l => parseInt(l, 10));
     if (locationsParams.length > 0) {
         query = query.where('locationId', 'in', locationsParams);
     }
@@ -89,7 +90,7 @@ export async function GET(request: Request) {
     ]);
 
     const applications = applicationsSnapshot.docs.map(doc => doc.data() as Application);
-    const locations = locationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Location);
+    const locations = locationsSnapshot.docs.map(doc => doc.data() as Location);
     const domains = domainsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Domain);
     
     const locationMap = createMap(locations);
@@ -103,7 +104,7 @@ export async function GET(request: Request) {
 
     const jobs = jobsSnapshot.docs.map(doc => {
       const jobData = doc.data() as Job;
-      const location = locationMap.get(String(jobData.locationId));
+      const location = locationMap.get(jobData.locationId);
       const domain = domainMap.get(String(jobData.domainId));
       return {
           id: doc.id,
