@@ -1,6 +1,6 @@
 
 import { notFound } from 'next/navigation';
-import type { Job, Application, User } from '@/lib/types';
+import type { Job, Application } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign, Workflow, Clock, UserCheck } from 'lucide-react';
@@ -9,7 +9,6 @@ import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
 import { headers } from 'next/headers';
 import { ShareButton } from '@/components/share-button';
-import { getAuth } from 'firebase-admin/auth';
 import { db } from '@/firebase/admin-config';
 
 async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[] }> {
@@ -25,7 +24,7 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     }
     const job: Job = await jobRes.json();
 
-    const relatedJobsRes = await fetch(`${baseUrl}/api/jobs?domain=${job.domainId}&limit=10`, { cache: 'no-store' });
+    const relatedJobsRes = await fetch(`${baseUrl}/api/jobs?domainId=${job.domainId}&limit=10`, { cache: 'no-store' });
     let relatedJobs: Job[] = [];
     if (relatedJobsRes.ok) {
         const allRelated = await relatedJobsRes.json();
@@ -37,26 +36,8 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     return { job, relatedJobs };
 }
 
-// Placeholder for fetching user applications - this will be handled client-side now
-async function getUserApplications(userId: string | undefined): Promise<Application[]> {
-    if (!userId) return [];
-     try {
-        const applicationsSnapshot = await db.collection('applications').where('userId', '==', userId).get();
-        if (applicationsSnapshot.empty) {
-            return [];
-        }
-        return applicationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Application[];
-    } catch (error) {
-        console.error("Failed to fetch user applications on server:", error);
-        return [];
-    }
-}
-
-
 export default async function JobDetailsPage({ params }: { params: { id: string } }) {
-    // For now, we pass an empty array for applications as this is handled client-side
     const { job, relatedJobs } = await getJobData(params.id);
-    const userApplications: Application[] = []; 
 
     if (!job) {
         notFound();
@@ -74,7 +55,9 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
         { icon: Clock, label: "Vacancies", value: job.vacancies },
     ];
 
-    const appliedJobIds = new Set(userApplications.map(app => app.jobId));
+    // This is now handled client-side in ApplyButton and JobCard,
+    // so we can pass an empty set here for server rendering.
+    const appliedJobIds = new Set<string>();
 
     return (
        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
@@ -119,7 +102,7 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <ApplyButton job={job} userApplications={userApplications} />
+                            <ApplyButton job={job} />
                         </CardFooter>
                     </Card>
                 </div>

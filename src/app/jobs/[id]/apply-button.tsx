@@ -11,26 +11,42 @@ import { Application, Job } from '@/lib/types';
 
 interface ApplyButtonProps {
     job: Job;
-    userApplications: Application[];
 }
 
-export function ApplyButton({ job, userApplications }: ApplyButtonProps) {
+export function ApplyButton({ job }: ApplyButtonProps) {
     const { user } = useUser();
     const { toast } = useToast();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [isApplied, setIsApplied] = useState(false);
     const [isJobOwner, setIsJobOwner] = useState(false);
+    const [loadingState, setLoadingState] = useState(true);
 
     useEffect(() => {
-      if(user && job) {
-        const alreadyApplied = userApplications.some(app => app.jobId === job.id);
-        setIsApplied(alreadyApplied);
+        const checkApplicationStatus = async () => {
+            if (user && job) {
+                setLoadingState(true);
+                try {
+                    const res = await fetch(`/api/applications?userId=${user.id}`);
+                    if (res.ok) {
+                        const userApplications: Application[] = await res.json();
+                        const alreadyApplied = userApplications.some(app => app.jobId === job.id);
+                        setIsApplied(alreadyApplied);
+                    }
+                } catch (error) {
+                    console.error("Failed to check application status", error);
+                }
 
-        const isOwner = job.recruiterId === user.id || job.employeeId === user.id;
-        setIsJobOwner(isOwner);
-      }
-    }, [user, job, userApplications]);
+                const isOwner = job.recruiterId === user.id || job.employeeId === user.id;
+                setIsJobOwner(isOwner);
+                setLoadingState(false);
+            } else {
+                setLoadingState(false);
+            }
+        };
+
+        checkApplicationStatus();
+    }, [user, job]);
 
 
     const handleApply = async () => {
@@ -82,6 +98,15 @@ export function ApplyButton({ job, userApplications }: ApplyButtonProps) {
         }
     };
     
+    if (loadingState) {
+        return (
+             <Button disabled className="w-full" size="lg">
+                <LoaderCircle className="animate-spin mr-2" />
+                Loading...
+            </Button>
+        )
+    }
+
     if (isJobOwner) {
         return (
             <Button disabled className="w-full" size="lg">
