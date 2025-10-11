@@ -43,7 +43,7 @@ export function ShareButton({ jobId, jobTitle }: ShareButtonProps) {
                 await navigator.share(shareData);
             } catch (error: any) {
                 // If the user cancels the share, it might throw an AbortError.
-                // In other cases of failure, fall back to clipboard.
+                // We only want to fall back to clipboard for other errors.
                 if (error.name !== 'AbortError') {
                     console.error("Error sharing:", error);
                     await copyToClipboard(jobUrl);
