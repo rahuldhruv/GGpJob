@@ -12,6 +12,13 @@ const createMap = (docs: any[], key = 'id') => {
     return map;
 };
 
+const statusMap: { [key: number]: string } = {
+    1: 'Applied',
+    2: 'Profile Viewed',
+    3: 'Not Suitable',
+    4: 'Selected',
+};
+
 
 export async function GET(request: Request) {
   try {
@@ -88,6 +95,14 @@ export async function GET(request: Request) {
     });
     const applicationsByDomain = groupByDomain(applicationsWithDomain, 'domainId');
 
+    // 8. Applications by status
+    const applicationsByStatus = allApplications.reduce((acc, app) => {
+        const statusName = statusMap[app.statusId] || 'Unknown';
+        acc[statusName] = (acc[statusName] || 0) + 1;
+        return acc;
+    }, {} as { [key: string]: number });
+    const applicationsByStatusChartData = Object.entries(applicationsByStatus).map(([name, value]) => ({ name, value }));
+
 
     const analyticsData = {
       totalJobSeekers,
@@ -100,6 +115,7 @@ export async function GET(request: Request) {
       referralJobsByDomain,
       usersByDomain,
       applicationsByDomain,
+      applicationsByStatus: applicationsByStatusChartData,
     };
     
     return NextResponse.json(analyticsData);

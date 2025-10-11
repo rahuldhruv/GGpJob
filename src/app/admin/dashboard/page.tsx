@@ -39,6 +39,7 @@ interface AnalyticsData {
   referralJobsByDomain: ChartData[];
   usersByDomain: ChartData[];
   applicationsByDomain: ChartData[];
+  applicationsByStatus: ChartData[];
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
@@ -414,6 +415,34 @@ export default function AdminDashboardPage() {
                             nameKey="name"
                         >
                             {analytics.applicationsByDomain.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend content={renderLegend} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Applications by Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                        <Pie
+                            data={analytics.applicationsByStatus}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                            nameKey="name"
+                        >
+                            {analytics.applicationsByStatus.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
