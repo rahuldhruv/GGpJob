@@ -1,0 +1,9 @@
+[
+    {
+      "origin": ["https://6000-firebase-studio-1756535815754.cluster-w5vd22whf5gmav2vgkomwtc4go.cloudworkstations.dev"],
+      "method": ["POST"],
+      "maxAgeSeconds": 3600,
+      "responseHeader": ["Content-Type"]
+    }
+  ]
+  
