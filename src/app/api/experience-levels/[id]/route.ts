@@ -10,7 +10,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const docRef = db.collection('experience_levels').doc(id);
+    const levelsRef = db.collection('experience_levels');
+    const snapshot = await levelsRef.where('id', '==', parseInt(id)).limit(1).get();
+
+    if (snapshot.empty) {
+      return NextResponse.json({ error: 'Experience level not found' }, { status: 404 });
+    }
+
+    const docRef = snapshot.docs[0].ref;
     await docRef.update({ name });
 
     const updatedDoc = await docRef.get();
@@ -25,7 +32,16 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        await db.collection('experience_levels').doc(id).delete();
+        const levelsRef = db.collection('experience_levels');
+        const snapshot = await levelsRef.where('id', '==', parseInt(id)).limit(1).get();
+
+        if (snapshot.empty) {
+          return NextResponse.json({ error: 'Experience level not found' }, { status: 404 });
+        }
+
+        const docRef = snapshot.docs[0].ref;
+        await docRef.delete();
+        
         return NextResponse.json({ message: 'Experience level deleted successfully' }, { status: 200 });
     } catch (e: any) {
         console.error(e);
