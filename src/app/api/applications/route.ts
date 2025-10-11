@@ -6,6 +6,13 @@ import { FieldValue } from 'firebase-admin/firestore';
 import type { Application, User, Job } from '@/lib/types';
 
 
+const statusMap: { [key: number]: string } = {
+    1: 'Applied',
+    2: 'Profile Viewed',
+    3: 'Not Suitable',
+    4: 'Selected',
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -46,14 +53,8 @@ export async function GET(request: Request) {
             }
         }
 
-        // Fetch application status
-        let statusName = 'Applied';
-        if (appData.statusId) {
-            const statusDoc = await db.collection('application_statuses').where('id', '==', appData.statusId).limit(1).get();
-            if (!statusDoc.empty) {
-                statusName = statusDoc.docs[0].data().name;
-            }
-        }
+        // Use the map to get the status name
+        const statusName = statusMap[appData.statusId] || 'Applied';
         
         const skills = applicant?.headline ?? '';
 
