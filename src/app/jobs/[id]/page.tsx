@@ -1,4 +1,6 @@
 
+"use client";
+
 import { notFound } from 'next/navigation';
 import type { Job, Application } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,24 +9,20 @@ import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign
 import { format } from 'date-fns';
 import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
-import { headers } from 'next/headers';
 import { ShareButton } from '@/components/share-button';
-import { db } from '@/firebase/admin-config';
+import { useUser } from '@/contexts/user-context';
+import { useState, useEffect } from 'react';
+import JobDetailsLoading from './loading';
 
 async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[] }> {
-    const headersList = headers();
-    const protocol = headersList.get('x-forwarded-proto') || 'http';
-    const host = headersList.get('host') || 'localhost:3000';
-    const baseUrl = `${protocol}://${host}`;
-
-    const jobRes = await fetch(`${baseUrl}/api/jobs/${id}`, { cache: 'no-store' });
+    const jobRes = await fetch(`/api/jobs/${id}`, { cache: 'no-store' });
     if (!jobRes.ok) {
         if (jobRes.status === 404) return { job: null, relatedJobs: [] };
         throw new Error('Failed to fetch job data');
     }
     const job: Job = await jobRes.json();
 
-    const relatedJobsRes = await fetch(`${baseUrl}/api/jobs?domainId=${job.domainId}&limit=10`, { cache: 'no-store' });
+    const relatedJobsRes = await fetch(`/api/jobs?domainId=${job.domainId}&limit=10`, { cache: 'no-store' });
     let relatedJobs: Job[] = [];
     if (relatedJobsRes.ok) {
         const allRelated = await relatedJobsRes.json();
@@ -36,8 +34,31 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     return { job, relatedJobs };
 }
 
-export default async function JobDetailsPage({ params }: { params: { id: string } }) {
-    const { job, relatedJobs } = await getJobData(params.id);
+export default function JobDetailsPage({ params }: { params: { id: string } }) {
+    const { user } = useUser();
+    const [job, setJob] = useState<Job | null>(null);
+    const [relatedJobs, setRelatedJobs] = useState<Job[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                const { job: jobData, relatedJobs: relatedJobsData } = await getJobData(params.id);
+                setJob(jobData);
+                setRelatedJobs(relatedJobsData);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, [params.id]);
+
+    if (loading) {
+        return <JobDetailsLoading />;
+    }
 
     if (!job) {
         notFound();
@@ -55,8 +76,6 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
         { icon: Clock, label: "Vacancies", value: job.vacancies },
     ];
 
-    // This is now handled client-side in ApplyButton and JobCard,
-    // so we can pass an empty set here for server rendering.
     const appliedJobIds = new Set<string>();
 
     return (
@@ -107,21 +126,23 @@ export default async function JobDetailsPage({ params }: { params: { id: string 
                     </Card>
                 </div>
                 <div className="lg:col-span-1 space-y-6">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>About {job.companyName}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                           <p className="text-sm text-muted-foreground">
-                            Contact for more info: <span className="font-semibold text-foreground">{job.contactEmail}</span>
-                           </p>
-                            {job.contactPhone && (
-                                <p className="text-sm text-muted-foreground">
-                                    Phone: <span className="font-semibold text-foreground">{job.contactPhone}</span>
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
+                     {user && user.role !== 'Job Seeker' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>About {job.companyName}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                Contact for more info: <span className="font-semibold text-foreground">{job.contactEmail}</span>
+                            </p>
+                                {job.contactPhone && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Phone: <span className="font-semibold text-foreground">{job.contactPhone}</span>
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
+                     )}
                     {relatedJobs.length > 0 && (
                         <div>
                             <h3 className="text-xl font-bold mb-4">Related Jobs</h3>
