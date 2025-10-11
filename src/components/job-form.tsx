@@ -214,7 +214,7 @@ export function JobForm({ job }: JobFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
+                    {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}, {loc.country}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />
