@@ -2,6 +2,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/firebase/admin-config';
 
+const statusMap: { [key: number]: string } = {
+    1: 'Applied',
+    2: 'Profile Viewed',
+    3: 'Not Suitable',
+    4: 'Selected',
+};
+
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -24,14 +31,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     // Fetch the updated application along with the status name
     const updatedDoc = await applicationRef.get();
     const updatedData = updatedDoc.data();
-
-    let statusName = 'N/A';
-    if (updatedData?.statusId) {
-        const statusQuery = await db.collection('application_statuses').where('id', '==', updatedData.statusId).limit(1).get();
-        if (!statusQuery.empty) {
-            statusName = statusQuery.docs[0].data().name;
-        }
-    }
+    
+    // Use the map to get the status name
+    const statusName = statusMap[statusId] || 'N/A';
 
     return NextResponse.json({ ...updatedData, id: updatedDoc.id, statusName }, { status: 200 });
   } catch (e: any) {
