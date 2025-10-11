@@ -140,7 +140,7 @@ export default function ManageJobsPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                      <DropdownMenuItem asChild>
-                       <Link href={`/jobs/${job.id}`}>
+                       <Link href={`/jobs/${job.id}?view=admin`}>
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                        </Link>

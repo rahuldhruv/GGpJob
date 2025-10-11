@@ -1,8 +1,8 @@
 
 "use client";
 
-import { notFound, useParams } from 'next/navigation';
-import type { Job, Application } from '@/lib/types';
+import { notFound, useParams, useSearchParams } from 'next/navigation';
+import type { Job, Application } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, MapPin, Building, Calendar, Users, FileText, BadgeDollarSign, Workflow, Clock, UserCheck } from 'lucide-react';
@@ -11,7 +11,7 @@ import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
 import { ShareButton } from '@/components/share-button';
 import { useUser } from '@/contexts/user-context';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import JobDetailsLoading from './loading';
 
 async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[] }> {
@@ -34,13 +34,16 @@ async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: J
     return { job, relatedJobs };
 }
 
-export default function JobDetailsPage() {
+function JobDetailsContent() {
     const { user } = useUser();
     const [job, setJob] = useState<Job | null>(null);
     const [relatedJobs, setRelatedJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const params = useParams();
+    const searchParams = useSearchParams();
     const id = params.id as string;
+
+    const isAdminView = searchParams.get('view') === 'admin';
 
     useEffect(() => {
         const loadData = async () => {
@@ -124,13 +127,15 @@ export default function JobDetailsPage() {
                                 ))}
                             </div>
                         </CardContent>
-                        <CardFooter>
-                            <ApplyButton job={job} />
-                        </CardFooter>
+                         {!isAdminView && (
+                            <CardFooter>
+                                <ApplyButton job={job} />
+                            </CardFooter>
+                        )}
                     </Card>
                 </div>
                 <div className="lg:col-span-1 space-y-6">
-                     {user && user.role !== 'Job Seeker' && (
+                     {user && user.role !== 'Job Seeker' && !isAdminView && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>About {job.companyName}</CardTitle>
@@ -147,7 +152,7 @@ export default function JobDetailsPage() {
                             </CardContent>
                         </Card>
                      )}
-                    {relatedJobs.length > 0 && (
+                    {relatedJobs.length > 0 && !isAdminView && (
                         <div>
                             <h3 className="text-xl font-bold mb-4">Related Jobs</h3>
                             <div className="space-y-4">
@@ -161,4 +166,12 @@ export default function JobDetailsPage() {
             </div>
        </div>
     );
+}
+
+export default function JobDetailsPage() {
+    return (
+        <Suspense fallback={<JobDetailsLoading />}>
+            <JobDetailsContent />
+        </Suspense>
+    )
 }
