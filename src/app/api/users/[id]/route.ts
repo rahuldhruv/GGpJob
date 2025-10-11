@@ -1,17 +1,16 @@
 
 import { NextResponse } from 'next/server';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { db } from '@/firebase/admin-config';
 import { User } from '@/lib/types';
 
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const userDocRef = doc(db, 'users', id);
-        const userDoc = await getDoc(userDocRef);
+        const userDocRef = db.collection('users').doc(id);
+        const userDoc = await userDocRef.get();
 
-        if (!userDoc.exists()) {
+        if (!userDoc.exists) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
         
@@ -20,9 +19,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
         // Fetch location if locationId exists
         if (user.locationId) {
             try {
-                const locationDoc = await getDoc(doc(db, 'locations', String(user.locationId)));
-                if (locationDoc.exists()) {
-                    user.location = locationDoc.data().name;
+                const locationDoc = await db.collection('locations').doc(String(user.locationId)).get();
+                if (locationDoc.exists) {
+                    user.location = locationDoc.data()?.name;
                 }
             } catch(e) {
                 console.error("Could not fetch location for user", e);
@@ -47,7 +46,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
         
-        const userDocRef = doc(db, 'users', id);
+        const userDocRef = db.collection('users').doc(id);
         
         const dataToUpdate: Partial<User> = {
             firstName,
@@ -60,9 +59,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             domainId: domainId || null,
         };
 
-        await updateDoc(userDocRef, dataToUpdate);
+        await userDocRef.update(dataToUpdate);
 
-        const updatedUserDoc = await getDoc(userDocRef);
+        const updatedUserDoc = await userDocRef.get();
         const updatedUser = { id: updatedUserDoc.id, ...updatedUserDoc.data() };
 
 
@@ -78,7 +77,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        await deleteDoc(doc(db, 'users', id));
+        await db.collection('users').doc(id).delete();
         // Note: This does NOT delete the Firebase Auth user. That requires the Admin SDK.
         return NextResponse.json({ message: 'User profile deleted successfully' }, { status: 200 });
     } catch (e) {
