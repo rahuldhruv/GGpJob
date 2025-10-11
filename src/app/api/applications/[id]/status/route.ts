@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { db } from '@/firebase/admin-config';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -11,36 +11,39 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Status ID is required' }, { status: 400 });
     }
 
-    const db = await getDb();
-    
-    const result = await db.run(
-      'UPDATE applications SET statusId = ? WHERE id = ?',
-      statusId,
-      id
-    );
+    const applicationRef = db.collection('applications').doc(id);
 
-    if (result.changes === 0) {
-      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    // Check if the application exists
+    const docSnap = await applicationRef.get();
+    if (!docSnap.exists) {
+        return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    }
+    
+    const currentApp = docSnap.data();
+
+    // If status is being viewed for the first time, update it to 'Profile Viewed'
+    if (currentApp?.statusId === 1 && statusId !== 1) { // If status was 'Applied'
+         await applicationRef.update({ statusId: 2 }); // Mark as 'Profile Viewed'
+    } else {
+        await applicationRef.update({ statusId });
     }
 
-    // Optionally, mark profile as viewed if not already done
-    if (statusId !== 2) {
-        const currentApp = await db.get('SELECT statusId FROM applications WHERE id = ?', id);
-        if(currentApp?.statusId === 1) { // If status was 'Applied'
-             await db.run('UPDATE applications SET statusId = 2 WHERE id = ?', id);
+    // Fetch the updated application along with the status name
+    const updatedDoc = await applicationRef.get();
+    const updatedData = updatedDoc.data();
+
+    let statusName = 'N/A';
+    if (updatedData?.statusId) {
+        // Assuming you have an 'application_statuses' collection where docs have an 'id' field
+        const statusQuery = await db.collection('application_statuses').where('id', '==', updatedData.statusId).limit(1).get();
+        if (!statusQuery.empty) {
+            statusName = statusQuery.docs[0].data().name;
         }
     }
-    
-    const updatedApplication = await db.get(`
-        SELECT a.*, s.name as statusName 
-        FROM applications a 
-        JOIN application_statuses s ON a.statusId = s.id 
-        WHERE a.id = ?
-    `, id);
 
-    return NextResponse.json(updatedApplication, { status: 200 });
+    return NextResponse.json({ ...updatedData, id: updatedDoc.id, statusName }, { status: 200 });
   } catch (e: any) {
-    console.error(e);
-    return NextResponse.json({ error: 'Failed to update application status' }, { status: 500 });
+    console.error('[API_APP_STATUS] Error:', e);
+    return NextResponse.json({ error: 'Failed to update application status', details: e.message }, { status: 500 });
   }
 }
