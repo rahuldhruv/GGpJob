@@ -13,6 +13,23 @@ interface ShareButtonProps {
 export function ShareButton({ jobId, jobTitle }: ShareButtonProps) {
     const { toast } = useToast();
 
+    const copyToClipboard = async (url: string) => {
+        try {
+            await navigator.clipboard.writeText(url);
+            toast({
+                title: "Link Copied!",
+                description: "The job link has been copied to your clipboard.",
+            });
+        } catch (error) {
+            console.error("Error copying to clipboard:", error);
+            toast({
+                title: "Error",
+                description: "Could not copy link to clipboard.",
+                variant: "destructive",
+            });
+        }
+    };
+
     const handleShare = async () => {
         const jobUrl = `${window.location.origin}/jobs/${jobId}`;
         const shareData = {
@@ -24,24 +41,16 @@ export function ShareButton({ jobId, jobTitle }: ShareButtonProps) {
         if (navigator.share) {
             try {
                 await navigator.share(shareData);
-            } catch (error) {
-                console.error("Error sharing:", error);
+            } catch (error: any) {
+                // If the user cancels the share, it might throw an AbortError.
+                // In other cases of failure, fall back to clipboard.
+                if (error.name !== 'AbortError') {
+                    console.error("Error sharing:", error);
+                    await copyToClipboard(jobUrl);
+                }
             }
         } else {
-            try {
-                await navigator.clipboard.writeText(jobUrl);
-                toast({
-                    title: "Link Copied!",
-                    description: "The job link has been copied to your clipboard.",
-                });
-            } catch (error) {
-                console.error("Error copying to clipboard:", error);
-                toast({
-                    title: "Error",
-                    description: "Could not copy link to clipboard.",
-                    variant: "destructive",
-                });
-            }
+            await copyToClipboard(jobUrl);
         }
     };
 
