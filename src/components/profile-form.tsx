@@ -27,8 +27,8 @@ const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   phone: z.string().length(10, "Please enter a valid 10-digit phone number."),
   headline: z.string().optional(),
-  locationId: z.coerce.number().optional(),
-  domainId: z.coerce.number().optional(),
+  locationId: z.string().optional(),
+  domainId: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof formSchema>;
@@ -67,8 +67,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
-      locationId: user.locationId,
-      domainId: user.domainId,
+      locationId: String(user.locationId || ''),
+      domainId: String(user.domainId || ''),
     },
   });
   
@@ -83,8 +83,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email,
       phone: user.phone,
       headline: user.headline || "",
-      locationId: user.locationId,
-      domainId: user.domainId,
+      locationId: String(user.locationId || ''),
+      domainId: String(user.domainId || ''),
     });
   }, [user, reset]);
 
@@ -203,7 +203,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                        {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={String(loc.id)}>{loc.name}</SelectItem>)}
+                        {Array.isArray(locations) && locations.map(loc => <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
                 <FormMessage />
