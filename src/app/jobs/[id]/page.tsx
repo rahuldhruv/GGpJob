@@ -11,7 +11,7 @@ import { ApplyButton } from './apply-button';
 import JobCard from '@/components/job-card';
 import { ShareButton } from '@/components/share-button';
 import { useUser } from '@/contexts/user-context';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import JobDetailsLoading from './loading';
 
 async function getJobData(id: string): Promise<{ job: Job | null; relatedJobs: Job[] }> {
@@ -38,6 +38,7 @@ function JobDetailsContent() {
     const { user } = useUser();
     const [job, setJob] = useState<Job | null>(null);
     const [relatedJobs, setRelatedJobs] = useState<Job[]>([]);
+    const [userApplications, setUserApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const params = useParams();
     const searchParams = useSearchParams();
@@ -45,23 +46,44 @@ function JobDetailsContent() {
 
     const isAdminView = searchParams.get('view') === 'admin';
 
-    useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            try {
-                const { job: jobData, relatedJobs: relatedJobsData } = await getJobData(id);
-                setJob(jobData);
-                setRelatedJobs(relatedJobsData);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
+    const loadData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const [jobAndRelatedData, appsRes] = await Promise.all([
+                getJobData(id),
+                user ? fetch(`/api/applications?userId=${user.id}`) : Promise.resolve(null)
+            ]);
+
+            const { job: jobData, relatedJobs: relatedJobsData } = jobAndRelatedData;
+            
+            setJob(jobData);
+            
+            let appsData: Application[] = [];
+            if (appsRes && appsRes.ok) {
+                appsData = await appsRes.json();
+                setUserApplications(Array.isArray(appsData) ? appsData : []);
             }
-        };
+
+            if (user?.role === 'Job Seeker' && Array.isArray(relatedJobsData)) {
+                const appliedJobIds = new Set(appsData.map(app => app.jobId));
+                const filteredRelatedJobs = relatedJobsData.filter(j => !appliedJobIds.has(j.id));
+                setRelatedJobs(filteredRelatedJobs);
+            } else {
+                setRelatedJobs(relatedJobsData);
+            }
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }, [id, user]);
+
+    useEffect(() => {
         if (id) {
             loadData();
         }
-    }, [id]);
+    }, [id, loadData]);
 
     if (loading) {
         return <JobDetailsLoading />;
@@ -83,7 +105,7 @@ function JobDetailsContent() {
         { icon: Clock, label: "Vacancies", value: job.vacancies },
     ];
 
-    const appliedJobIds = new Set<string>();
+    const appliedJobIds = new Set(userApplications.map(app => app.jobId));
 
     const shouldShowCompanyDetails = (user && (user.role === 'Recruiter' || user.role === 'Employee')) || isAdminView;
 
