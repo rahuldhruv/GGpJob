@@ -42,6 +42,9 @@ export async function GET(request: Request) {
     // Create a map for quick domain name lookup
     const domainMap = createMap(domains);
 
+    // Get total applications before filtering
+    const totalApplications = allApplications.length;
+
     // Filter by date range if provided
     if (fromDate && toDate) {
         allJobs = allJobs.filter(job => {
@@ -49,7 +52,8 @@ export async function GET(request: Request) {
             return postedAt >= fromDate && postedAt <= toDate;
         });
         allApplications = allApplications.filter(app => {
-            const appliedAt = app.appliedAt instanceof Date ? app.appliedAt : new Date(app.appliedAt);
+            // Firestore timestamps need to be converted to JS Dates on the server
+            const appliedAt = (app.appliedAt as any).toDate ? (app.appliedAt as any).toDate() : new Date(app.appliedAt);
             return appliedAt >= fromDate && appliedAt <= toDate;
         });
     }
@@ -63,10 +67,7 @@ export async function GET(request: Request) {
     const totalDirectJobs = allJobs.filter(j => !j.isReferral).length;
     const totalReferralJobs = allJobs.filter(j => j.isReferral).length;
     
-    // 3. Total applications
-    const totalApplications = allApplications.length;
-
-    // 4. Group by domain functions
+    // 3. Group by domain functions
     const groupByDomain = (items: any[], domainIdField: string) => {
         const counts: { [key: string]: number } = {};
         for (const item of items) {
@@ -79,23 +80,23 @@ export async function GET(request: Request) {
         return Object.entries(counts).map(([name, value]) => ({ name, value }));
     };
     
-    // 5. Jobs by domain
+    // 4. Jobs by domain
     const directJobsByDomain = groupByDomain(allJobs.filter(j => !j.isReferral), 'domainId');
     const referralJobsByDomain = groupByDomain(allJobs.filter(j => j.isReferral), 'domainId');
 
-    // 6. Users by domain
+    // 5. Users by domain
     const usersByDomain = groupByDomain(allUsers.filter(u => u.role === 'Job Seeker'), 'domainId');
     
-    // 7. Applications by domain
+    // 6. Applications by domain
     // To do this, we need to map applications to jobs to find the domain.
-    const jobsMap = createMap(allJobs);
+    const jobsMap = createMap(allJobs, 'id');
     const applicationsWithDomain = allApplications.map(app => {
         const job = jobsMap.get(app.jobId);
         return { ...app, domainId: job?.domainId };
     });
     const applicationsByDomain = groupByDomain(applicationsWithDomain, 'domainId');
 
-    // 8. Applications by status
+    // 7. Applications by status
     const applicationsByStatus = allApplications.reduce((acc, app) => {
         const statusName = statusMap[app.statusId] || 'Unknown';
         acc[statusName] = (acc[statusName] || 0) + 1;
