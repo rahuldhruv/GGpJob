@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
-import { PlusCircle, MoreHorizontal, Edit, Trash2, Users, User } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Users } from "lucide-react";
 import { format } from "date-fns";
 import {
   DropdownMenu,
@@ -45,8 +45,6 @@ export default function RecruiterDashboard() {
       const res = await fetch(`/api/jobs?recruiterId=${user.id}&isReferral=false`);
       let data = await res.json();
       if(Array.isArray(data)) {
-        // Sort by date descending on the client-side
-        data.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
         setPostedJobs(data);
       } else {
         setPostedJobs([]);
