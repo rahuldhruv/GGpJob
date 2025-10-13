@@ -16,11 +16,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle, FileText, Link as LinkIcon, ExternalLink, UploadCloud, Paperclip } from "lucide-react";
+import { LoaderCircle, FileText, ExternalLink, UploadCloud, Paperclip } from "lucide-react";
 import { User } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import Link from "next/link";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { storage } from "@/firebase/config";
 import { Progress } from "./ui/progress";
 
@@ -57,6 +57,18 @@ export function ResumeForm({ user: initialUser }: ResumeFormProps) {
         toast({ title: "No file selected", description: "Please select a resume file to upload.", variant: "destructive" });
         return;
     }
+    
+    // If a resume already exists, delete it before uploading a new one.
+    if (user.resumeUrl) {
+      try {
+        const oldResumeRef = ref(storage, user.resumeUrl);
+        await deleteObject(oldResumeRef);
+      } catch (error: any) {
+        // If deletion fails (e.g., file not found), log it but don't block the upload.
+        console.error("Failed to delete old resume, it might not exist.", error);
+      }
+    }
+
 
     const file = data.resumeFile;
     const storageRef = ref(storage, `resumes/${user.id}/${file.name}`);
