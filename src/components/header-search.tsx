@@ -1,24 +1,38 @@
 
 "use client"
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useUser } from "@/contexts/user-context";
 
 export default function HeaderSearch() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const pathname = usePathname();
+    const { user } = useUser();
+
+    // Determine if the search bar should be visible
+    const isJobSeeker = user?.role === 'Job Seeker';
+    const isRelevantPage = pathname === '/' || pathname.startsWith('/jobs');
+
+    if (!isJobSeeker || !isRelevantPage) {
+        return null;
+    }
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const searchQuery = formData.get("search") as string;
         const newParams = new URLSearchParams(searchParams.toString());
+        
         if (searchQuery) {
             newParams.set('search', searchQuery);
         } else {
             newParams.delete('search');
         }
+        
+        // Always navigate to the jobs page for a new search
         router.push(`/jobs?${newParams.toString()}`);
     }
 

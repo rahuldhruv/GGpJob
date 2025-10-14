@@ -58,7 +58,7 @@ function JobSearchContent() {
         } finally {
             setLoading(false);
         }
-    }, [searchParams.toString(), user]);
+    }, [searchParams, user]);
 
     useEffect(() => {
         fetchJobs();

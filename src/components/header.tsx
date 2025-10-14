@@ -83,11 +83,6 @@ export default function Header() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   }
 
-  const showSearchBar = isClient && !loading && user && (
-    user.role === 'Job Seeker' &&
-    (pathname === '/' || pathname === '/jobs' || (pathname.startsWith('/jobs')))
-  );
-
   const adminNavItems = [
     { href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/admin/users", label: "Manage Users", icon: UserCog },
@@ -338,11 +333,9 @@ export default function Header() {
       </nav>
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        {showSearchBar && (
-            <Suspense fallback={null}>
-                <HeaderSearch />
-            </Suspense>
-        )}
+        <Suspense fallback={null}>
+            <HeaderSearch />
+        </Suspense>
         <div className="ml-auto flex items-center gap-2">
            {renderMobileRightButton()}
            {isClient && !loading && user ? (
