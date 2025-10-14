@@ -1,3 +1,4 @@
+
 import { Suspense } from 'react';
 
 export default function SignupLayout({
@@ -5,5 +6,5 @@ export default function SignupLayout({
 }: {
     children: React.ReactNode
 }) {
-    return <Suspense>{children}</Suspense>;
+    return <Suspense fallback={null}>{children}</Suspense>;
 }

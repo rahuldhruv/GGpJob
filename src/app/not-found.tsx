@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Suspense } from 'react';
@@ -27,7 +28,7 @@ function NotFoundContent() {
 
 export default function NotFound() {
     return (
-        <Suspense>
+        <Suspense fallback={null}>
             <NotFoundContent />
         </Suspense>
     )

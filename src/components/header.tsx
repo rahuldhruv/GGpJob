@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   BriefcaseBusiness,
   Settings,
@@ -11,7 +11,6 @@ import {
   LogIn,
   UserPlus,
   LayoutGrid,
-  Search,
   Menu,
   SlidersHorizontal,
   MessageSquareQuote,
@@ -34,21 +33,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useUser } from "@/contexts/user-context";
 import { Sheet, SheetContent, SheetClose, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "./ui/separator";
 import { JobFilters } from "./job-filters";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { ShareButton } from "./share-button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import HeaderSearch from "./header-search";
 
 export default function Header() {
   const { user, logout } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isClient, setIsClient] = useState(false);
   const { loading } = useUser();
   const isMobile = useIsMobile();
@@ -85,18 +83,9 @@ export default function Header() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   }
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const searchQuery = formData.get("search") as string;
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('search', searchQuery);
-    router.push(`/jobs?${newParams.toString()}`);
-  }
-  
   const showSearchBar = isClient && !loading && user && (
     user.role === 'Job Seeker' &&
-    (pathname === '/' || pathname === '/jobs' || (pathname.startsWith('/jobs') && searchParams.get('domain') != null))
+    (pathname === '/' || pathname === '/jobs' || (pathname.startsWith('/jobs')))
   );
 
   const adminNavItems = [
@@ -333,7 +322,7 @@ export default function Header() {
               </Link>
             )}
             {isClient && !loading && user?.role === 'Job Seeker' && (
-                <>
+                <Suspense>
                     <Link href="/jobs" className={`transition-colors hover:text-foreground ${pathname === "/jobs" ? "text-foreground" : "text-foreground/60"}`}>
                         Jobs
                     </Link>
@@ -342,7 +331,7 @@ export default function Header() {
                             Recommended Jobs
                         </Link>
                     )}
-                </>
+                </Suspense>
             )}
           </>
         )}
@@ -350,18 +339,9 @@ export default function Header() {
 
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         {showSearchBar && (
-         <form onSubmit={handleSearch} className="ml-auto flex-1 sm:flex-initial">
-           <div className="relative">
-             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-             <Input
-               type="search"
-               name="search"
-               placeholder="Search jobs..."
-               className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-               defaultValue={searchParams.get('search') || ''}
-             />
-           </div>
-         </form>
+            <Suspense fallback={null}>
+                <HeaderSearch />
+            </Suspense>
         )}
         <div className="ml-auto flex items-center gap-2">
            {renderMobileRightButton()}
